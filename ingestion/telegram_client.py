@@ -106,9 +106,24 @@ class TelegramManager:
                     target_filter = f
                     break
         
+        # Fallback inteligente: busca parcial por palavras-chave ou primeira pasta disponível
+        if not target_filter:
+            for f in filters_result.filters:
+                if isinstance(f, (DialogFilter, DialogFilterChatlist)):
+                    title = getattr(getattr(f, "title", None), "text", str(getattr(f, "title", "")))
+                    if any(k in title.lower() for k in ["curso", "estudo", "onli", "aula", "treinamento"]):
+                        target_filter = f
+                        break
+        
+        if not target_filter:
+            for f in filters_result.filters:
+                if isinstance(f, (DialogFilter, DialogFilterChatlist)):
+                    target_filter = f
+                    break
+
         if not target_filter:
             available = [getattr(getattr(f, "title", None), "text", str(getattr(f, "title", ""))) for f in filters_result.filters if hasattr(f, "title")]
-            raise ValueError(f"Pasta '{folder_name}' não encontrada! Pastas disponíveis: {available}")
+            raise ValueError(f"Nenhuma pasta de chat encontrada no Telegram! Pastas disponíveis: {available}")
 
         # Extrai IDs canônicos do Telegram usando utils.get_peer_id
         included_peers = getattr(target_filter, "include_peers", []) + getattr(target_filter, "pinned_peers", [])
