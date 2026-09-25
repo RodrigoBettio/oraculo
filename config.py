@@ -35,8 +35,8 @@ class Settings:
     MAX_STUDY_WORKERS: int = int(os.getenv("MAX_STUDY_WORKERS", "3"))
 
     # Modelos Oficiais de Produção (com fallback resiliente de alta velocidade)
-    STUDY_MODELS: list[str] = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-flash-latest"]
-    ORCHESTRATION_MODELS: list[str] = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-flash-latest"]
+    STUDY_MODELS: list[str] = ["gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-flash-latest", "gemini-3.7-flash"]
+    ORCHESTRATION_MODELS: list[str] = ["gemini-3.8-flash", "gemini-pro-latest", "gemini-flash-latest"]
 
     # Google Drive
     GOOGLE_DRIVE_FOLDER_ID: str = os.getenv("GOOGLE_DRIVE_FOLDER_ID", "")
