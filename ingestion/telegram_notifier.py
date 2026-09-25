@@ -100,18 +100,18 @@ async def process_telegram_command(command_text: str) -> str:
 
     elif cmd_lower.startswith("/agentes"):
         try:
-            from web.app import get_all_agents
-            agents = get_all_agents()
+            from web.app import load_all_agents
+            agents = load_all_agents()
             if not agents:
                 return "ℹ️ Nenhum agente cadastrado no sistema."
 
             msg = "👥 **ESPECIALISTAS DO ORÁCULO**\n\n"
             for ag in agents:
-                seniority = ag.get_seniority_info()
+                seniority = ag.get("seniority", {})
                 badge = seniority.get("badge", "🥉")
                 rank = seniority.get("rank", "Júnior")
-                msg += f"{ag.avatar} **{ag.name}** ({ag.role})\n"
-                msg += f"   • Horas: `{ag.total_hours_studied:.1f}h` | Aulas: `{ag.total_videos_studied}` | Nível: {badge} {rank}\n\n"
+                msg += f"{ag.get('avatar', '🧠')} **{ag.get('name', 'Agente')}** ({ag.get('role', 'Consultor')})\n"
+                msg += f"   • Horas: `{ag.get('total_hours_studied', 0.0):.1f}h` | Aulas: `{ag.get('total_videos_studied', 0)}` | Nível: {badge} {rank}\n\n"
             return msg
         except Exception as e:
             return f"❌ Erro ao listar agentes: {e}"
@@ -166,28 +166,36 @@ async def process_telegram_command(command_text: str) -> str:
         question = parts[2].strip()
 
         try:
-            from web.app import get_all_agents
+            from web.app import load_all_agents
             from google import genai
-            agents = get_all_agents()
+            agents = load_all_agents()
 
-            matched_agent = None
+            matched_id = None
+            matched_name = None
+            matched_role = None
+            matched_avatar = None
             for ag in agents:
-                if raw_agent in ag.name.lower() or raw_agent in ag.id.lower():
-                    matched_agent = ag
+                ag_name = ag.get("name", "").lower()
+                ag_id = ag.get("id", "").lower()
+                if raw_agent in ag_name or raw_agent in ag_id:
+                    matched_id = ag.get("id")
+                    matched_name = ag.get("name")
+                    matched_role = ag.get("role")
+                    matched_avatar = ag.get("avatar")
                     break
 
-            if not matched_agent:
+            if not matched_id:
                 return f"❌ Especialista `@{raw_agent}` não encontrado. Use `/agentes` para ver os disponíveis."
 
             # Lê a skill compilada do especialista se houver
-            skill_file = settings.DATA_DIR / "skills" / matched_agent.id / "SKILL.md"
+            skill_file = settings.DATA_DIR / "skills" / matched_id / "SKILL.md"
             skill_context = ""
             if skill_file.exists():
                 with open(skill_file, "r", encoding="utf-8") as sf:
                     skill_context = sf.read()[:8000]
 
             prompt = (
-                f"Você é {matched_agent.name} ({matched_agent.role}), especialista treinado pelo Oráculo.\n"
+                f"Você é {matched_name} ({matched_role}), especialista treinado pelo Oráculo.\n"
                 f"Responda à seguinte dúvida do seu líder (Rodrigo) de forma objetiva, direta e aplicando seus conceitos reais estudados.\n\n"
                 f"BASE DE CONHECIMENTO & REGRAS:\n{skill_context}\n\n"
                 f"DÚVIDA DO RODRIGO: {question}"
@@ -199,17 +207,17 @@ async def process_telegram_command(command_text: str) -> str:
                 contents=prompt
             )
             ans = resp.text.strip()
-            return f"{matched_agent.avatar} **{matched_agent.name} Responde**:\n\n{ans}"
+            return f"{matched_avatar} **{matched_name} Responde**:\n\n{ans}"
         except Exception as e:
             return f"❌ Erro ao consultar especialista: {e}"
 
     elif cmd_lower.startswith("/sync"):
         try:
-            from web.app import get_all_agents, compile_agent_rich_skill
-            agents = get_all_agents()
+            from web.app import load_all_agents, compile_agent_rich_skill
+            agents = load_all_agents()
             count = 0
             for ag in agents:
-                c = compile_agent_rich_skill(ag.id)
+                c = compile_agent_rich_skill(ag.get("id"))
                 if c:
                     count += 1
             return f"✅ Compilação forçada concluída! `{count}` skills de especialistas foram atualizadas."
