@@ -31,20 +31,19 @@ jobs:
           pytest tests/ -v
 
   deploy:
-    name: 🚀 Deploy to Google Compute Engine
+    name: 🚀 Continuous Deployment (GCE)
     needs: test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.GCE_HOST != ''
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy via SSH (se configurado)
-        if: env.GCE_HOST != ''
+      - name: Deploy to Google Cloud VM via SSH
         env:
           GCE_HOST: ${{ secrets.GCE_HOST }}
           GCE_USER: ${{ secrets.GCE_USER }}
           GCE_KEY: ${{ secrets.GCE_SSH_KEY }}
         run: |
           mkdir -p ~/.ssh
-          echo "$GCE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H "$GCE_HOST" >> ~/.ssh/known_hosts
-          ssh "$GCE_USER@$GCE_HOST" "cd oraculo && git pull && bash scripts/deploy_vm.sh"
+          printf "%s\n" "$GCE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -i ~/.ssh/deploy_key "$GCE_USER@$GCE_HOST" "cd /home/$GCE_USER/oraculo && git pull && sudo docker compose up -d --build"
+          echo "✅ Deploy concluído com sucesso na VM!"
