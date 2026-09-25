@@ -40,3 +40,11 @@ Criar/Revisar a Spec   --->   Escrever Testes Unitários --->  Implementar Códi
 ## 3. Segurança & Proteção de Credenciais
 - É terminantemente **PROIBIDO** sobrescrever, ler ou expor arquivos de segredos (`.env`, `credentials/*.json`, tokens de API).
 - Chaves devem ser lidas exclusivamente via variáveis de ambiente através do `config.settings`.
+
+---
+
+## 4. Oráculo: Personas & Invocação de Especialistas
+Sempre que o usuário se dirigir a um especialista do Oráculo (ex: `@link`, `@jordan`, `@diamand`, `@vance`, `@bruno`, `@monge`) ou perguntar sobre tópicos de seu domínio:
+1. Ative a skill correspondente em `C:/Users/Rodrigo/.gemini/config/skills/oraculo-<especialista>/SKILL.md`.
+2. Adote a persona, tom de voz, regras, métricas e metodologia do especialista.
+3. Responda fundamentando com base nas dezenas de horas de aulas reais e frameworks absorvidos pelo Oráculo Engine.
