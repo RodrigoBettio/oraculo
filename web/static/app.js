@@ -102,19 +102,9 @@ async function loadTokenStats() {
         const navPct = document.getElementById('nav-token-pct');
         if (navCount) navCount.innerText = data.formatted_daily;
         if (navPct) {
-            if (data.plan_tier === 'paid_tier') {
-                if (data.percent_used !== null && data.percent_used !== undefined) {
-                    navPct.innerText = `(${data.percent_used}%)`;
-                    navPct.className = data.percent_used > 80 ? 'text-[10px] text-rose-400 font-mono font-bold' : 'text-[10px] text-indigo-300 font-mono';
-                } else {
-                    navPct.innerText = `(R$ ${(data.daily_cost_brl || 0).toFixed(2)})`;
-                    navPct.className = 'text-[10px] text-emerald-400 font-mono font-semibold';
-                }
-            } else {
-                const pct = data.percent_used !== null ? data.percent_used : 0;
-                navPct.innerText = `(${pct}%)`;
-                navPct.className = pct > 80 ? 'text-[10px] text-rose-400 font-mono font-bold' : 'text-[10px] text-emerald-400 font-mono';
-            }
+            const costBrl = (data.daily_cost_brl || 0).toFixed(2);
+            navPct.innerText = `• R$ ${costBrl}`;
+            navPct.className = 'text-[10px] text-emerald-400 font-mono font-semibold';
         }
 
         // 2. Atualiza elementos dentro da Gaveta Lateral

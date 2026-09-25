@@ -197,9 +197,8 @@ class StudyQueueManager:
     @property
     def max_workers(self) -> int:
         """Calcula o teto de workers em paralelo com base no pool de chaves e configuração."""
-        configured = getattr(settings, "MAX_STUDY_WORKERS", 8)
-        keys_count = len(settings.GEMINI_API_KEYS)
-        return max(1, min(max(keys_count, 1) * 2, configured))
+        configured = getattr(settings, "MAX_STUDY_WORKERS", 4)
+        return max(1, min(configured, 6))
 
     @max_workers.setter
     def max_workers(self, value: int):
@@ -626,7 +625,9 @@ class StudyQueueManager:
         has_saved_session = session_file.exists()
         can_resume = (len(error_items) > 0) or (len(queued_items) > 0 and len(self.active_items) == 0) or (has_saved_session and len(self.active_items) == 0 and len(queued_items) == 0)
         pending_count = len(queued_items) + len(self.active_items)
-        estimated_seconds = pending_count * 22 if pending_count > 0 else 0
+        workers_count = max(1, self.max_workers)
+        # Em média 40s por aula com áudio e tópicos estruturados divididos pelos workers simultâneos
+        estimated_seconds = int((pending_count * 40) / workers_count) if pending_count > 0 else 0
         if pending_count == 0:
             estimated_time_text = "Concluído" if len(completed_items) > 0 else "0m"
         else:

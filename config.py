@@ -31,8 +31,8 @@ class Settings:
             keys = [self.GEMINI_API_KEY.strip()]
         return keys
 
-    # Configuração de Concorrência de Treinamento (modo ideal: 3 workers para alta velocidade sem flood wait)
-    MAX_STUDY_WORKERS: int = int(os.getenv("MAX_STUDY_WORKERS", "3"))
+    # Configuração de Concorrência de Treinamento (modo ideal: 4 workers na VM e2-standard-4)
+    MAX_STUDY_WORKERS: int = int(os.getenv("MAX_STUDY_WORKERS", "4"))
 
     # Modelos Oficiais de Produção (com fallback resiliente de alta velocidade)
     STUDY_MODELS: list[str] = ["gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-flash-latest", "gemini-3.7-flash"]
