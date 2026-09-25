@@ -428,6 +428,23 @@ class StudyQueueManager:
             )
             enqueued.append(item)
 
+        # Se não há vídeos neste módulo/tema, mas há arquivos de apoio (ex: PDFs/Ebooks)
+        if not videos and s_files:
+            for s in s_files:
+                if only_pending and s.get("is_studied"):
+                    continue
+                item = await self.enqueue_drive_file(
+                    agent_id=agent_id,
+                    drive_file_id=s["id"],
+                    file_name=s.get("file_name", s.get("name")),
+                    course_name=course_name,
+                    theme_name=theme_name,
+                    support_files=[],
+                    tier=tier,
+                    start_worker=False
+                )
+                enqueued.append(item)
+
         if start_worker and enqueued:
             self.ensure_worker()
 
@@ -469,6 +486,23 @@ class StudyQueueManager:
                 )
                 enqueued.append(item)
 
+            # Se o módulo/tema não possui vídeos, mas possui arquivos de apoio (ex: PDFs/Ebooks)
+            if not t_videos and t_files:
+                for s in t_files:
+                    if only_pending and s.get("is_studied"):
+                        continue
+                    item = await self.enqueue_drive_file(
+                        agent_id=agent_id,
+                        drive_file_id=s["id"],
+                        file_name=s.get("file_name", s.get("name")),
+                        course_name=course_name,
+                        theme_name=t_name,
+                        support_files=[],
+                        tier=tier,
+                        start_worker=False
+                    )
+                    enqueued.append(item)
+
         # 2. Aulas diretas no curso (fora de módulos/temas específicos)
         direct_videos = course_node.get("direct_videos", [])
         direct_files = course_node.get("direct_support_files", [])
@@ -487,6 +521,23 @@ class StudyQueueManager:
                 start_worker=False
             )
             enqueued.append(item)
+
+        # Se não há vídeos diretos, mas há arquivos de apoio diretos (ex: PDFs/Ebooks avulsos)
+        if not direct_videos and direct_files:
+            for s in direct_files:
+                if only_pending and s.get("is_studied"):
+                    continue
+                item = await self.enqueue_drive_file(
+                    agent_id=agent_id,
+                    drive_file_id=s["id"],
+                    file_name=s.get("file_name", s.get("name")),
+                    course_name=course_name,
+                    theme_name=None,
+                    support_files=[],
+                    tier=tier,
+                    start_worker=False
+                )
+                enqueued.append(item)
 
         if start_worker and enqueued:
             self.ensure_worker()

@@ -294,6 +294,7 @@ class GoogleDriveManager:
                         "theme_name": theme_name
                     })
                 elif ext in SUPPORT_FILE_EXTENSIONS or "pdf" in mime or "text" in mime or "document" in mime or "code" in mime or "zip" in mime:
+                    is_studied = (fstem in studied_stems) or (f"drive_{fid}" in studied_stems)
                     support_files.append({
                         "id": fid,
                         "drive_file_id": fid,
@@ -304,6 +305,7 @@ class GoogleDriveManager:
                         "mime_type": mime,
                         "extension": ext,
                         "web_view_link": f.get("webViewLink"),
+                        "is_studied": is_studied,
                         "course_name": course_name,
                         "theme_name": theme_name
                     })
@@ -410,11 +412,14 @@ class GoogleDriveManager:
         self._course_cache[folder_id] = (time.time(), res)
         return res
 
-    def get_full_hierarchy(self) -> Dict[str, Any]:
+    def get_full_hierarchy(self, force_refresh: bool = False) -> Dict[str, Any]:
         """Escaneia a estrutura do Drive suportando a taxonomia de 3 níveis:
         Nível 1 (Pastas Raiz) ➔ Áreas da Vida OU Cursos
         Nível 2 (Subpastas) ➔ Cursos OU Temas/Módulos
         Nível 3 (Conteúdo) ➔ Aulas (Vídeo/Áudio) + Arquivos de Apoio (PDFs, Códigos, Notas)"""
+        if force_refresh:
+            self._course_cache.clear()
+
         status = self.get_status()
         if not status.get("accessible"):
             return {
@@ -428,9 +433,16 @@ class GoogleDriveManager:
         top_folders = self.list_subfolders(root_id)
         tree = []
 
-        if not top_folders:
-            # Caso especial: a pasta compartilhada raiz já é o próprio curso
-            course_node = self._inspect_course_folder(root_id, root_name, area_name="Geral")
+        # 1. Verifica se a pasta raiz possui arquivos diretos (vídeos ou PDFs soltos na raiz)
+        root_contents = self.list_folder_contents(root_id, course_name=root_name, theme_name=None)
+        if root_contents.get("videos") or root_contents.get("support_files"):
+            root_course = self._inspect_course_folder(root_id, root_name, area_name=root_name, force_refresh=force_refresh)
+            if root_course["videos_count"] > 0 or root_course["support_files_count"] > 0:
+                tree.append(root_course)
+
+        if not top_folders and not tree:
+            # Caso especial: a pasta compartilhada raiz não tem subpastas e é o único curso
+            course_node = self._inspect_course_folder(root_id, root_name, area_name=root_name, force_refresh=force_refresh)
             if course_node["videos_count"] > 0 or course_node["support_files_count"] > 0 or course_node["themes"]:
                 tree.append(course_node)
             return {
@@ -440,12 +452,24 @@ class GoogleDriveManager:
                 "tree": tree
             }
 
+        material_keywords = ["material", "materiais", "slide", "slides", "anexo", "anexos", "apoio", "recurso", "recursos", "pdf", "codigo", "code", "html"]
+
         for f1 in top_folders:
             f1_id = f1["id"]
             f1_name = f1["name"]
             f1_subfolders = self.list_subfolders(f1_id)
 
-            if f1_subfolders:
+            content_subs = [s for s in f1_subfolders if not any(k in s["name"].lower() for k in material_keywords)]
+            is_module_pattern = bool(re.match(r'^\s*(\d+|m[oó]dulo|cap[ií]tulo|aula|ebook|parte)', f1_name, re.IGNORECASE))
+
+            course_node = self._inspect_course_folder(f1_id, f1_name, area_name=root_name, force_refresh=force_refresh)
+            has_direct_content = bool(course_node.get("direct_videos") or course_node.get("direct_support_files"))
+
+            if has_direct_content or not content_subs or is_module_pattern:
+                # F1 é um curso ou módulo direto (possui vídeos/materiais diretos, subpastas são apenas materiais, ou tem padrão de módulo)
+                if course_node["videos_count"] > 0 or course_node["support_files_count"] > 0 or course_node["themes"]:
+                    tree.append(course_node)
+            else:
                 # F1 é uma Área de Conhecimento / Categoria (ex: Programação, Marketing, etc.)
                 area_node = {
                     "id": f1_id,
@@ -453,7 +477,7 @@ class GoogleDriveManager:
                     "type": "area",
                     "courses": []
                 }
-                for f2 in f1_subfolders:
+                for f2 in content_subs:
                     area_node["courses"].append({
                         "id": f2["id"],
                         "name": f2["name"],
@@ -470,12 +494,8 @@ class GoogleDriveManager:
                         "direct_support_files": [],
                         "lazy": True
                     })
-                tree.append(area_node)
-            else:
-                # F1 não tem subpastas: pode ser um Curso direto ou pasta informativa
-                course_node = self._inspect_course_folder(f1_id, f1_name, area_name="Geral")
-                if course_node["videos_count"] > 0 or course_node["support_files_count"] > 0:
-                    tree.append(course_node)
+                if area_node["courses"]:
+                    tree.append(area_node)
 
         return {
             "status": status,

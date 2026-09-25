@@ -5005,7 +5005,7 @@ function renderDriveCoursesHtmlList(container, courses) {
                                 <span>${c.name}</span>
                             </div>
                             <div id="subtitle-${detailsId}" class="text-[10px] text-gray-400 font-mono">
-                                ${isLazy ? `${c.areaName} • Toque para ver módulos, aulas e arquivos de apoio` : `${c.areaName} • ${themes.length} temas/módulos • ${c.support_files_count || 0} arquivos de apoio • ${c.total_size_mb} MB`}
+                                ${isLazy ? `${c.areaName} • Toque para ver módulos, aulas e arquivos de apoio` : `${c.areaName}${themes.length > 0 ? ` • ${themes.length} temas/módulos` : ''}${c.videos_count > 0 ? ` • ${c.videos_count} aulas` : ''}${c.support_files_count > 0 ? ` • ${c.support_files_count} arquivos` : ''} • ${c.total_size_mb} MB`}
                             </div>
                         </div>
                     </div>
@@ -5014,9 +5014,9 @@ function renderDriveCoursesHtmlList(container, courses) {
                             ${isLazy ? `
                                 <div class="text-[11px] text-purple-400 font-semibold">Ver detalhes</div>
                             ` : `
-                                <div class="text-[11px] text-purple-300 font-bold">${c.videos_count} aulas</div>
+                                <div class="text-[11px] text-purple-300 font-bold">${c.videos_count > 0 ? `${c.videos_count} aulas` : `${c.support_files_count || 0} materiais`}</div>
                                 <div class="text-[10px] ${c.pending_count > 0 ? 'text-amber-400' : 'text-emerald-400'}">
-                                    ${c.pending_count > 0 ? `${c.pending_count} pendentes` : '100% estudado'}
+                                    ${c.pending_count > 0 ? `${c.pending_count} pendentes` : (c.videos_count > 0 ? '100% estudado' : `${c.support_files_count || 0} arquivos`)}
                                 </div>
                             `}
                         </div>
@@ -5092,17 +5092,34 @@ function renderDriveDirectContentsHtml(directVideos, directSupport) {
             <span class="text-[10px] font-mono ${v.is_studied ? 'text-emerald-400' : 'text-amber-400'}">${v.is_studied ? '✓ Concluído' : 'Pendente'}</span>
         </div>
     `).join('');
-    const suppHtml = directSupport.map(s => `
-        <span class="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded bg-purple-950/60 border border-purple-500/30 text-[10px] text-purple-300 font-mono">
-            <span>📎</span>
-            <span class="truncate max-w-[140px]">${s.name}</span>
-        </span>
-    `).join('');
+
+    let suppHtml = '';
+    if (directVideos.length > 0) {
+        suppHtml = directSupport.map(s => `
+            <span class="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded bg-purple-950/60 border border-purple-500/30 text-[10px] text-purple-300 font-mono">
+                <span>📎</span>
+                <span class="truncate max-w-[140px]">${s.name}</span>
+            </span>
+        `).join('');
+    } else {
+        suppHtml = directSupport.map(s => `
+            <div class="flex items-center justify-between py-1 px-2 rounded bg-black/20 text-[11px]">
+                <span class="truncate text-gray-300 flex items-center space-x-1.5">
+                    <span>📄</span>
+                    <span title="${s.name}">${s.name}</span>
+                </span>
+                <div class="flex items-center space-x-2 text-[10px] font-mono flex-shrink-0">
+                    <span class="text-gray-500">${s.size_mb || 0} MB</span>
+                    <span class="${s.is_studied ? 'text-emerald-400 font-bold' : 'text-amber-400'}">${s.is_studied ? '✓ Concluído' : 'Pendente'}</span>
+                </div>
+            </div>
+        `).join('');
+    }
 
     return `
         <div class="p-2 rounded-xl bg-gray-950/60 space-y-1.5">
-            ${suppHtml ? `<div class="flex flex-wrap gap-1">${suppHtml}</div>` : ''}
-            <div class="space-y-1 max-h-32 overflow-y-auto">${vidsHtml}</div>
+            ${directVideos.length > 0 && suppHtml ? `<div class="flex flex-wrap gap-1">${suppHtml}</div>` : ''}
+            <div class="space-y-1 max-h-32 overflow-y-auto">${vidsHtml || suppHtml}</div>
         </div>
     `;
 }
@@ -5327,7 +5344,11 @@ async function startStudyFromModal() {
             }
 
             if (totalEnqueued === 0) {
-                alert('Todas as aulas dos cursos selecionados já foram concluídas por este especialista!\n(Dica: se quiser reprocessar, desmarque a opção "Apenas aulas pendentes")');
+                if (onlyPending) {
+                    alert('Todas as aulas dos cursos selecionados já foram concluídas por este especialista!\n\n(Dica: se quiser reprocessar alguma aula já estudada, desmarque a opção "Apenas aulas pendentes")');
+                } else {
+                    alert('Nenhuma aula compatível (vídeo, áudio ou documento PDF) foi encontrada nos cursos selecionados.');
+                }
             } else {
                 alert(`🚀 ${totalEnqueued} aula(s) do Google Drive adicionadas à esteira de processamento!`);
             }
