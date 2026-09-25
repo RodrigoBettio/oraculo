@@ -12,7 +12,8 @@ class Settings:
     # Environment
     ENVIRONMENT: str = os.getenv('ENVIRONMENT', 'development')
     OAUTH_REDIRECT_URI: str = os.getenv('OAUTH_REDIRECT_URI', 'http://127.0.0.1:8000/auth/google/callback')
-    APP_SECRET_KEY: str = os.getenv('APP_SECRET_KEY', 'dev-secret-change-in-production')
+    # Governança de Execução Autônoma (em minutos)
+    AUTONOMOUS_EXECUTION_DELAY_MINUTES: int = int(os.getenv("AUTONOMOUS_EXECUTION_DELAY_MINUTES", "5"))
 
     # Telegram
     TELEGRAM_API_ID: int = int(os.getenv("TELEGRAM_API_ID") or 0)

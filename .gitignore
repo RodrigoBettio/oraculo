@@ -30,6 +30,7 @@ data/agents/
 data/processed/
 data/skills/
 data/workspaces/
+data/autonomous_actions/
 data/token_usage.json
 data/token_usage.tmp
 data/*.mp4

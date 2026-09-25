@@ -7,7 +7,9 @@
   "manager_agent_id": "gestor_tech_cto",
   "subagent_ids": [
     "agent_alex_vance",
-    "agent_claude_code"
+    "agent_claude_code",
+    "agent_quinn_qa_7781",
+    "agent_claudio_cloud_4421"
   ],
   "health_score": 100,
   "routines_count": 0,

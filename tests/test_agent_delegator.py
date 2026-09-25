@@ -82,10 +82,48 @@ def test_full_consultation_hand_off():
     assert "Quinn" in full_response, "Deveria conter a resposta do especialista Quinn QA"
     print("✅ Teste 5: Diálogo completo com Hand-Off e resposta de Quinn QA executado com perfeição!")
 
+def test_helena_executive_delegation_to_qa():
+    query = "Helena, qual a estratégia recomendada para testes E2E do nosso login com Playwright?"
+    full_response = agent_delegator.consult("helena", query)
+
+    print("\n" + "=" * 60)
+    print("👩‍💼 Resposta Executiva de Helena Torres:")
+    print(full_response)
+    print("=" * 60)
+
+    assert "Helena Torres" in full_response, "Deveria conter a síntese executiva de Helena Torres"
+    assert "Quinn" in full_response, "Helena deveria ter acionado a especialista Quinn QA para Playwright"
+    print("✅ Teste 6: Helena Torres atuou como executiva não-técnica e acionou Quinn QA!")
+
+def test_autonomous_governor_flow():
+    from orchestration.autonomous_governor import autonomous_governor
+    import time
+
+    test_act_id = f"test_act_{int(time.time())}"
+    action = autonomous_governor.propose_action(
+        action_id=test_act_id,
+        title="Teste de Otimização de Imagens",
+        description="Reduzir tamanho dos assets para acelerar o LCP",
+        category="operational",
+        delay_minutes=5
+    )
+    assert action["status"] == "pending"
+    assert action["delay_minutes"] == 5
+
+    # Cancelamento
+    res_cancel = autonomous_governor.cancel_action(test_act_id, reason="Teste de veto do usuário")
+    assert res_cancel["status"] == "success"
+
+    saved = autonomous_governor.get_action(test_act_id)
+    assert saved["status"] == "cancelled"
+    print("✅ Teste 7: Fluxo do AutonomousGovernor (Proposta e Veto) aprovado com sucesso!")
+
 if __name__ == "__main__":
     test_delegator_finds_agents()
     test_competency_alex_vance_qa_delegation()
     test_competency_alex_vance_own_domain()
     test_competency_jordan_sales_own_domain()
     test_full_consultation_hand_off()
-    print("\n🎉 TODOS OS TESTES DE DELEGAÇÃO E FALLBACK PASSARAM COM SUCESSO!")
+    test_helena_executive_delegation_to_qa()
+    test_autonomous_governor_flow()
+    print("\n🎉 TODOS OS TESTES DE DELEGAÇÃO, HELENA EXECUTIVA E GOVERNADOR PASSARAM COM SUCESSO!")

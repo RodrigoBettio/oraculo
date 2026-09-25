@@ -64,6 +64,14 @@ def get_back_keyboard():
         ]
     ]
 
+def get_action_proposal_keyboard(action_id: str):
+    return [
+        [
+            Button.inline("🛑 Cancelar / Vetar", data=f"action:cancel_act:{action_id}".encode("utf-8")),
+            Button.inline("⚡ Executar Agora", data=f"action:exec_act:{action_id}".encode("utf-8"))
+        ]
+    ]
+
 _bot_client = None
 
 async def get_bot_client():
@@ -126,6 +134,20 @@ async def handle_callback_query(event):
             res = await process_telegram_command("/contratar cloud")
             await event.answer("☁️ Cláudio Cloud contratado com sucesso!", alert=True)
             await event.edit(res, buttons=get_cockpit_inline_keyboard())
+
+        elif data_str.startswith("action:cancel_act:"):
+            act_id = data_str.replace("action:cancel_act:", "").strip()
+            from orchestration.autonomous_governor import autonomous_governor
+            res = autonomous_governor.cancel_action(act_id)
+            await event.answer("🛑 Ação cancelada pelo usuário!", alert=True)
+            await event.edit(f"🛑 **[AÇÃO AUTÔNOMA CANCELADA / VETADA]**\n\n{res.get('message')}\n\nOperação abortada com sucesso a pedido do Rodrigo Bettio Jr.")
+
+        elif data_str.startswith("action:exec_act:"):
+            act_id = data_str.replace("action:exec_act:", "").strip()
+            from orchestration.autonomous_governor import autonomous_governor
+            res = autonomous_governor.execute_action(act_id, trigger="manual_immediate")
+            await event.answer("⚡ Ação executada imediatamente!", alert=False)
+            await event.edit(f"⚡ **[AÇÃO AUTÔNOMA DISPARADA]**\n\n{res.get('message')}\n\nExecução realizada com sucesso.")
 
         elif data_str == "action:main_menu":
             await event.answer()
@@ -245,7 +267,64 @@ async def send_telegram_notification(title: str, message: str, with_keyboard: bo
         return sent_any
     except Exception as e:
         logger.warning(f"Erro ao enviar notificação Telegram: {e}")
-        return False
+async def notify_autonomous_proposal(
+    title: str,
+    description: str,
+    category: str = "operational",
+    delay_minutes: Optional[int] = None,
+    payload: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    """
+    Envia uma notificação de proposta autônoma com contagem regressiva e botões táteis inline.
+    Se category='operational' e o usuário não vetar em delay_minutes, o Governor auto-executa.
+    Se category='critical', exige aprovação explícita.
+    """
+    try:
+        from orchestration.autonomous_governor import autonomous_governor
+        import time
+
+        action_id = f"act_{int(time.time())}"
+        delay = delay_minutes if delay_minutes is not None else settings.AUTONOMOUS_EXECUTION_DELAY_MINUTES
+        action = autonomous_governor.propose_action(
+            action_id=action_id,
+            title=title,
+            description=description,
+            category=category,
+            delay_minutes=delay,
+            payload=payload
+        )
+
+        cat_badge = "⚙️ **[PROPOSTA DE AÇÃO AUTÔNOMA]**" if category == "operational" else "🚨 **[MUDANÇA ESTRUTURAL — REQUER APROVAÇÃO]**"
+        countdown_msg = (
+            f"⏱️ **Janela de Intervenção**: `{delay} minutos`\n"
+            f"_Se você não responder ou vetar dentro do prazo, a ação será executada automaticamente._"
+        ) if category == "operational" else (
+            f"🛑 **Atenção**: Esta ação é crítica e **NÃO** será executada sem aprovação explícita."
+        )
+
+        formatted_msg = (
+            f"{cat_badge}\n\n"
+            f"📌 **{title}**\n\n"
+            f"{description}\n\n"
+            f"{countdown_msg}\n\n"
+            f"🆔 `ID: {action_id}`"
+        )
+
+        group_id = get_cockpit_group_id()
+        bot = await get_bot_client()
+        buttons = get_action_proposal_keyboard(action_id)
+
+        if bot and bot.is_connected() and group_id:
+            try:
+                sent = await bot.send_message(group_id, formatted_msg, buttons=buttons)
+                _record_sent_id(sent)
+            except Exception as be:
+                logger.warning(f"Erro ao enviar proposta autônoma via Bot: {be}")
+
+        return action
+    except Exception as e:
+        logger.warning(f"Erro ao registrar proposta autônoma: {e}")
+        return {}
 
 def sync_send_notification(title: str, message: str):
     """Dispara a notificação de forma assíncrona segura a partir de contexto síncrono."""
@@ -608,8 +687,8 @@ Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de 
         except Exception as e:
             return f"❌ Erro ao consultar especialista: {e}"
 
-    # 7.1. Tarefas Rápidas / Payloads do Edge Node (Gemma / Celular)
-    elif cmd_lower.startswith("/tarefa") or ("origem" in cmd_lower and "gemma_edge" in cmd_lower) or ('"especialista_alvo"' in cmd):
+    # 7.1. Registro de Tarefas Rápidas no Backlog
+    elif cmd_lower.startswith("/tarefa") or ('"especialista_alvo"' in cmd):
         try:
             from orchestration.agent_delegator import agent_delegator
             tasks_dir = settings.DATA_DIR / "tasks"
@@ -644,7 +723,6 @@ Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de 
             title = data.get("titulo", "Tarefa sem título")
             details = data.get("detalhes", "")
             priority = data.get("prioridade", "normal")
-            origin = data.get("origem", "gemma_edge")
 
             import time
             task_id = f"task_{int(time.time())}"
@@ -656,9 +734,8 @@ Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de 
 
             opinion = agent_delegator.consult(target_agent, f"Tarefa registrada: {title}. Contexto: {details}. Dê seu parecer inicial.")
 
-            badge = "📱 [Gemma Edge Node ➔ Oráculo]" if origin == "gemma_edge" else "💬 [Cockpit Mobile ➔ Oráculo]"
             return (
-                f"{badge}\n\n"
+                f"💬 [Cockpit Mobile ➔ Oráculo]\n\n"
                 f"✅ **NOVA TAREFA REGISTRADA NO BACKLOG!**\n"
                 f"📌 **Título**: {title}\n"
                 f"🎯 **Responsável**: `@{target_agent}` | Prioridade: `{priority.upper()}`\n"
@@ -687,6 +764,37 @@ Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de 
             except Exception:
                 continue
         return msg
+
+    # 7.2. Ações Autônomas e Delay de Governança
+    elif cmd_lower.startswith("/acoes") or "acoes pendentes" in cmd_lower:
+        from orchestration.autonomous_governor import autonomous_governor
+        pending = autonomous_governor.get_pending_actions()
+        if not pending:
+            return "ℹ️ Nenhuma ação autônoma pendente de execução no momento."
+        import time
+        now = time.time()
+        msg = f"⏱️ **AÇÕES AUTÔNOMAS PENDENTES** (`{len(pending)} na fila`):\n\n"
+        for act in pending:
+            sched = act.get("scheduled_timestamp")
+            rem_sec = max(0, int(sched - now)) if sched else 0
+            rem_min = rem_sec // 60
+            cat = "⚙️ Operacional" if act.get("category") == "operational" else "🚨 Crítica (Aguardando Aprovação)"
+            msg += f"• **{act.get('title')}** (`{act.get('id')}`)\n"
+            msg += f"  _{act.get('description')[:80]}_\n"
+            msg += f"  Categoria: {cat} | Tempo restante: `{rem_min}m {rem_sec % 60}s`\n\n"
+        msg += "💡 Para cancelar uma ação: envie `/cancelar <id>` ou use o botão na mensagem original."
+        return msg
+
+    elif cmd_lower.startswith("/cancelar"):
+        parts = cmd.split(maxsplit=1)
+        if len(parts) < 2:
+            return "⚠️ Uso correto: `/cancelar <id_da_acao>`"
+        target_id = parts[1].strip()
+        from orchestration.autonomous_governor import autonomous_governor
+        res = autonomous_governor.cancel_action(target_id)
+        if res.get("status") == "success":
+            return f"🛑 **Ação Cancelada**: {res.get('message')}"
+        return f"⚠️ {res.get('message')}"
 
     # 8. Sincronização Forçada
     elif cmd_lower.startswith("/sync") or "sincronizar tudo" in cmd_lower:

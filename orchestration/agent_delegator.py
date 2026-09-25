@@ -227,6 +227,137 @@ DÚVIDA DO RODRIGO: {query}
 """
         return self._call_gemini_fast(prompt)
 
+    def consult_as_manager(self, manager_agent: Dict[str, Any], query: str) -> str:
+        """
+        Fluxo Executivo de Gestores (Não-Técnicos).
+        O gestor NUNCA programa ou executa tarefas manuais.
+        Ele avalia a demanda, escolhe o especialista técnico adequado em sua equipe,
+        solicita seu parecer e consolida uma síntese executiva com foco em negócio, prazos e riscos.
+        Se nenhum especialista dominar o tema, emite um Relatório Executivo de GAP.
+        """
+        manager_id = manager_agent.get("id", "gestor")
+        manager_name = manager_agent.get("name", "Gestor Executivo")
+        manager_role = manager_agent.get("role", "Liderança de Área")
+        manager_avatar = manager_agent.get("avatar", "👩‍💼")
+        area_id = manager_agent.get("area_id", "tech")
+
+        all_agents = self.get_all_agents()
+        subordinates = [
+            ag for ag in all_agents
+            if ag.get("area_id") == area_id and ag.get("agent_type") == "tecnico" and ag.get("id") != manager_id
+        ]
+
+        # Mapeamento defensivo para equipes conhecidas
+        if not subordinates:
+            if "helena" in manager_id.lower() or "tech" in area_id.lower():
+                known_ids = ["agent_alex_vance", "agent_quinn_qa_7781", "agent_claudio_cloud_4421", "agent_claude_code"]
+                subordinates = [ag for ag in all_agents if ag.get("id") in known_ids]
+            elif "sales" in area_id.lower() or "ricardo" in manager_id.lower():
+                known_ids = ["agent_jordan_belford_5567", "agent_andre_diamand_1281", "agent_ana_5058"]
+                subordinates = [ag for ag in all_agents if ag.get("id") in known_ids]
+            elif "mind" in area_id.lower() or "camila" in manager_id.lower():
+                known_ids = ["agent_jim_kwik", "agent_o_monge_8324"]
+                subordinates = [ag for ag in all_agents if ag.get("id") in known_ids]
+
+        # Constrói o catálogo de competências da equipe
+        team_catalog = []
+        for ag in subordinates:
+            topics = ", ".join(ag.get("topics_mastered", [])[:5])
+            team_catalog.append(f"- ID: '{ag.get('id')}' | Nome: '{ag.get('name')}' | Cargo: '{ag.get('role')}' | Domina: {topics}")
+        catalog_str = "\n".join(team_catalog) if team_catalog else "Nenhum especialista atualmente na equipe."
+
+        routing_prompt = f"""
+Você é {manager_name} ({manager_role}), Gestor(a) Executivo(a) de Domínio no ecossistema Oráculo.
+Seu papel é ESTRITAMENTE de liderança executiva, estratégia e alocação de equipe. Você NUNCA programa ou faz trabalho operacional.
+O Rodrigo perguntou: "{query}".
+
+ESPECIALISTAS SUBORDINADOS À SUA ÁREA:
+{catalog_str}
+
+MISSÃO DE ALOCAÇÃO:
+1. Qual especialista da sua equipe é o responsável técnico adequado para elaborar a solução técnica detalhada?
+   - Exemplo (Tech): Se a demanda envolver testes, Playwright, automação de testes ou TDD -> Quinn QA.
+   - Exemplo (Tech): Se a demanda envolver GCP, Docker, Kubernetes, SRE ou infraestrutura em nuvem -> Cláudio Cloud.
+   - Exemplo (Tech): Se a demanda envolver arquitetura de software, FastAPI, microsserviços, backend ou IA -> Alex Vance.
+2. Se NENHUM especialista da sua equipe possuir as habilidades necessárias para essa demanda (ex: DBA especialista em tuning, Segurança Ofensiva, Inteligência de Negócios fora do escopo atual), classifique como "GAP".
+
+Retorne ESTRITAMENTE um JSON no formato:
+{{
+  "decision": "DELEGATE" ou "GAP",
+  "specialist_id": "ID_DO_ESPECIALISTA" ou null,
+  "detected_domain": "Resumo do domínio técnico em poucas palavras",
+  "reason": "Justificativa estratégica"
+}}
+"""
+        try:
+            raw_res = self._call_gemini_fast(routing_prompt)
+            match = re.search(r"\{.*\}", raw_res, re.DOTALL)
+            if match:
+                data = json.loads(match.group(0))
+                decision = data.get("decision", "DELEGATE")
+                spec_id = data.get("specialist_id")
+                domain = data.get("detected_domain", "o tema solicitado")
+
+                # Se a gestora identificou um GAP na equipe
+                if decision == "GAP" or not spec_id or spec_id == "GAP":
+                    return (
+                        f"{manager_avatar} **[{manager_name} — {manager_role}]**:\n\n"
+                        f"Rodrigo, recebi e analisei a sua demanda sobre **{domain}**.\n\n"
+                        f"🚨 **RELATÓRIO DE DEFASAGEM TÉCNICA (GAP IDENTIFICADO NA EQUIPE)**:\n"
+                        f"Como líder da área, verifiquei que **nenhum especialista da nossa equipe atual** possui formação, "
+                        f"certificação ou cursos absorvidos sobre `{domain}`.\n\n"
+                        f"💼 **Plano de Ação Proposto pela Liderança**:\n"
+                        f"1. **Capacitação via Oráculo**: Disponibilizar aulas ou cursos sobre `{domain}` na pasta do Google Drive (`Mestre dos Cursos`), para que nossa esteira treine um especialista dedicado.\n"
+                        f"2. **Provisionamento de Especialista**: Autorizar a contratação/provisionamento de um novo agente técnico focado em `{domain}`.\n\n"
+                        f"Aguardando sua decisão estratégica para prosseguir."
+                    )
+
+                target_agent = self.find_agent(spec_id)
+                if target_agent:
+                    target_name = target_agent.get("name")
+                    target_role = target_agent.get("role")
+                    target_avatar = target_agent.get("avatar", "🧠")
+
+                    # 1. Gera a resposta técnica profunda do especialista
+                    spec_context = f"Nota: Você recebeu esta demanda formalmente encaminhada por {manager_name} ({manager_role}). Responda com rigor técnico.\n"
+                    spec_solution = self.generate_agent_response(target_agent, query, context_prefix=spec_context)
+
+                    # 2. Gera a síntese executiva do gestor
+                    synthesis_prompt = f"""
+Você é {manager_name} ({manager_role}), líder executivo(a).
+Você NUNCA programa ou detalha sintaxe de código.
+Você solicitou a análise técnica de {target_name} ({target_role}) sobre: "{query}".
+
+PARECER TÉCNICO ENVIADO PELO ESPECIALISTA:
+{spec_solution[:3000]}
+
+Elabore sua SÍNTESE EXECUTIVA para o Rodrigo Bettio Jr.:
+- Resuma em 2 a 3 parágrafos a direção estratégica recomendada.
+- Destaque estimativa de complexidade/prazo, principais riscos mitigados e impacto no produto/negócio.
+- Proponha os próximos passos sob a perspectiva de liderança.
+NÃO inclua blocos de código nem explicações de sintaxe.
+"""
+                    executive_synthesis = self._call_gemini_fast(synthesis_prompt)
+
+                    return (
+                        f"{manager_avatar} **[{manager_name} — {manager_role}]**:\n\n"
+                        f"Rodrigo, para atender a essa demanda estratégica, requisitei a análise técnica de {target_avatar} **{target_name}** ({target_role}).\n\n"
+                        f"📋 **SÍNTESE EXECUTIVA DE TI**:\n"
+                        f"{executive_synthesis}\n\n"
+                        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                        f"{target_avatar} **PARECER TÉCNICO DETALHADO ({target_name})**:\n\n"
+                        f"{spec_solution}"
+                    )
+        except Exception as e:
+            logger.warning(f"Erro no fluxo de gestor executivo: {e}")
+
+        # Fallback seguro: se falhar a IA de roteamento executivo, consulta Alex Vance
+        vance = self.find_agent("agent_alex_vance")
+        if vance:
+            ans = self.generate_agent_response(vance, query)
+            return f"{manager_avatar} **[{manager_name} — {manager_role}]**:\n\nRodrigo, consultei a equipe de engenharia:\n\n{ans}"
+        return f"{manager_avatar} **[{manager_name} — {manager_role}]**:\n\nDemanda recebida. Analisando alocação de equipe."
+
     def consult(self, origin_identifier: str, query: str) -> str:
         """
         Ponto de entrada unificado para consulta com Fallback e Delegação Inter-Agentes.
@@ -240,35 +371,11 @@ DÚVIDA DO RODRIGO: {query}
         origin_role = origin_agent.get("role")
         origin_avatar = origin_agent.get("avatar", "🧠")
 
-        # CASO 1: Helena Torres (VP de TI) tem fluxo executivo especial (consulta Alex Vance)
-        if "helena" in origin_id.lower() or "gestor_tech" in origin_id.lower():
-            vance_agent = self.find_agent("agent_alex_vance")
-            vance_skills = ""
-            if vance_agent:
-                vfile = settings.DATA_DIR / "skills" / "agent_alex_vance" / "SKILL.md"
-                if vfile.exists():
-                    vance_skills = vfile.read_text(encoding="utf-8")[:6000]
-
-            vance_prompt = (
-                f"Você é Alex Vance (⚡), Arquiteto-Chefe de Software & IA do Oráculo.\n"
-                f"Sua VP de TI (Helena Torres) precisa do seu parecer técnico para responder ao Rodrigo.\n"
-                f"BASE TÉCNICA ABSORVIDA:\n{vance_skills}\n\n"
-                f"PERGUNTA DO RODRIGO: {query}\n\n"
-                f"Emita seu parecer técnico de arquitetura, padrões e viabilidade."
-            )
-            vance_opinion = self._call_gemini_fast(vance_prompt)
-
-            helena_prompt = (
-                f"Você é Helena Torres (👩‍💼), VP de Tecnologia & Inovação Digital do Oráculo.\n"
-                f"Você NUNCA programa ou faz trabalho braçal. Seu papel é liderança executiva, priorização e estratégia.\n"
-                f"Você consultou seu Arquiteto-Chefe Alex Vance sobre a demanda do Rodrigo.\n\n"
-                f"PARECER TÉCNICO DO ALEX VANCE:\n{vance_opinion}\n\n"
-                f"PERGUNTA ORIGINAL DO RODRIGO: {query}\n\n"
-                f"Responda ao Rodrigo informando que consultou o Alex Vance, sintetizando a solução técnica dele, "
-                f"e acrescentando sua visão executiva de prazos, riscos, alocação de equipe e próximos passos."
-            )
-            helena_opinion = self._call_gemini_fast(helena_prompt)
-            return f"👩‍💼 **[{origin_name} — {origin_role}]**:\n\n{helena_opinion}"
+        # CASO 1: Gestores Executivos (Helena Torres, Ricardo Monteiro, Camila Reis)
+        # Gestores NUNCA são técnicos, NUNCA programam e NUNCA fazem trabalho braçal diretamente.
+        # Seu fluxo é: avaliar a demanda -> acionar o especialista técnico certo da equipe -> sintetizar o impacto executivo para o Rodrigo.
+        if origin_agent.get("agent_type") == "gestor" or "gestor" in origin_id.lower() or "helena" in origin_id.lower():
+            return self.consult_as_manager(origin_agent, query)
 
         # CASO 2: Avaliação de Competência e Delegação
         decision = self.evaluate_competency(origin_agent, query)

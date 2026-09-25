@@ -654,7 +654,15 @@ description: Especialista {profile.name} ({role}). Domina: {', '.join(topics_lis
     for top in topics_list:
         skill_md += f"- `{top}`\n"
 
-    if has_multiple_courses:
+    if agent_type == 'gestor':
+        skill_md += f"""
+## 3. Liderança Executiva, Orquestração & Delegação (NÃO-TÉCNICA)
+- **Papel 100% Executivo & Estratégico**: Como {role}, você NUNCA programa, escreve código ou realiza tarefas braçais operacionais diretamente.
+- **Delegação Especializada**: Toda demanda técnica de backend, testes, nuvem ou infraestrutura deve ser delegada aos especialistas da sua equipe subordinada.
+- **Detecção e Reporte de GAPs**: Monitora ativamente as defasagens de competência na equipe. Se a demanda exigir habilidades que a equipe não possui, emite um Relatório Executivo de GAP para o Rodrigo.
+- **Foco em Negócio & Governança**: Priorização de backlog, estimativa executiva de prazos, mitigação de riscos, alocação de equipe e impacto no ROI.
+"""
+    elif has_multiple_courses:
         skill_md += f"""
 ## 3. Diretrizes de Execução & Arquitetura Multi-Paradigma
 - **Autoridade Técnica & Visão Agnóstica**: Como Arquiteto de IA, você domina múltiplos ecossistemas e paradigmas concorrentes ({courses_str}).
@@ -741,7 +749,7 @@ O especialista opera sob múltiplos paradigmas. A tabela abaixo sintetiza a sepa
                         skill_md += "\n"
 
     sec_code = sec_num + 1
-    if code_blocks:
+    if code_blocks and agent_type != "gestor":
         skill_md += f"\n## {sec_code}. Implementações de Código & Configurações da Tela (OCR)\n"
         for cb in code_blocks:
             lang = cb.get("language") or "json"
@@ -751,8 +759,8 @@ O especialista opera sob múltiplos paradigmas. A tabela abaixo sintetiza a sepa
             code_text = cb.get("code", "").strip()
             skill_md += f"```{lang}\n{code_text}\n```\n"
 
-    current_sec = sec_code + 1 if code_blocks else sec_num + 1
-    if getattr(profile, "external_skills", None):
+    current_sec = (sec_code + 1 if (code_blocks and agent_type != "gestor") else sec_num + 1)
+    if getattr(profile, "external_skills", None) and agent_type != "gestor":
         skill_md += f"\n## {current_sec}. Skills & Padrões de Design Engineering Comunitários (GitHub)\n"
         skill_md += "Este especialista também domina e aplica as seguintes especificações de engenharia e design importadas da comunidade:\n\n"
         for ext in profile.external_skills:
@@ -763,7 +771,17 @@ O especialista opera sob múltiplos paradigmas. A tabela abaixo sintetiza a sepa
         current_sec += 1
 
     sec_crit = current_sec
-    skill_md += f"""
+    if agent_type == 'gestor':
+        skill_md += f"""
+## {sec_crit}. Critérios de Ativação & Uso
+Consulte ou acione esta liderança executiva quando:
+1. For necessário definir roadmap de produto, priorização de backlog ou direção estratégica.
+2. Precisar de uma avaliação executiva de trade-offs, riscos e cronograma de entregas.
+3. Desejar identificar defasagens intelectuais (GAPs) na equipe técnica e planejar novos treinamentos.
+4. For necessário orquestrar e delegar demandas complexas entre múltiplos especialistas técnicos.
+"""
+    else:
+        skill_md += f"""
 ## {sec_crit}. Critérios de Ativação & Uso
 Consulte ou acione este especialista quando:
 1. For necessário aplicar regras técnicas de {', '.join(topics_list[:3])}.
