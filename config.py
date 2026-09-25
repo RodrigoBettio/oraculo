@@ -19,6 +19,7 @@ class Settings:
     TELEGRAM_API_HASH: str = os.getenv("TELEGRAM_API_HASH", "")
     TELEGRAM_SESSION_NAME: str = os.getenv("TELEGRAM_SESSION_NAME", "oraculo_session")
     TELEGRAM_TARGET_FOLDER: str = os.getenv("TELEGRAM_TARGET_FOLDER", "Estudos")
+    TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 
     # Gemini API (Chave única ou Pool de múltiplas chaves rotativas)
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")

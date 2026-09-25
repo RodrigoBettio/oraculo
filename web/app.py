@@ -751,7 +751,18 @@ O especialista opera sob múltiplos paradigmas. A tabela abaixo sintetiza a sepa
             code_text = cb.get("code", "").strip()
             skill_md += f"```{lang}\n{code_text}\n```\n"
 
-    sec_crit = sec_code + 1 if code_blocks else sec_num + 1
+    current_sec = sec_code + 1 if code_blocks else sec_num + 1
+    if getattr(profile, "external_skills", None):
+        skill_md += f"\n## {current_sec}. Skills & Padrões de Design Engineering Comunitários (GitHub)\n"
+        skill_md += "Este especialista também domina e aplica as seguintes especificações de engenharia e design importadas da comunidade:\n\n"
+        for ext in profile.external_skills:
+            ext_name = ext.get("name", ext.get("id", "Skill"))
+            ext_id = ext.get("id", "")
+            ext_desc = ext.get("description", "")
+            skill_md += f"- **`{ext_id}`** ({ext_name}): {ext_desc[:200]}...\n"
+        current_sec += 1
+
+    sec_crit = current_sec
     skill_md += f"""
 ## {sec_crit}. Critérios de Ativação & Uso
 Consulte ou acione este especialista quando:

@@ -47,6 +47,33 @@ def set_cockpit_group(chat_id: int, title: str):
     except Exception as e:
         logger.error(f"Erro ao salvar grupo cockpit: {e}")
 
+COCKPIT_TOPICS_FILE = settings.DATA_DIR / "cockpit_topics.json"
+
+def get_cockpit_topics() -> Dict[str, Dict[str, Any]]:
+    """Retorna o mapeamento de tópicos (threads) do fórum para agentes especialistas."""
+    try:
+        if COCKPIT_TOPICS_FILE.exists():
+            with open(COCKPIT_TOPICS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {}
+
+def set_cockpit_topic(topic_id: int, agent_id: str, agent_name: str):
+    """Vincula um tópico específico do Fórum a um agente especialista."""
+    try:
+        data = get_cockpit_topics()
+        data[str(topic_id)] = {
+            "agent_id": agent_id,
+            "agent_name": agent_name
+        }
+        COCKPIT_TOPICS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(COCKPIT_TOPICS_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        logger.info(f"📌 Tópico #{topic_id} vinculado ao especialista {agent_name} ({agent_id})")
+    except Exception as e:
+        logger.error(f"Erro ao salvar mapeamento de tópico: {e}")
+
 # Rastreamento de mensagens enviadas pelo robô para evitar loops
 _sent_message_ids = set()
 
@@ -523,6 +550,32 @@ Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de 
         except Exception as e:
             return f"❌ Erro no sync: {e}"
 
+    # 9. Listagem e Gestão de Tópicos do Fórum
+    elif cmd_lower.startswith("/topicos"):
+        topics = get_cockpit_topics()
+        if not topics:
+            return (
+                "📌 **TÓPICOS DO FÓRUM (SUPERGRUPO)**\n\n"
+                "Nenhum tópico foi vinculado ainda!\n\n"
+                "💡 **Como configurar o Fórum dos Agentes**:\n"
+                "1. No Telegram, edite seu grupo e ative a chave **'Tópicos'** (Modo Fórum).\n"
+                "2. Crie tópicos dedicados como:\n"
+                "   • `⚡ Alex Vance`\n"
+                "   • `🤖 Jordan Belford`\n"
+                "   • `👩‍💼 Helena Torres`\n"
+                "   • `💎 André Diamand`\n"
+                "   • `🧠 Link`\n"
+                "   • `🧘 O Monge`\n"
+                "3. Entre no tópico correspondente e envie:\n"
+                "   `/vincular_topico @nome_do_agente` (ex: `/vincular_topico @vance`)\n\n"
+                "A partir daí, **qualquer mensagem** enviada dentro daquele tópico será respondida direto pelo especialista, sem precisar digitar `@`!"
+            )
+        msg = "📌 **MAPEAMENTO DE TÓPICOS DO FÓRUM ATIVOS**:\n\n"
+        for tid, info in topics.items():
+            msg += f"• **Tópico #{tid}**: `{info.get('agent_name')}` (`@{info.get('agent_id')}`)\n"
+        msg += "\nEnvie `/vincular_topico @agente` dentro de qualquer tópico para vincular ou reatribuir."
+        return msg
+
     return (
         "❓ Comando não reconhecido.\n"
         "Toque em um dos botões abaixo ou envie `/ajuda` para ver o menu."
@@ -601,7 +654,51 @@ async def start_telegram_listener():
             # CASO 3: Mensagens dentro do Grupo Cockpit
             is_cockpit = (cockpit_group_id and chat_id == cockpit_group_id) or ("oraculo" in getattr(chat, "title", "").lower() or "oráculo" in getattr(chat, "title", "").lower())
             if is_group and is_cockpit:
-                # Comandos de barra diretos no grupo
+                reply_to = getattr(event.message, "reply_to", None)
+                topic_id = getattr(reply_to, "reply_to_top_id", None) or getattr(reply_to, "reply_to_msg_id", None)
+
+                # Subcaso 3.1: Comando para vincular o tópico atual a um especialista
+                if txt.startswith(("/vincular_topico", "/bind_topico", "/set_topico")):
+                    parts = txt.split(maxsplit=1)
+                    if len(parts) < 2:
+                        sent = await event.reply(
+                            "ℹ️ **Como vincular este tópico a um especialista**:\n\n"
+                            "Envie: `/vincular_topico @nome_do_agente`\n"
+                            "Exemplos:\n"
+                            "• `/vincular_topico @vance`\n"
+                            "• `/vincular_topico @jordan`\n"
+                            "• `/vincular_topico @helena`\n"
+                            "• `/vincular_topico @diamand`"
+                        )
+                        _record_sent_id(sent)
+                        return
+
+                    target_raw = parts[1].replace("@", "").strip().lower()
+                    from web.app import load_all_agents
+                    agents = load_all_agents()
+                    matched_ag = None
+                    for ag in agents:
+                        if target_raw in ag.get("name", "").lower() or target_raw in ag.get("id", "").lower():
+                            matched_ag = ag
+                            break
+
+                    if not matched_ag:
+                        sent = await event.reply(f"❌ Especialista `@{target_raw}` não encontrado. Use `/agentes` para ver a lista.")
+                        _record_sent_id(sent)
+                        return
+
+                    effective_tid = topic_id or event.message.id
+                    set_cockpit_topic(effective_tid, matched_ag.get("id"), matched_ag.get("name"))
+                    welcome_top = (
+                        f"📌 **TÓPICO #{effective_tid} VINCULADO COM SUCESSO!**\n\n"
+                        f"Este canal agora é a **Sala Oficial de {matched_ag.get('name')}** ({matched_ag.get('avatar')} — {matched_ag.get('role')}).\n\n"
+                        f"💬 **A partir de agora**: qualquer mensagem enviada aqui será respondida diretamente por ele sem precisar digitar `@`!"
+                    )
+                    sent = await event.reply(welcome_top)
+                    _record_sent_id(sent)
+                    return
+
+                # Subcaso 3.2: Comandos de barra diretos no grupo (/status, /agentes, /gaps, /topicos, etc.)
                 if txt.startswith("/"):
                     print(f"📱 [Telegram Grupo] Comando recebido: {txt}", flush=True)
                     response = await process_telegram_command(txt)
@@ -609,7 +706,7 @@ async def start_telegram_listener():
                     _record_sent_id(sent)
                     return
 
-                # Mapeamento de gatilhos de agentes no grupo
+                # Subcaso 3.3: Mapeamento de menções explícitas (@link, @jordan, @helena, etc.)
                 agent_triggers = {
                     "@link": "link",
                     "@jordan": "jordan",
@@ -636,11 +733,25 @@ async def start_telegram_listener():
                     for trigger, aid in matched:
                         clean_q = re.sub(trigger, "", txt, flags=re.IGNORECASE).strip()
                         cmd_synth = f"/perguntar @{aid} {clean_q if clean_q else txt}"
-                        print(f"👥 [Telegram Grupo] Roteando para @{aid}: {clean_q[:50]}", flush=True)
+                        print(f"👥 [Telegram Grupo] Roteando menção para @{aid}: {clean_q[:50]}", flush=True)
                         ans = await process_telegram_command(cmd_synth)
                         sent = await event.reply(ans)
                         _record_sent_id(sent)
                     return
+
+                # Subcaso 3.4: Roteamento Automático por Tópico (Fórum / Supergrupo)
+                if topic_id:
+                    topics_map = get_cockpit_topics()
+                    bound_info = topics_map.get(str(topic_id))
+                    if bound_info:
+                        bound_agent_id = bound_info.get("agent_id")
+                        bound_agent_name = bound_info.get("agent_name", bound_agent_id)
+                        cmd_synth = f"/perguntar @{bound_agent_id} {txt}"
+                        print(f"👥 [Fórum Tópico #{topic_id}] Roteando automaticamente para {bound_agent_name}: {txt[:50]}", flush=True)
+                        ans = await process_telegram_command(cmd_synth)
+                        sent = await event.reply(ans)
+                        _record_sent_id(sent)
+                        return
 
         _listener_started = True
         print("📱 Telegram Mobile Cockpit Listener iniciado com sucesso (ouvindo em Mensagens Salvas e Grupos)!", flush=True)

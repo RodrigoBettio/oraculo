@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 from datetime import datetime, timezone
 
@@ -47,6 +47,7 @@ class AgentProfile(BaseModel):
     total_hours_studied: float = 0.0
     total_videos_studied: int = 0
     topics_mastered: List[str] = Field(default_factory=list)
+    external_skills: List[Dict[str, Any]] = Field(default_factory=list)
     
     # Configurações de Comportamento
     system_prompt: Optional[str] = None
