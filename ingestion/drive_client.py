@@ -336,7 +336,8 @@ class GoogleDriveManager:
 
         themes = []
 
-        def _explore_folder(fid: str, current_theme_name: str, depth: int = 0):
+        def _explore_folder(fid: str, current_theme_name: str, depth: int = 0, out_themes: list = None):
+            target_themes = themes if out_themes is None else out_themes
             cont = self.list_folder_contents(fid, course_name=folder_name, theme_name=current_theme_name)
             vids = cont["videos"]
             supp = cont["support_files"]
@@ -354,7 +355,7 @@ class GoogleDriveManager:
             if vids or supp or not other_subs:
                 t_studied = sum(1 for v in vids if v["is_studied"])
                 t_bytes = sum(v["size_bytes"] for v in vids) + sum(s["size_bytes"] for s in supp)
-                themes.append({
+                target_themes.append({
                     "id": fid,
                     "name": current_theme_name,
                     "type": "theme",
@@ -371,16 +372,28 @@ class GoogleDriveManager:
             if depth < 3:
                 for os in other_subs:
                     sub_theme_name = f"{current_theme_name} / {os['name']}" if current_theme_name else os["name"]
-                    _explore_folder(os["id"], sub_theme_name, depth + 1)
+                    _explore_folder(os["id"], sub_theme_name, depth + 1, out_themes=target_themes)
 
         if subfolders:
-            for sf in subfolders:
+            from concurrent.futures import ThreadPoolExecutor
+            def _inspect_single_sub(sf):
                 if any(k in sf["name"].lower() for k in ["material", "materiais", "slide", "anexo", "apoio", "recurso", "pdf", "codigo", "code"]):
                     m_cont = self.list_folder_contents(sf["id"], course_name=folder_name, theme_name=None)
-                    direct_support.extend(m_cont["support_files"])
-                    direct_support.extend(m_cont["videos"])
+                    return ("support", m_cont)
                 else:
-                    _explore_folder(sf["id"], sf["name"], depth=0)
+                    sub_themes = []
+                    _explore_folder(sf["id"], sf["name"], depth=0, out_themes=sub_themes)
+                    return ("theme", sub_themes)
+
+            with ThreadPoolExecutor(max_workers=min(8, len(subfolders))) as executor:
+                results = list(executor.map(_inspect_single_sub, subfolders))
+
+            for rtype, rdata in results:
+                if rtype == "support":
+                    direct_support.extend(rdata["support_files"])
+                    direct_support.extend(rdata["videos"])
+                elif rtype == "theme":
+                    themes.extend(rdata)
 
         all_videos_count = len(direct_videos) + sum(t["videos_count"] for t in themes)
         all_studied_count = sum(1 for v in direct_videos if v["is_studied"]) + sum(t["studied_count"] for t in themes)

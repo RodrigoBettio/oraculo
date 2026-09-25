@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     startStudyPolling();
     switchAgentView('crud'); // Inicia diretamente no modo lista corporativo
     loadKnowledgeGraph();
-    // Atualiza telemetria de tokens a cada 5 segundos
-    setInterval(loadTokenStats, 5000);
+    // Atualiza telemetria de tokens a cada 20 segundos
+    setInterval(loadTokenStats, 20000);
 });
 
 // Renderizador Markdown Limpo & Elegante
@@ -3159,8 +3159,8 @@ function closeChannelInspectModal() {
 async function loadStudyQueue() {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000);
-        const res = await fetch('/api/study/queue', { signal: controller.signal });
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+        const res = await fetch('/api/study/queue?mode=summary', { signal: controller.signal });
         clearTimeout(timeoutId);
         if (!res.ok) return;
         const state = await res.json();
@@ -3403,10 +3403,13 @@ async function clearFinishedQueue() {
     }
 }
 
+let _lastStudyPollingRate = 5000;
+let _agentPollCounter = 0;
+
 function startStudyPolling() {
     if (studyPollingInterval) clearInterval(studyPollingInterval);
     checkActiveStudyStatus();
-    studyPollingInterval = setInterval(checkActiveStudyStatus, 2500);
+    studyPollingInterval = setInterval(checkActiveStudyStatus, 5000);
 }
 
 async function checkActiveStudyStatus() {
@@ -3414,13 +3417,23 @@ async function checkActiveStudyStatus() {
         await loadStudyQueue();
         await loadTokenStats();
 
-        // Atualiza agentes e canais se houver processamento
-        const hasActiveOrQueued = document.getElementById('queue-active-box') && !document.getElementById('queue-active-box').classList.contains('hidden');
-        if (hasActiveOrQueued && currentTab === 'study') {
+        const state = window._lastStudyQueueState;
+        const isBusy = state && (state.is_busy || (state.active_count && state.active_count > 0));
+        const targetRate = isBusy ? 5000 : 15000;
+        if (targetRate !== _lastStudyPollingRate) {
+            _lastStudyPollingRate = targetRate;
+            clearInterval(studyPollingInterval);
+            studyPollingInterval = setInterval(checkActiveStudyStatus, targetRate);
+        }
+
+        // Atualiza lista de agentes periodicamente (a cada ~30s) sem sobrecarregar o servidor
+        _agentPollCounter++;
+        if (_agentPollCounter >= 6 && currentTab === 'study') {
+            _agentPollCounter = 0;
             loadAgents();
         }
     } catch (e) {
-        console.error('Erro no polling:', e);
+        console.error('Erro no polling adaptativo:', e);
     }
 }
 

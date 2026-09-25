@@ -667,42 +667,66 @@ class StudyQueueManager:
                 except Exception:
                     pass
 
-    def get_status(self) -> Dict[str, Any]:
-        """Retorna o estado atual da fila de estudos, histórico consolidado e workers paralelos."""
-        all_db_items = self._db_get_all()
+    def get_status(self, summary_only: bool = True) -> Dict[str, Any]:
+        """Retorna o estado atual da fila de estudos, histórico consolidado e workers paralelos de forma ultrarrápida."""
+        import json
         active_list = [item.model_dump() for item in self.active_items.values()]
         active_ids = set(self.active_items.keys())
 
-        queued_items = []
-        error_items = []
-        completed_items = []
+        with self._db_lock:
+            with sqlite3.connect(self._db_path) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                # 1. Contagens rápidas indexadas (<1ms)
+                cursor.execute("SELECT status, COUNT(*) FROM study_queue GROUP BY status")
+                counts = dict(cursor.fetchall())
 
-        for item in all_db_items:
-            if item.id in active_ids:
-                continue
-            dump = item.model_dump()
-            if item.status in ["queued", "downloading"]:
-                queued_items.append(dump)
-            elif item.status == "error":
-                error_items.append(dump)
-            elif item.status == "completed":
-                completed_items.append(dump)
+                # 2. Itens com erro (relevantes para retomada)
+                cursor.execute("SELECT * FROM study_queue WHERE status = 'error' ORDER BY enqueued_at DESC LIMIT 20")
+                error_rows = cursor.fetchall()
 
-        # Ordenações adequadas
-        completed_items.sort(key=lambda x: str(x.get("completed_at") or ""), reverse=True)
-        error_items.sort(key=lambda x: str(x.get("enqueued_at") or ""), reverse=True)
+                # 3. Amostra de itens na fila (preview leve)
+                cursor.execute("SELECT * FROM study_queue WHERE status IN ('queued', 'downloading') ORDER BY enqueued_at ASC LIMIT 30")
+                queued_rows = cursor.fetchall()
+
+                # 4. Amostra de concluídos recentes (últimos 15 no modo resumo, 100 no modo completo)
+                comp_limit = 15 if summary_only else 100
+                cursor.execute(f"SELECT * FROM study_queue WHERE status = 'completed' ORDER BY completed_at DESC LIMIT {comp_limit}")
+                completed_rows = cursor.fetchall()
+
+        def _row_to_dict(row):
+            data = dict(row)
+            data['retry_count'] = data.get('retry_count') or 0
+            if isinstance(data.get('support_files'), str):
+                try:
+                    data['support_files'] = json.loads(data['support_files'])
+                except Exception:
+                    data['support_files'] = []
+            elif not data.get('support_files'):
+                data['support_files'] = []
+            return data
+
+        error_items = [_row_to_dict(r) for r in error_rows]
+        queued_items = [_row_to_dict(r) for r in queued_rows if r["id"] not in active_ids]
+        completed_items = [_row_to_dict(r) for r in completed_rows]
 
         all_items = active_list + error_items + queued_items + completed_items
 
+        total_completed = counts.get("completed", 0)
+        total_error = counts.get("error", 0)
+        total_queued = counts.get("queued", 0) + counts.get("downloading", 0)
+        pending_in_queue = max(0, total_queued - len(self.active_items))
+        total_items = sum(counts.values())
+
         session_file = settings.DATA_DIR / "last_study_session.json"
         has_saved_session = session_file.exists()
-        can_resume = (len(error_items) > 0) or (len(queued_items) > 0 and len(self.active_items) == 0) or (has_saved_session and len(self.active_items) == 0 and len(queued_items) == 0)
-        pending_count = len(queued_items) + len(self.active_items)
+        can_resume = (total_error > 0) or (pending_in_queue > 0 and len(self.active_items) == 0) or (has_saved_session and len(self.active_items) == 0 and pending_in_queue == 0)
+        pending_count = pending_in_queue + len(self.active_items)
         workers_count = max(1, self.max_workers)
         # Em média 40s por aula com áudio e tópicos estruturados divididos pelos workers simultâneos
         estimated_seconds = int((pending_count * 40) / workers_count) if pending_count > 0 else 0
         if pending_count == 0:
-            estimated_time_text = "Concluído" if len(completed_items) > 0 else "0m"
+            estimated_time_text = "Concluído" if total_completed > 0 else "0m"
         else:
             hours = estimated_seconds // 3600
             minutes = (estimated_seconds % 3600) // 60
@@ -726,21 +750,53 @@ class StudyQueueManager:
             "max_drive_workers": self.max_drive_workers,
             "active_items": active_list,
             "active_item": active_list[0] if active_list else None,
-            "queue_count": len(queued_items),
+            "queue_count": pending_in_queue,
             "queued_items": queued_items,
-            "completed_count": len(completed_items),
-            "completed_items": completed_items[:50],
-            "error_count": len(error_items),
+            "completed_count": total_completed,
+            "completed_items": completed_items,
+            "error_count": total_error,
             "error_items": error_items,
-            "all_items": all_items[:150],
-            "total_items": len(all_db_items),
+            "all_items": all_items,
+            "total_items": total_items,
             "pending_count": pending_count,
             "estimated_seconds": estimated_seconds,
             "estimated_time_text": estimated_time_text,
             "can_resume": can_resume,
-            "interrupted_count": len(error_items),
+            "interrupted_count": total_error,
             "safety_paused": safety_paused
         }
+
+    def get_history(self, status: Optional[str] = None, limit: int = 50, offset: int = 0) -> Dict[str, Any]:
+        """Retorna histórico paginado de aulas estudadas ou com erro para a gaveta lateral."""
+        import json
+        with self._db_lock:
+            with sqlite3.connect(self._db_path) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                if status:
+                    cursor.execute("SELECT COUNT(*) FROM study_queue WHERE status = ?", (status,))
+                    total = cursor.fetchone()[0]
+                    cursor.execute("SELECT * FROM study_queue WHERE status = ? ORDER BY completed_at DESC, enqueued_at DESC LIMIT ? OFFSET ?", (status, limit, offset))
+                else:
+                    cursor.execute("SELECT COUNT(*) FROM study_queue")
+                    total = cursor.fetchone()[0]
+                    cursor.execute("SELECT * FROM study_queue ORDER BY completed_at DESC, enqueued_at DESC LIMIT ? OFFSET ?", (limit, offset))
+                rows = cursor.fetchall()
+
+        items = []
+        for r in rows:
+            data = dict(r)
+            data['retry_count'] = data.get('retry_count') or 0
+            if isinstance(data.get('support_files'), str):
+                try:
+                    data['support_files'] = json.loads(data['support_files'])
+                except Exception:
+                    data['support_files'] = []
+            elif not data.get('support_files'):
+                data['support_files'] = []
+            items.append(data)
+
+        return {"total": total, "items": items, "limit": limit, "offset": offset}
 
 
     def ensure_worker(self):

@@ -1893,8 +1893,11 @@ async def get_knowledge_graph():
 # ----------------- ROTAS DA FILA DE ESTUDOS & GRUPOS -----------------
 
 @app.get("/api/study/queue")
-async def get_study_queue():
-    return StudyQueueManager().get_status()
+async def get_study_queue(mode: str = "summary", status: Optional[str] = None, limit: int = 50, offset: int = 0):
+    qm = StudyQueueManager()
+    if mode == "history":
+        return await asyncio.to_thread(qm.get_history, status=status, limit=limit, offset=offset)
+    return await asyncio.to_thread(qm.get_status, summary_only=(mode == "summary"))
 
 @app.post("/api/study/queue")
 async def enqueue_study(req: EnqueueStudyRequest):

@@ -1,0 +1,897 @@
+{
+  "id": "agent_link_4211",
+  "name": "Link",
+  "role": "Linkedin",
+  "avatar": "🧠",
+  "status": "ativo",
+  "current_task": null,
+  "area_id": "mind",
+  "agent_type": "tecnico",
+  "sources": [
+    {
+      "group_name": "03. Posicionamento e Estratégia de Perfil",
+      "videos_count": 3,
+      "hours_studied": 0.38,
+      "last_studied_at": "2026-09-25T15:13:37.292095Z",
+      "lessons": [
+        {
+          "lesson_id": "01. Clareza e objetivo profissional - Telegram @mestredocursoss",
+          "title": "Definindo Clareza de Objetivo e Posicionamento no LinkedIn",
+          "duration_hours": 0.06,
+          "duration_seconds": 213.4132,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:12:35.725187Z",
+          "topics": [
+            "Importância da clareza de objetivo no LinkedIn",
+            "A regra dos 5 segundos para recrutadores e algoritmo",
+            "O perigo do perfil genérico ('quem tenta ser tudo acaba não sendo lembrado por nada')",
+            "Passo 1: Avaliação da trajetória e geração de valor",
+            "Passo 2: Análise da demanda de mercado",
+            "Passo 3: Definição de cargo-alvo, área e nível de senioridade"
+          ]
+        },
+        {
+          "lesson_id": "02. Seu perfil como um produto - Telegram @mestredocursoss",
+          "title": "Posicionamento Estratégico no LinkedIn: Você como Produto",
+          "duration_hours": 0.09,
+          "duration_seconds": 308.053667,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:12:54.622532Z",
+          "topics": [
+            "Conceito de profissional como produto",
+            "Comportamento do recrutador e escaneabilidade do perfil",
+            "Pilares de valor: Clareza, Diferenciação e Valor Percebido",
+            "Elementos que geram desejo profissional",
+            "Erros comuns de posicionamento no LinkedIn"
+          ]
+        },
+        {
+          "lesson_id": "03. Definição de palavras-chave estratégicas - Telegram @mestredocursoss",
+          "title": "Palavras-Chave no LinkedIn: Como Encontrar e Posicionar no Perfil",
+          "duration_hours": 0.23,
+          "duration_seconds": 820.854,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:37.292137Z",
+          "topics": [
+            "O que são palavras-chave e analogia com mecanismos de busca (Google vs LinkedIn)",
+            "Funcionamento prático do LinkedIn Recruiter e seus filtros de busca",
+            "Metodologia de 4 passos para mapear palavras-chave assertivas",
+            "Passo 1: Criação de lista própria (cargos, senioridade, ferramentas e competências)",
+            "Passo 2: Análise e extração de termos a partir de 10 vagas abertas",
+            "Passo 3: Mapeamento e benchmarking de perfis de profissionais de referência",
+            "Passo 4: Utilização do ChatGPT para geração de palavras-chave estratégicas",
+            "Seções do perfil para aplicação das palavras-chave (Título, Sobre, Experiências e Competências)"
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "01. Comece por aqui",
+      "videos_count": 2,
+      "hours_studied": 0.07,
+      "last_studied_at": "2026-09-25T15:12:52.336792Z",
+      "lessons": [
+        {
+          "lesson_id": "01. Boas-vindas ao LinkedIn em Ação - Telegram @mestredocursoss",
+          "title": "Boas-vindas e Orientações Iniciais",
+          "duration_hours": 0.05,
+          "duration_seconds": 181.163,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:12:37.946649Z",
+          "topics": [
+            "Boas-vindas e mentalidade para o curso",
+            "Metodologia focada na prática e validação de mercado",
+            "Canal de suporte oficial e revisão de perfil por e-mail",
+            "Orientações sobre comentários na plataforma vs. suporte",
+            "Preenchimento da Ficha do Aluno"
+          ]
+        },
+        {
+          "lesson_id": "02. Como o LinkedIn em Ação vai funcionar - Telegram @mestredocursoss",
+          "title": "Como o LinkedIn em Ação vai funcionar",
+          "duration_hours": 0.02,
+          "duration_seconds": 89.923,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:12:52.336817Z",
+          "topics": [
+            "Metodologia do curso: assistir e executar em paralelo",
+            "Foco em aplicação prática vs. consumo rápido de conteúdo",
+            "Importância de seguir a ordem estratégica dos módulos",
+            "Público-alvo e adaptação a diferentes rotinas",
+            "Estrutura do curso: entendimento da plataforma, perfil e alcance"
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "05. Título Magnético",
+      "videos_count": 2,
+      "hours_studied": 0.23,
+      "last_studied_at": "2026-09-25T15:13:19.684554Z",
+      "lessons": [
+        {
+          "lesson_id": "01. Como funciona o TÍTULO no algoritmo - Telegram @mestredocursoss",
+          "title": "A Importância do Título no LinkedIn e os 4 Erros Mais Comuns",
+          "duration_hours": 0.03,
+          "duration_seconds": 109.075633,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:12:38.637742Z",
+          "topics": [
+            "Localização e relevância da seção de título no LinkedIn",
+            "Como o recrutador visualiza os resultados de busca",
+            "Impacto do título na taxa de cliques no perfil",
+            "Os 4 erros clássicos cometidos no título do LinkedIn"
+          ]
+        },
+        {
+          "lesson_id": "02. Estrutura ideal de título - Telegram @mestredocursoss",
+          "title": "Como Estruturar o Título Magnético no LinkedIn",
+          "duration_hours": 0.2,
+          "duration_seconds": 704.320333,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:19.684580Z",
+          "topics": [
+            "Estrutura e fórmula ideal do título no LinkedIn (Cargo | Palavras-chave)",
+            "Uso do cargo desejado vs. cargo atual",
+            "Seleção estratégica de palavras-chave baseada em descrições de vagas",
+            "Diretrizes para transição de carreira e primeiro emprego",
+            "Principais erros no título (excesso de cargos, falta de foco, títulos longos, termos não buscados)",
+            "Configuração de idioma no perfil (Português vs. Inglês)",
+            "Passo a passo prático para atualizar o título no perfil"
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "04. Foto e Capa do Perfil",
+      "videos_count": 2,
+      "hours_studied": 0.18,
+      "last_studied_at": "2026-09-25T15:12:45.760555Z",
+      "lessons": [
+        {
+          "lesson_id": "02. Capa estratégica - Telegram @mestredocursoss",
+          "title": "Capa do Perfil no LinkedIn: Boas Práticas e Erros Comuns",
+          "duration_hours": 0.08,
+          "duration_seconds": 301.167533,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:12:39.972668Z",
+          "topics": [
+            "Função estética da capa no LinkedIn e impacto na percepção do recrutador",
+            "Erros comuns na escolha da capa (poluição visual, frases desconexas, informalidade)",
+            "Boas práticas para capa (estilo clean, harmonia visual, pouco texto, profissionalismo)",
+            "Uso de capa da própria empresa (onde conseguir e por que usar)",
+            "Exemplos práticos de harmonia e biblioteca com mais de 30 opções de capas"
+          ]
+        },
+        {
+          "lesson_id": "01. Foto de perfil que gera confiança - Telegram @mestredocursoss",
+          "title": "Foto do Perfil no LinkedIn: Boas Práticas, Pilares e Como Atualizar",
+          "duration_hours": 0.1,
+          "duration_seconds": 369.202,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:12:45.760583Z",
+          "topics": [
+            "Importância da foto de perfil no LinkedIn (estatística de 21x mais visualizações)",
+            "O que funciona vs. o que não funciona na foto profissional",
+            "Os 4 pilares da foto de perfil: Expressão, Roupa/Vestimenta, Fundo e Enquadramento",
+            "Checklist da foto ideal",
+            "Demonstração prática de upload da foto no perfil do LinkedIn"
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "08. Seções Adicionais",
+      "videos_count": 9,
+      "hours_studied": 0.4,
+      "last_studied_at": "2026-09-25T15:13:52.795834Z",
+      "lessons": [
+        {
+          "lesson_id": "01. Formação acadêmica - Telegram @mestredocursoss",
+          "title": "Adicionando Formação Acadêmica ao Perfil do LinkedIn",
+          "duration_hours": 0.03,
+          "duration_seconds": 97.764333,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:12:51.637793Z",
+          "topics": [
+            "Como adicionar a seção de Formação Acadêmica no perfil",
+            "Preenchimento de campos: Instituição, Grau, Área de Estudo e Datas",
+            "Relevância de notas e atividades extracurriculares",
+            "Diferença entre formação acadêmica formal e cursos livres"
+          ]
+        },
+        {
+          "lesson_id": "02. Cursos e certificações - Telegram @mestredocursoss",
+          "title": "Cursos e Certificados no LinkedIn",
+          "duration_hours": 0.04,
+          "duration_seconds": 147.780967,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:31.812255Z",
+          "topics": [
+            "Importância da seção de cursos para palavras-chave e habilidades técnicas",
+            "Passo a passo no LinkedIn: Adicionar seção ao perfil > Recomendado > Cursos",
+            "Estrutura padronizada de preenchimento: Nome do Curso - Instituição (Ano)",
+            "Associação de cursos a experiências profissionais",
+            "Critérios de curadoria: o que incluir e o que evitar"
+          ]
+        },
+        {
+          "lesson_id": "05. Recomendações - Telegram @mestredocursoss",
+          "title": "Como Solicitar e Gerenciar Recomendações no LinkedIn",
+          "duration_hours": 0.04,
+          "duration_seconds": 149.85,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:35.938777Z",
+          "topics": [
+            "Relevância e impacto das recomendações no perfil",
+            "Estatística do LinkedIn: 9x mais chances de contato com 5+ recomendações",
+            "Passo a passo na interface do LinkedIn para pedir recomendações",
+            "Boas práticas e etiqueta profissional ao solicitar recomendações"
+          ]
+        },
+        {
+          "lesson_id": "04. Idiomas - Telegram @mestredocursoss",
+          "title": "Seção de Idiomas no Perfil do LinkedIn",
+          "duration_hours": 0.04,
+          "duration_seconds": 147.881067,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:36.838200Z",
+          "topics": [
+            "Importância da seção de idiomas para filtros de recrutadores",
+            "Abertura para vagas e oportunidades internacionais",
+            "Relevância de cadastrar o português como idioma nativo/fluente",
+            "Passo a passo para adicionar a seção de Idiomas no perfil",
+            "Inclusão de idiomas adicionais (inglês, espanhol) mesmo em nível básico"
+          ]
+        },
+        {
+          "lesson_id": "07. URL do perfil - Telegram @mestredocursoss",
+          "title": "Personalização da URL do Perfil no LinkedIn",
+          "duration_hours": 0.03,
+          "duration_seconds": 102.955333,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:42.121368Z",
+          "topics": [
+            "Importância da URL personalizada no LinkedIn",
+            "Localização da seção 'Perfil público e URL'",
+            "Passo a passo para edição da URL do perfil",
+            "Boas práticas para definição do link amigável (nome e sobrenome)"
+          ]
+        },
+        {
+          "lesson_id": "09. LinkedIn Premium vale a pena - Telegram @mestredocursoss",
+          "title": "LinkedIn Premium: Vale a pena assinar?",
+          "duration_hours": 0.03,
+          "duration_seconds": 90.657,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:49.263193Z",
+          "topics": [
+            "O que é o LinkedIn Premium",
+            "Recursos e benefícios da assinatura (insights de empresas, LinkedIn Learning, InMail)",
+            "Impacto real na contratação e no ranking de buscas",
+            "Opinião e recomendação sobre a assinatura paga vs. teste gratuito"
+          ]
+        },
+        {
+          "lesson_id": "03. Competências - Telegram @mestredocursoss",
+          "title": "Seção de Competências no LinkedIn",
+          "duration_hours": 0.06,
+          "duration_seconds": 226.4262,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:50.210961Z",
+          "topics": [
+            "Importância da seção de Competências para os filtros de recrutadores",
+            "Preenchimento automático a partir de outras seções (Sobre e Experiências)",
+            "Adição manual e inclusão de competências personalizadas/em outros idiomas",
+            "Critérios de escolha: foco no cargo-alvo e competências técnicas vs. comportamentais",
+            "Bilinguismo de palavras-chave (Português e Inglês)",
+            "Quantidade ideal de competências e principais erros a evitar"
+          ]
+        },
+        {
+          "lesson_id": "08. Selo Open to Work - Telegram @mestredocursoss",
+          "title": "Selo Open to Work no LinkedIn: Usar ou Não Usar?",
+          "duration_hours": 0.05,
+          "duration_seconds": 182.549033,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:50.940064Z",
+          "topics": [
+            "Polêmica do selo 'Open to Work' na foto de perfil",
+            "Dados sobre a taxa de contato de recrutadores com o selo público",
+            "Configuração de preferências de busca de emprego no LinkedIn",
+            "Preenchimento de cargos, localidades e tipo de contratação",
+            "Privacidade: visibilidade para 'Apenas recrutadores' vs 'Todos os usuários'",
+            "Proteção contra detecção por recrutadores da empresa atual"
+          ]
+        },
+        {
+          "lesson_id": "06. Versão do perfil em outro idioma - Telegram @mestredocursoss",
+          "title": "Como Criar Perfil em Múltiplos Idiomas no LinkedIn",
+          "duration_hours": 0.08,
+          "duration_seconds": 285.696333,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:52.795853Z",
+          "topics": [
+            "Configuração de versões de perfil em múltiplos idiomas no LinkedIn",
+            "Campos editáveis por idioma: Título, Sobre e Experiência",
+            "Uso do ChatGPT para suporte na tradução",
+            "Tratamento de competências e termos bilíngues",
+            "Relevância do inglês para SEO de busca por recrutadores no Brasil"
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "07. Seção de Experiências",
+      "videos_count": 2,
+      "hours_studied": 0.23,
+      "last_studied_at": "2026-09-25T15:13:32.284787Z",
+      "lessons": [
+        {
+          "lesson_id": "01. Porque apenas listar atividades não funciona - Telegram @mestredocursoss",
+          "title": "07. Seção de Experiências - Resultados e Impacto no LinkedIn",
+          "duration_hours": 0.04,
+          "duration_seconds": 155.3552,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:12:53.039983Z",
+          "topics": [
+            "Importância da seção de experiências no LinkedIn",
+            "Diferença entre lista de atividades versus resultados e impacto",
+            "O que os recrutadores avaliam durante a análise do perfil",
+            "Os 4 pilares essenciais: Contexto, Escopo, Impacto e Resultados",
+            "Resultados quantitativos (métricas) versus qualitativos"
+          ]
+        },
+        {
+          "lesson_id": "02. A estrutura ideal de EXPERIÊNCIAS - Telegram @mestredocursoss",
+          "title": "Estruturação da Seção de Experiências no LinkedIn",
+          "duration_hours": 0.19,
+          "duration_seconds": 669.035033,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:32.284809Z",
+          "topics": [
+            "Estrutura da descrição: Responsabilidades vs. Resultados e Impactos",
+            "Formatação visual: Bullet points e espaços para respiro na leitura",
+            "Alinhamento da nomenclatura do cargo com o mercado",
+            "Nível de detalhamento baseado na recência das experiências",
+            "Filtro de relevância de experiências profissionais antigas",
+            "Vinculação da página corporativa oficial da empresa",
+            "Registro de múltiplos cargos na mesma empresa para evidenciar evolução",
+            "Adição de competências e palavras-chave na experiência"
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "06. Seção de Sobre",
+      "videos_count": 3,
+      "hours_studied": 0.27,
+      "last_studied_at": "2026-09-25T15:13:19.506651Z",
+      "lessons": [
+        {
+          "lesson_id": "03. SOBRE para diferentes momentos de carreira - Telegram @mestredocursoss",
+          "title": "Seção de Sobre: Casos Especiais de Primeiro Emprego e Transição de Carreira",
+          "duration_hours": 0.07,
+          "duration_seconds": 251.584667,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:12:54.093791Z",
+          "topics": [
+            "Particularidades da seção 'Sobre'",
+            "Estrutura de 'Sobre' para Primeiro Emprego / Estágio",
+            "Foco em experiências acadêmicas e competências básicas",
+            "Estrutura de 'Sobre' para Transição de Carreira",
+            "Identificação e uso de habilidades transferíveis",
+            "Uso de prompts e templates com ChatGPT"
+          ]
+        },
+        {
+          "lesson_id": "01. Por que o SOBRE é decisivo - Telegram @mestredocursoss",
+          "title": "Introdução à Seção Sobre no LinkedIn",
+          "duration_hours": 0.06,
+          "duration_seconds": 210.176633,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:12:54.789619Z",
+          "topics": [
+            "Função e impacto da seção 'Sobre'",
+            "Como adicionar e posicionar a seção 'Sobre' no LinkedIn",
+            "Comportamento do recrutador: leitura dinâmica e escaneabilidade",
+            "Critérios avaliados: clareza, coerência com o título, senioridade e resultados",
+            "Erros comuns: textos longos, frases genéricas e excesso de soft skills"
+          ]
+        },
+        {
+          "lesson_id": "02. A estrutura ideal do SOBRE - Telegram @mestredocursoss",
+          "title": "A Estrutura Ideal da Seção Sobre no LinkedIn",
+          "duration_hours": 0.14,
+          "duration_seconds": 520.453267,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:19.506674Z",
+          "topics": [
+            "Importância da estrutura lógica e dinâmica de leitura no Sobre",
+            "Pilar 1: Identidade Profissional (cargo, senioridade, tempo de experiência e setores)",
+            "Pilar 2: Contexto de Atuação e Desafios",
+            "Pilar 3: Resultados Mensuráveis em Bullet Points",
+            "Pilar 4: Competências Técnicas e Palavras-chave",
+            "Pilar 5: Direcionamento de Carreira (opcional dependendo do status de emprego)",
+            "Pilar 6: Fechamento, Call to Action e Contato",
+            "Prompt para geração do texto no ChatGPT",
+            "Preenchimento prático no perfil do LinkedIn e adição de até 5 competências"
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "02. Fundamentos do LinkedIn",
+      "videos_count": 1,
+      "hours_studied": 0.14,
+      "last_studied_at": "2026-09-25T15:13:33.973081Z",
+      "lessons": [
+        {
+          "lesson_id": "01. Como o LinkedIn funciona de verdade - Telegram @mestredocursoss",
+          "title": "Fundamentos do LinkedIn: Currículo vs. LinkedIn e a Perspectiva do Recrutador",
+          "duration_hours": 0.14,
+          "duration_seconds": 497.046,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:33.973101Z",
+          "topics": [
+            "Diferença essencial entre Currículo (documento estático) e LinkedIn (rede viva)",
+            "LinkedIn como motor de busca global de talentos ('Google da Carreira')",
+            "Comportamento do recrutador: triagem padronizada vs. análise demorada de currículos",
+            "Desmistificando o mito das indicações e candidaturas avulsas",
+            "O mercado de trabalho oculto ('The Hidden Job Market')",
+            "Estratégia de marca pessoal, networking ativo e casos reais (BTG e Nubank)"
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "09. Alcance Máximo",
+      "videos_count": 7,
+      "hours_studied": 0.69,
+      "last_studied_at": "2026-09-25T15:14:52.989108Z",
+      "lessons": [
+        {
+          "lesson_id": "02. Pilar 1 - Estabelecer sua marca profissional - Telegram @mestredocursoss",
+          "title": "Pilar 1: Estabelecer a Sua Marca Profissional",
+          "duration_hours": 0.03,
+          "duration_seconds": 115.015,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:48.885559Z",
+          "topics": [
+            "Primeiro Pilar: Estabelecer a Marca Profissional",
+            "Clareza para o LinkedIn e recrutadores",
+            "Preenchimento e relevância das seções do perfil",
+            "Checklist de validação do perfil profissional",
+            "Alinhamento para entrega do algoritmo"
+          ]
+        },
+        {
+          "lesson_id": "03. Pilar 2 - Localizar as pessoas certas - Telegram @mestredocursoss",
+          "title": "Pilar 2: Localizar as Pessoas Certas",
+          "duration_hours": 0.08,
+          "duration_seconds": 289.356,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:13:59.458765Z",
+          "topics": [
+            "Conceito do Pilar 2: Localizar as pessoas certas",
+            "Qualidade das conexões e relevância da área profissional",
+            "Meta mínima de 1.500 conexões para tração no algoritmo",
+            "Público-alvo para conexão: recrutadores, líderes e profissionais seniores",
+            "Método 1 de busca: aba 'Pessoas' na página da empresa",
+            "Método 2 de busca: pesquisa booleana/geral com filtros no LinkedIn",
+            "Diferença entre Conectar e Seguir para o algoritmo"
+          ]
+        },
+        {
+          "lesson_id": "01. Introdução - Telegram @mestredocursoss",
+          "title": "Introdução ao Módulo Alcance Máximo",
+          "duration_hours": 0.06,
+          "duration_seconds": 230.097,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:14:07.629440Z",
+          "topics": [
+            "Diferença entre perfil estruturado e perfil com visibilidade",
+            "Analogia da loja de cookies e a invisibilidade no LinkedIn",
+            "Fim do acesso gratuito ao SSI (Social Selling Index)",
+            "Os 4 Pilares de Alcance no LinkedIn",
+            "Apresentação da Operação Turbo e métricas nativas gratuitas"
+          ]
+        },
+        {
+          "lesson_id": "05. Pilar 4 - Criar relacionamentos - Telegram @mestredocursoss",
+          "title": "Pilar Criar Relacionamentos e Biblioteca de Templates de Abordagem",
+          "duration_hours": 0.05,
+          "duration_seconds": 164.074667,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:14:10.768057Z",
+          "topics": [
+            "Pilar 'Criar Relacionamentos' no LinkedIn",
+            "Comunicação via inbox após aceite de conexão",
+            "Biblioteca de templates de abordagem",
+            "Abordagem de recrutadores e lideranças para vagas abertas",
+            "Abordagem ativa para empresas sem vagas divulgadas (empregado vs. desempregado)",
+            "Abordagens para transição de carreira e primeiro emprego/estágio",
+            "Estratégia de follow-up após ausência de resposta"
+          ]
+        },
+        {
+          "lesson_id": "06. Operação Turbo - Telegram @mestredocursoss",
+          "title": "Operação Turbo: Plano de Ação de 30 Dias para Alcance Máximo",
+          "duration_hours": 0.12,
+          "duration_seconds": 442.542,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:14:37.660742Z",
+          "topics": [
+            "Apresentação da Operação Turbo (30 dias)",
+            "Configuração e duplicação do template no Notion",
+            "Os 4 Pilares de atuação no LinkedIn",
+            "Semana 1: Revisão e checklist da estrutura do perfil",
+            "Rotina semanal: 3 posts autorais e dias fixos",
+            "Rotina diária: Comentários e compartilhamentos com insights",
+            "Networking ativo: Conexão e abordagem com recrutadores e líderes",
+            "Semanas 2 a 4 e manutenção da constância"
+          ]
+        },
+        {
+          "lesson_id": "04. Pilar 3 - Interagir oferecendo insights - Telegram @mestredocursoss",
+          "title": "Pilar 3: Interagir Oferecendo Insights e Atualizações do Algoritmo",
+          "duration_hours": 0.17,
+          "duration_seconds": 621.588,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:14:38.064772Z",
+          "topics": [
+            "Pilar 3: Interagir Oferecendo Insights",
+            "Boas práticas e regras para comentários estratégicos",
+            "O que evitar e o que nunca postar no LinkedIn",
+            "5 tipos de conteúdo para fortalecer o perfil profissional",
+            "Frequência ideal de postagens e interações",
+            "8 mudanças no algoritmo do LinkedIn (regras de distribuição, salvamentos, priming e links)"
+          ]
+        },
+        {
+          "lesson_id": "07. Análise de Métricas o seu termômetro - Telegram @mestredocursoss",
+          "title": "Acompanhando Resultados e Métricas no LinkedIn",
+          "duration_hours": 0.18,
+          "duration_seconds": 645.679,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:14:52.989142Z",
+          "topics": [
+            "Acesso à seção de Análise no perfil do LinkedIn",
+            "Três métricas principais: Visualizações, Ocorrências em Pesquisa e Impressões",
+            "Detalhamento de Ocorrências em Pesquisa: empresas, cargos dos pesquisadores e palavras-chave",
+            "Benchmarks e faixas de referência (Crítico, Fraco, Bom, Ótimo)",
+            "Rotina semanal de acompanhamento (terças-feiras)",
+            "Diagnóstico e correção para métricas baixas (palavras-chave, constância na Operação Turbo e demanda de mercado)"
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "11. Ebooks",
+      "videos_count": 2,
+      "hours_studied": 0.83,
+      "last_studied_at": "2026-09-25T15:14:25.152398Z",
+      "lessons": [
+        {
+          "lesson_id": "01. Ebook - Transição de Carreira (1).docx",
+          "title": "Transição de Carreira com Estratégia: Como escolher uma nova área e se reposicionar no mercado sem recomeçar do zero",
+          "duration_hours": 0.25,
+          "duration_seconds": 900.0,
+          "theme_name": "02. Ebook - Transição de Carreira com Estratégia",
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:14:14.504582Z",
+          "topics": [
+            "Diferenciação entre insatisfação circunstancial e desalinhamento estrutural",
+            "Mapeamento de competências transferíveis e autodiagnóstico profissional",
+            "Tríade de Decisão: O que manter, o que desenvolver e o que abandonar",
+            "Critérios de escolha de área: Afinidade, demanda, empregabilidade e viabilidade",
+            "Validação prática e testes controlados pré-transição",
+            "Modelos de transição: Gradual vs. Direta e planejamento financeiro mínimo",
+            "Uso do cargo atual como ponte para desenvolvimento transversal",
+            "Reposicionamento profissional e narrativa estratégica no Currículo e LinkedIn",
+            "Estratégia de candidaturas qualificadas, networking e gestão de rejeições"
+          ]
+        },
+        {
+          "lesson_id": "01. Ebook - Carreira sem Fronteiras (3) (1)",
+          "title": "Carreira sem Fronteiras: Como conquistar uma oportunidade internacional trabalhando do Brasil ou vivendo no exterior",
+          "duration_hours": 0.58,
+          "duration_seconds": 2100.0,
+          "theme_name": "01. Ebook - Carreira sem Fronteiras",
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:14:25.152444Z",
+          "topics": [
+            "Modalidades de Carreira Internacional: Remoto, Relocação e Modelos Híbridos",
+            "Mitos e Realidades do Mercado de Trabalho Global",
+            "Diagnóstico de Perfil, Leitura Estratégica e Gaps Críticos",
+            "Plano de Ação Tático de 90 Dias",
+            "Vistos de Trabalho, Documentação, Apostila de Haia e Tradução Juramentada",
+            "Planejamento Financeiro, Familiar e Logístico para Relocação",
+            "Posicionamento Internacional: CV compatível com ATS e Inteligência Artificial",
+            "Otimização Estratégica de LinkedIn e Engenharia de Palavras-Chave",
+            "Cover Letters e Abordagens Personalizadas de Cold Outreach",
+            "Networking Estratégico Global e Canais de Oportunidades",
+            "Estrutura de Processos Seletivos Globais e Entrevistas Preditivas",
+            "Framework Comportamental STAR (Situation, Task, Action, Result)",
+            "Comunicação em Inglês para Entrevistas e Avaliação de Fit Cultural",
+            "Métricas de Conversão, Gestão de Recusas e Sustentabilidade de Carreira"
+          ]
+        }
+      ]
+    },
+    {
+      "group_name": "10. Assistente de IA - L.I.A",
+      "videos_count": 1,
+      "hours_studied": 0.1,
+      "last_studied_at": "2026-09-25T15:14:39.046292Z",
+      "lessons": [
+        {
+          "lesson_id": "01. Acesse a L.I.A e reestruture o seu perfil em segundos - Telegram @mestredocursoss",
+          "title": "Apresentação e Uso da L.I.A. - Assistente de IA para LinkedIn",
+          "duration_hours": 0.1,
+          "duration_seconds": 360.027,
+          "theme_name": null,
+          "companion_files": [],
+          "studied_at": "2026-09-25T15:14:39.046319Z",
+          "topics": [
+            "Apresentação da L.I.A. e distinção em relação ao ChatGPT comum",
+            "Passo a passo para exportar o currículo/perfil do LinkedIn em PDF",
+            "Avaliação e scoring inicial das seções do perfil",
+            "Reestruturação guiada: Título (Headline), Sobre e Experiências",
+            "Seleção e sugestão de palavras-chave e competências estratégicas",
+            "Interação contínua, ajustes personalizados e validação humana com o suporte"
+          ]
+        }
+      ]
+    }
+  ],
+  "total_hours_studied": 3.52,
+  "total_videos_studied": 34,
+  "topics_mastered": [
+    "Linkedin",
+    "Importância da clareza de objetivo no LinkedIn",
+    "A regra dos 5 segundos para recrutadores e algoritmo",
+    "O perigo do perfil genérico ('quem tenta ser tudo acaba não sendo lembrado por nada')",
+    "Passo 1: Avaliação da trajetória e geração de valor",
+    "Passo 2: Análise da demanda de mercado",
+    "Passo 3: Definição de cargo-alvo, área e nível de senioridade",
+    "Boas-vindas e mentalidade para o curso",
+    "Metodologia focada na prática e validação de mercado",
+    "Canal de suporte oficial e revisão de perfil por e-mail",
+    "Orientações sobre comentários na plataforma vs. suporte",
+    "Preenchimento da Ficha do Aluno",
+    "Localização e relevância da seção de título no LinkedIn",
+    "Como o recrutador visualiza os resultados de busca",
+    "Impacto do título na taxa de cliques no perfil",
+    "Os 4 erros clássicos cometidos no título do LinkedIn",
+    "Função estética da capa no LinkedIn e impacto na percepção do recrutador",
+    "Erros comuns na escolha da capa (poluição visual, frases desconexas, informalidade)",
+    "Boas práticas para capa (estilo clean, harmonia visual, pouco texto, profissionalismo)",
+    "Uso de capa da própria empresa (onde conseguir e por que usar)",
+    "Exemplos práticos de harmonia e biblioteca com mais de 30 opções de capas",
+    "Importância da foto de perfil no LinkedIn (estatística de 21x mais visualizações)",
+    "O que funciona vs. o que não funciona na foto profissional",
+    "Os 4 pilares da foto de perfil: Expressão, Roupa/Vestimenta, Fundo e Enquadramento",
+    "Checklist da foto ideal",
+    "Demonstração prática de upload da foto no perfil do LinkedIn",
+    "Como adicionar a seção de Formação Acadêmica no perfil",
+    "Preenchimento de campos: Instituição, Grau, Área de Estudo e Datas",
+    "Relevância de notas e atividades extracurriculares",
+    "Diferença entre formação acadêmica formal e cursos livres",
+    "Metodologia do curso: assistir e executar em paralelo",
+    "Foco em aplicação prática vs. consumo rápido de conteúdo",
+    "Importância de seguir a ordem estratégica dos módulos",
+    "Público-alvo e adaptação a diferentes rotinas",
+    "Estrutura do curso: entendimento da plataforma, perfil e alcance",
+    "Importância da seção de experiências no LinkedIn",
+    "Diferença entre lista de atividades versus resultados e impacto",
+    "O que os recrutadores avaliam durante a análise do perfil",
+    "Os 4 pilares essenciais: Contexto, Escopo, Impacto e Resultados",
+    "Resultados quantitativos (métricas) versus qualitativos",
+    "Particularidades da seção 'Sobre'",
+    "Estrutura de 'Sobre' para Primeiro Emprego / Estágio",
+    "Foco em experiências acadêmicas e competências básicas",
+    "Estrutura de 'Sobre' para Transição de Carreira",
+    "Identificação e uso de habilidades transferíveis",
+    "Uso de prompts e templates com ChatGPT",
+    "Conceito de profissional como produto",
+    "Comportamento do recrutador e escaneabilidade do perfil",
+    "Pilares de valor: Clareza, Diferenciação e Valor Percebido",
+    "Elementos que geram desejo profissional",
+    "Erros comuns de posicionamento no LinkedIn",
+    "Função e impacto da seção 'Sobre'",
+    "Como adicionar e posicionar a seção 'Sobre' no LinkedIn",
+    "Comportamento do recrutador: leitura dinâmica e escaneabilidade",
+    "Critérios avaliados: clareza, coerência com o título, senioridade e resultados",
+    "Erros comuns: textos longos, frases genéricas e excesso de soft skills",
+    "Importância da estrutura lógica e dinâmica de leitura no Sobre",
+    "Pilar 1: Identidade Profissional (cargo, senioridade, tempo de experiência e setores)",
+    "Pilar 2: Contexto de Atuação e Desafios",
+    "Pilar 3: Resultados Mensuráveis em Bullet Points",
+    "Pilar 4: Competências Técnicas e Palavras-chave",
+    "Pilar 5: Direcionamento de Carreira (opcional dependendo do status de emprego)",
+    "Pilar 6: Fechamento, Call to Action e Contato",
+    "Prompt para geração do texto no ChatGPT",
+    "Preenchimento prático no perfil do LinkedIn e adição de até 5 competências",
+    "Estrutura e fórmula ideal do título no LinkedIn (Cargo | Palavras-chave)",
+    "Uso do cargo desejado vs. cargo atual",
+    "Seleção estratégica de palavras-chave baseada em descrições de vagas",
+    "Diretrizes para transição de carreira e primeiro emprego",
+    "Principais erros no título (excesso de cargos, falta de foco, títulos longos, termos não buscados)",
+    "Configuração de idioma no perfil (Português vs. Inglês)",
+    "Passo a passo prático para atualizar o título no perfil",
+    "Importância da seção de cursos para palavras-chave e habilidades técnicas",
+    "Passo a passo no LinkedIn: Adicionar seção ao perfil > Recomendado > Cursos",
+    "Estrutura padronizada de preenchimento: Nome do Curso - Instituição (Ano)",
+    "Associação de cursos a experiências profissionais",
+    "Critérios de curadoria: o que incluir e o que evitar",
+    "Estrutura da descrição: Responsabilidades vs. Resultados e Impactos",
+    "Formatação visual: Bullet points e espaços para respiro na leitura",
+    "Alinhamento da nomenclatura do cargo com o mercado",
+    "Nível de detalhamento baseado na recência das experiências",
+    "Filtro de relevância de experiências profissionais antigas",
+    "Vinculação da página corporativa oficial da empresa",
+    "Registro de múltiplos cargos na mesma empresa para evidenciar evolução",
+    "Adição de competências e palavras-chave na experiência",
+    "Diferença essencial entre Currículo (documento estático) e LinkedIn (rede viva)",
+    "LinkedIn como motor de busca global de talentos ('Google da Carreira')",
+    "Comportamento do recrutador: triagem padronizada vs. análise demorada de currículos",
+    "Desmistificando o mito das indicações e candidaturas avulsas",
+    "O mercado de trabalho oculto ('The Hidden Job Market')",
+    "Estratégia de marca pessoal, networking ativo e casos reais (BTG e Nubank)",
+    "Relevância e impacto das recomendações no perfil",
+    "Estatística do LinkedIn: 9x mais chances de contato com 5+ recomendações",
+    "Passo a passo na interface do LinkedIn para pedir recomendações",
+    "Boas práticas e etiqueta profissional ao solicitar recomendações",
+    "Importância da seção de idiomas para filtros de recrutadores",
+    "Abertura para vagas e oportunidades internacionais",
+    "Relevância de cadastrar o português como idioma nativo/fluente",
+    "Passo a passo para adicionar a seção de Idiomas no perfil",
+    "Inclusão de idiomas adicionais (inglês, espanhol) mesmo em nível básico",
+    "O que são palavras-chave e analogia com mecanismos de busca (Google vs LinkedIn)",
+    "Funcionamento prático do LinkedIn Recruiter e seus filtros de busca",
+    "Metodologia de 4 passos para mapear palavras-chave assertivas",
+    "Passo 1: Criação de lista própria (cargos, senioridade, ferramentas e competências)",
+    "Passo 2: Análise e extração de termos a partir de 10 vagas abertas",
+    "Passo 3: Mapeamento e benchmarking de perfis de profissionais de referência",
+    "Passo 4: Utilização do ChatGPT para geração de palavras-chave estratégicas",
+    "Seções do perfil para aplicação das palavras-chave (Título, Sobre, Experiências e Competências)",
+    "Importância da URL personalizada no LinkedIn",
+    "Localização da seção 'Perfil público e URL'",
+    "Passo a passo para edição da URL do perfil",
+    "Boas práticas para definição do link amigável (nome e sobrenome)",
+    "Primeiro Pilar: Estabelecer a Marca Profissional",
+    "Clareza para o LinkedIn e recrutadores",
+    "Preenchimento e relevância das seções do perfil",
+    "Checklist de validação do perfil profissional",
+    "Alinhamento para entrega do algoritmo",
+    "O que é o LinkedIn Premium",
+    "Recursos e benefícios da assinatura (insights de empresas, LinkedIn Learning, InMail)",
+    "Impacto real na contratação e no ranking de buscas",
+    "Opinião e recomendação sobre a assinatura paga vs. teste gratuito",
+    "Importância da seção de Competências para os filtros de recrutadores",
+    "Preenchimento automático a partir de outras seções (Sobre e Experiências)",
+    "Adição manual e inclusão de competências personalizadas/em outros idiomas",
+    "Critérios de escolha: foco no cargo-alvo e competências técnicas vs. comportamentais",
+    "Bilinguismo de palavras-chave (Português e Inglês)",
+    "Quantidade ideal de competências e principais erros a evitar",
+    "Polêmica do selo 'Open to Work' na foto de perfil",
+    "Dados sobre a taxa de contato de recrutadores com o selo público",
+    "Configuração de preferências de busca de emprego no LinkedIn",
+    "Preenchimento de cargos, localidades e tipo de contratação",
+    "Privacidade: visibilidade para 'Apenas recrutadores' vs 'Todos os usuários'",
+    "Proteção contra detecção por recrutadores da empresa atual",
+    "Configuração de versões de perfil em múltiplos idiomas no LinkedIn",
+    "Campos editáveis por idioma: Título, Sobre e Experiência",
+    "Uso do ChatGPT para suporte na tradução",
+    "Tratamento de competências e termos bilíngues",
+    "Relevância do inglês para SEO de busca por recrutadores no Brasil",
+    "Conceito do Pilar 2: Localizar as pessoas certas",
+    "Qualidade das conexões e relevância da área profissional",
+    "Meta mínima de 1.500 conexões para tração no algoritmo",
+    "Público-alvo para conexão: recrutadores, líderes e profissionais seniores",
+    "Método 1 de busca: aba 'Pessoas' na página da empresa",
+    "Método 2 de busca: pesquisa booleana/geral com filtros no LinkedIn",
+    "Diferença entre Conectar e Seguir para o algoritmo",
+    "Diferença entre perfil estruturado e perfil com visibilidade",
+    "Analogia da loja de cookies e a invisibilidade no LinkedIn",
+    "Fim do acesso gratuito ao SSI (Social Selling Index)",
+    "Os 4 Pilares de Alcance no LinkedIn",
+    "Apresentação da Operação Turbo e métricas nativas gratuitas",
+    "Pilar 'Criar Relacionamentos' no LinkedIn",
+    "Comunicação via inbox após aceite de conexão",
+    "Biblioteca de templates de abordagem",
+    "Abordagem de recrutadores e lideranças para vagas abertas",
+    "Abordagem ativa para empresas sem vagas divulgadas (empregado vs. desempregado)",
+    "Abordagens para transição de carreira e primeiro emprego/estágio",
+    "Estratégia de follow-up após ausência de resposta",
+    "Diferenciação entre insatisfação circunstancial e desalinhamento estrutural",
+    "Mapeamento de competências transferíveis e autodiagnóstico profissional",
+    "Tríade de Decisão: O que manter, o que desenvolver e o que abandonar",
+    "Critérios de escolha de área: Afinidade, demanda, empregabilidade e viabilidade",
+    "Validação prática e testes controlados pré-transição",
+    "Modelos de transição: Gradual vs. Direta e planejamento financeiro mínimo",
+    "Uso do cargo atual como ponte para desenvolvimento transversal",
+    "Reposicionamento profissional e narrativa estratégica no Currículo e LinkedIn",
+    "Estratégia de candidaturas qualificadas, networking e gestão de rejeições",
+    "Modalidades de Carreira Internacional: Remoto, Relocação e Modelos Híbridos",
+    "Mitos e Realidades do Mercado de Trabalho Global",
+    "Diagnóstico de Perfil, Leitura Estratégica e Gaps Críticos",
+    "Plano de Ação Tático de 90 Dias",
+    "Vistos de Trabalho, Documentação, Apostila de Haia e Tradução Juramentada",
+    "Planejamento Financeiro, Familiar e Logístico para Relocação",
+    "Posicionamento Internacional: CV compatível com ATS e Inteligência Artificial",
+    "Otimização Estratégica de LinkedIn e Engenharia de Palavras-Chave",
+    "Cover Letters e Abordagens Personalizadas de Cold Outreach",
+    "Networking Estratégico Global e Canais de Oportunidades",
+    "Estrutura de Processos Seletivos Globais e Entrevistas Preditivas",
+    "Framework Comportamental STAR (Situation, Task, Action, Result)",
+    "Comunicação em Inglês para Entrevistas e Avaliação de Fit Cultural",
+    "Métricas de Conversão, Gestão de Recusas e Sustentabilidade de Carreira",
+    "Apresentação da Operação Turbo (30 dias)",
+    "Configuração e duplicação do template no Notion",
+    "Os 4 Pilares de atuação no LinkedIn",
+    "Semana 1: Revisão e checklist da estrutura do perfil",
+    "Rotina semanal: 3 posts autorais e dias fixos",
+    "Rotina diária: Comentários e compartilhamentos com insights",
+    "Networking ativo: Conexão e abordagem com recrutadores e líderes",
+    "Semanas 2 a 4 e manutenção da constância",
+    "Pilar 3: Interagir Oferecendo Insights",
+    "Boas práticas e regras para comentários estratégicos",
+    "O que evitar e o que nunca postar no LinkedIn",
+    "5 tipos de conteúdo para fortalecer o perfil profissional",
+    "Frequência ideal de postagens e interações",
+    "8 mudanças no algoritmo do LinkedIn (regras de distribuição, salvamentos, priming e links)",
+    "Apresentação da L.I.A. e distinção em relação ao ChatGPT comum",
+    "Passo a passo para exportar o currículo/perfil do LinkedIn em PDF",
+    "Avaliação e scoring inicial das seções do perfil",
+    "Reestruturação guiada: Título (Headline), Sobre e Experiências",
+    "Seleção e sugestão de palavras-chave e competências estratégicas",
+    "Interação contínua, ajustes personalizados e validação humana com o suporte",
+    "Acesso à seção de Análise no perfil do LinkedIn",
+    "Três métricas principais: Visualizações, Ocorrências em Pesquisa e Impressões",
+    "Detalhamento de Ocorrências em Pesquisa: empresas, cargos dos pesquisadores e palavras-chave",
+    "Benchmarks e faixas de referência (Crítico, Fraco, Bom, Ótimo)",
+    "Rotina semanal de acompanhamento (terças-feiras)",
+    "Diagnóstico e correção para métricas baixas (palavras-chave, constância na Operação Turbo e demanda de mercado)"
+  ],
+  "system_prompt": null,
+  "capabilities": [
+    "answer_questions",
+    "generate_specs",
+    "write_code"
+  ],
+  "created_at": "2026-09-25T06:08:04.802299Z",
+  "updated_at": "2026-09-25T15:14:52.989212Z"
+}
