@@ -5,7 +5,7 @@ import asyncio
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -62,6 +62,20 @@ def health_check():
         'version': '1.0.0',
         'environment': settings.ENVIRONMENT
     }
+
+@app.post('/api/telegram/session/upload')
+async def upload_telegram_session(file: UploadFile = File(...)):
+    session_file = settings.DATA_DIR / f"{settings.TELEGRAM_SESSION_NAME}.session"
+    content = await file.read()
+    with open(session_file, "wb") as f:
+        f.write(content)
+    try:
+        from ingestion.telegram_client import TelegramManager
+        tm = TelegramManager()
+        await tm._force_reconnect()
+    except Exception:
+        pass
+    return {"success": True, "message": "Sessão do Telegram instalada com sucesso!", "size": len(content)}
 
 # Gerenciador global de progresso de estudo em background
 study_state: Dict[str, Any] = {

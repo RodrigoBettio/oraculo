@@ -2175,6 +2175,17 @@
       "total_tokens": 2500,
       "cost_usd": 0.00185,
       "cost_brl": 0.0104
+    },
+    {
+      "timestamp": "2026-09-25T04:29:19.342724+00:00",
+      "source": "test_run",
+      "details": "teste de aula",
+      "model": "gemini-3.6-flash",
+      "prompt_tokens": 2000,
+      "output_tokens": 500,
+      "total_tokens": 2500,
+      "cost_usd": 0.00185,
+      "cost_brl": 0.0104
     }
   ],
   "plan_tier": "paid_tier"
