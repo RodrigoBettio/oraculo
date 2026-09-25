@@ -605,6 +605,16 @@ def compile_agent_rich_skill(agent_id: str) -> str:
         except Exception:
             continue
 
+    # Agrupa aulas por Curso e por Tema/Módulo
+    from collections import defaultdict
+    courses_map = defaultdict(lambda: defaultdict(list))
+    for doc in studied_lessons:
+        c_name = doc.get("group_name") or "Curso Técnico"
+        t_name = doc.get("theme_name") or "Aulas Gerais"
+        courses_map[c_name][t_name].append(doc)
+
+    has_multiple_courses = len(courses_map) > 1 or len(profile.sources) > 1
+
     clean_name = re.sub(r'[^\w\s-]', '', profile.name).strip().lower().replace(" ", "-")
     skill_slug = f"oraculo-{clean_name}"
     topics_list = profile.topics_mastered or ["Automação Determinística", "Arquitetura de Software"]
@@ -617,7 +627,7 @@ def compile_agent_rich_skill(agent_id: str) -> str:
 
     skill_md = f"""---
 name: {skill_slug}
-description: Especialista {profile.name} ({role}). Domina: {', '.join(topics_list[:6])}. Use para orientação técnica, regras determinísticas de código, arquitetura e automações aprendidas no curso {courses_str}.
+description: Especialista {profile.name} ({role}). Domina: {', '.join(topics_list[:6])}. Use para orientação técnica, regras determinísticas de código, arquitetura e automações aprendidas em {courses_str}.
 ---
 
 # Skill: {profile.name} - {role}
@@ -632,33 +642,67 @@ description: Especialista {profile.name} ({role}). Domina: {', '.join(topics_lis
 - **Hierarquia Corporativa**: {'👑 Gestor Executivo de Domínio' if agent_type == 'gestor' else '⚡ Especialista Técnico'}
 - **Nível de Senioridade**: {seniority.get('rank', 'Pleno')} ({seniority.get('badge', '🥈')})
 - **Horas Reais Absorvidas**: `{total_hours:.2f}h` ({profile.total_videos_studied} aulas indexadas)
-- **Base de Cursos**: {courses_str}
+- **Base de Cursos & Escolas**: {courses_str}
 
 ## 2. Habilidades & Tópicos Dominados
 """
     for top in topics_list:
         skill_md += f"- `{top}`\n"
 
-    skill_md += f"""
+    if has_multiple_courses:
+        skill_md += f"""
+## 3. Diretrizes de Execução & Arquitetura Multi-Paradigma
+- **Autoridade Técnica & Visão Agnóstica**: Como Arquiteto de IA, você domina múltiplos ecossistemas e paradigmas concorrentes ({courses_str}).
+- **Isolamento Estrito de Stacks (Regra de Ouro)**: NUNCA misture sintaxes, arquivos de configuração ou conceitos de uma ferramenta em outra (ex: não aplique hooks do Claude Code no ecossistema OpenAI/Codex, nem assuma function calling de Codex dentro de scripts de terminal do Claude).
+- **Desambiguação Prévia**: Ao ser consultado sobre padrões que variam entre as escolas estudadas, identifique primeiro o ambiente e objetivo pretendido pelo usuário antes de prescrever uma solução.
+- **Trade-offs Explícitos**: Sempre justifique escolhas técnicas apontando vantagens, desvantagens e limites operacionais de cada stack para o caso de uso apresentado.
+"""
+    else:
+        skill_md += f"""
 ## 3. Diretrizes de Execução & Arquitetura Determinística
 - Agir com autoridade técnica no domínio de {role}.
 - Aplicar automações determinísticas sempre que possível, priorizando consistência e repetibilidade.
 - Seguir os padrões arquiteturais ensinados nas aulas, incluindo controle rigoroso de contexto de IA, estrutura `/docs` e automação com hooks.
 """
 
+    if has_multiple_courses:
+        skill_md += f"""
+## 4. Matriz Comparativa de Paradigmas & Resolução de Divergências
+O especialista opera sob múltiplos paradigmas. A tabela abaixo sintetiza a separação arquitetural e diretrizes de decisão entre as escolas dominadas:
+
+| Paradigma / Curso | Escopo Principal | Filosofia de Automação | Ferramenta / Arquivo de Configuração | Quando Priorizar? |
+| :--- | :--- | :--- | :--- | :--- |
+"""
+        distinct_sources = list(courses_map.keys()) if courses_map else [s.group_name for s in profile.sources]
+        for c_name in distinct_sources:
+            cn_lower = c_name.lower()
+            if "claude" in cn_lower:
+                skill_md += f"| **{c_name}** | Automação CLI Local & Agentes Locais | Determinística via Event Hooks | `.claude/settings.json`, `/docs`, bash | Ambientes de desenvolvimento no terminal local e controle estrito de permissões |\n"
+            elif "codex" in cn_lower or "openai" in cn_lower:
+                skill_md += f"| **{c_name}** | Engenharia Cloud, APIs & Assistentes | Tool Calling / Function Schemas | JSON Schema, Assistants API, Sandboxes | Aplicações SaaS, serviços headless em nuvem e agentes via API |\n"
+            elif "sexy" in cn_lower:
+                skill_md += f"| **{c_name}** | Branding & Ativação de Desejo | Sexy Canvas (7 Pecados + Criança) | Framework dos 8 pontos de eletrificação | Criação de propostas de valor, nomes, pitch e posicionamento de marca |\n"
+            elif "straight" in cn_lower:
+                skill_md += f"| **{c_name}** | Vendas de Alta Pressão & Fechamento | Linha Reta (3 Dez + Looping) | Scripts de controle e quebra de objeções | Vendas B2C/B2B transacionais e negociações com objeções de preço |\n"
+            elif "linkedin" in cn_lower:
+                skill_md += f"| **{c_name}** | Autoridade Profissional & Social Selling | 6 Pilares do Perfil Campeão | Título magnético, Sobre escaneável, Métricas | Posicionamento de liderança, atração de recrutadores e parcerias |\n"
+            else:
+                skill_md += f"| **{c_name}** | Especialização Técnica | Metodologia Prática da Escola | Padrões e Arquivos do Curso | Casos de uso alinhados ao escopo do treinamento |\n"
+
+        skill_md += """
+> [!IMPORTANT]
+> **Regra de Resolução de Conflitos**:
+> 1. Respeite o ambiente em que o projeto do usuário será executado (ex: terminal local vs infraestrutura cloud).
+> 2. Se o projeto for agnóstico, apresente a solução recomendada por cada escola com um resumo de prós e contras.
+> 3. Nunca crie uma solução híbrida "Frankenstein" sem justificativa arquitetural clara.
+"""
+
+    sec_num = 5 if has_multiple_courses else 4
     if studied_lessons:
-        skill_md += "\n## 4. Base de Conhecimento Aprofundada (Cursos, Módulos & Aulas)\n"
-        
-        # Agrupa aulas por Curso e por Tema/Módulo
-        from collections import defaultdict
-        courses_map = defaultdict(lambda: defaultdict(list))
-        for doc in studied_lessons:
-            c_name = doc.get("group_name") or "Curso Técnico"
-            t_name = doc.get("theme_name") or "Aulas Gerais"
-            courses_map[c_name][t_name].append(doc)
+        skill_md += f"\n## {sec_num}. Base de Conhecimento Aprofundada (Cursos, Módulos & Aulas)\n"
 
         for c_name, themes_dict in courses_map.items():
-            skill_md += f"\n### 🎓 Curso: {c_name}\n"
+            skill_md += f"\n### 🏛️ Paradigma / Curso: {c_name}\n"
             for t_name, docs_list in themes_dict.items():
                 if t_name != "Aulas Gerais":
                     skill_md += f"\n#### 📁 Tema / Módulo: {t_name}\n"
@@ -691,8 +735,9 @@ description: Especialista {profile.name} ({role}). Domina: {', '.join(topics_lis
                             skill_md += f"- **[{time_lbl}]**: {seg.get('text', '')}\n"
                         skill_md += "\n"
 
+    sec_code = sec_num + 1
     if code_blocks:
-        skill_md += "\n## 5. Implementações de Código & Configurações da Tela (OCR)\n"
+        skill_md += f"\n## {sec_code}. Implementações de Código & Configurações da Tela (OCR)\n"
         for cb in code_blocks:
             lang = cb.get("language") or "json"
             skill_md += f"\n#### 💻 {cb['lesson_title']} (Timestamp `{cb['timestamp']}`)\n"
@@ -701,12 +746,14 @@ description: Especialista {profile.name} ({role}). Domina: {', '.join(topics_lis
             code_text = cb.get("code", "").strip()
             skill_md += f"```{lang}\n{code_text}\n```\n"
 
+    sec_crit = sec_code + 1 if code_blocks else sec_num + 1
     skill_md += f"""
-## 6. Critérios de Ativação & Uso
+## {sec_crit}. Critérios de Ativação & Uso
 Consulte ou acione este especialista quando:
 1. For necessário aplicar regras técnicas de {', '.join(topics_list[:3])}.
 2. Houver dúvidas sobre configurações e estruturas ensinadas em {courses_str}.
 3. O usuário ou outro agente solicitar arquitetura determinística no domínio de {role}.
+4. Houver necessidade de avaliar trade-offs entre diferentes arquiteturas de IA para um projeto.
 """
     return skill_md
 
@@ -2198,16 +2245,23 @@ async def oracle_chat(req: OracleChatRequest):
                 except Exception:
                     continue
 
+            multi_course_directive = ""
+            if len(agent_groups) > 1:
+                multi_course_directive = f"""
+- MULTI-PARADIGMA / RESOLUÇÃO DE DIVERGÊNCIAS: Você domina múltiplos ecossistemas distintos ({', '.join(agent_groups)}). Se a dúvida do usuário referir-se a uma tecnologia específica, aplique estritamente as convenções daquela stack sem misturar sintaxes. Se for uma dúvida ampla ou se houver divergência de metodologia entre os cursos que você estudou, aponte com autoridade os trade-offs de cada abordagem antes de recomendar a melhor.
+"""
+            persona_extra = f"\nDiretrizes de Persona: {target_agent.get('system_prompt')}\n" if target_agent.get("system_prompt") else ""
+
             prompt = f"""
 Você é {target_agent['name']} ({target_agent['role']}), um agente especialista.
 Você estudou profundamente os cursos: {', '.join(agent_groups) if agent_groups else 'geral'}.
 Tópicos que você domina: {', '.join(target_agent.get('topics_mastered', []))}.
-
+{persona_extra}
 Diretrizes de resposta:
 - Responda em primeira pessoa mantendo seu tom técnico e especialista.
 - Seja DIRETO, CONCISO e OBJETIVO. Vá direto ao ponto sem enrolações ou introduções desnecessárias.
 - Use negrito de forma natural e limpa para destacar conceitos essenciais. Evite poluição de asteriscos redundantes.
-- Se relevante, cite a aula e o minuto exato de onde extraiu a solução.
+- Se relevante, cite a aula e o minuto exato de onde extraiu a solução.{multi_course_directive}
 
 Pergunta do usuário: "{req.query}"
 
