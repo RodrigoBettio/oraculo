@@ -306,7 +306,8 @@ async def process_telegram_command(command_text: str) -> str:
             "🚨 `/gaps` — Relatório executivo da Helena Torres (carências de QA e Cloud)\n"
             "➕ `/contratar <qa|cloud>` — Provisionar novo especialista solicitado pela Helena\n"
             "📁 `/estudar <link_drive>` — Enfileirar curso do Drive direto pelo celular\n"
-            "💬 `/perguntar @agente <dúvida>` — Consultar qualquer especialista\n"
+            "💬 `/perguntar @agente <dúvida>` — Consultar qualquer especialista (com delegação automática)\n"
+            "📋 `/tarefas` — Ver backlog de tarefas recebidas do celular ou chat\n"
             "🏢 `/ativar_grupo` — Vincular o grupo atual como Quartel-General Oficial\n"
             "🔄 `/sync` — Forçar compilação de todas as skills\n"
             "🤖 `/botfather` — Guia de configuração e comandos para menu dinâmico\n"
@@ -602,69 +603,90 @@ Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de 
                 resp_text = _call_gemini_resilient(prompt)
                 return f"🔮 **[Oráculo — Central Operacional]**:\n\n{resp_text}"
 
-            matched_id = None
-            matched_name = None
-            matched_role = None
-            matched_avatar = None
-            for ag in agents:
-                ag_name = ag.get("name", "").lower()
-                ag_id = ag.get("id", "").lower()
-                if raw_agent in ag_name or raw_agent in ag_id:
-                    matched_id = ag.get("id")
-                    matched_name = ag.get("name")
-                    matched_role = ag.get("role")
-                    matched_avatar = ag.get("avatar")
-                    break
-
-            if not matched_id:
-                return f"❌ Especialista `@{raw_agent}` não encontrado. Use `/agentes` para ver os disponíveis."
-
-            # DELEGAÇÃO HIERÁRQUICA: Helena Torres (VP de TI)
-            if "helena" in matched_id.lower() or "gestor_tech" in matched_id.lower():
-                vance_file = settings.DATA_DIR / "skills" / "agent_alex_vance" / "SKILL.md"
-                vance_skills = ""
-                if vance_file.exists():
-                    with open(vance_file, "r", encoding="utf-8") as vf:
-                        vance_skills = vf.read()[:6000]
-
-                vance_prompt = (
-                    f"Você é Alex Vance (⚡), Arquiteto-Chefe de Software & IA do Oráculo.\n"
-                    f"Sua VP de TI (Helena Torres) precisa do seu parecer técnico aprofundado para responder ao fundador Rodrigo.\n"
-                    f"BASE TÉCNICA ABSORVIDA:\n{vance_skills}\n\n"
-                    f"PERGUNTA DO RODRIGO: {question}\n\n"
-                    f"Emita seu parecer técnico de arquitetura, padrões, viabilidade e riscos de forma direta."
-                )
-                vance_opinion = _call_gemini_resilient(vance_prompt)
-
-                helena_prompt = (
-                    f"Você é Helena Torres (👩‍💼), VP de Tecnologia & Inovação Digital do Oráculo.\n"
-                    f"Você NUNCA programa ou faz trabalho braçal. Seu papel é liderança executiva, priorização e estratégia.\n"
-                    f"Você consultou seu Arquiteto-Chefe Alex Vance sobre a demanda do Rodrigo.\n\n"
-                    f"PARECER TÉCNICO DO ALEX VANCE:\n{vance_opinion}\n\n"
-                    f"PERGUNTA ORIGINAL DO RODRIGO: {question}\n\n"
-                    f"Responda ao Rodrigo iniciando informando que consultou o Alex Vance, sintetizando a solução técnica dele, "
-                    f"e acrescentando a sua recomendação executiva de liderança (prazos, riscos, alocação de equipe e próximos passos)."
-                )
-                helena_opinion = _call_gemini_resilient(helena_prompt)
-                return f"👩‍💼 **[Helena Torres — VP de TI]**:\n\n{helena_opinion}"
-
-            # CONSULTA DIRETA A ESPECIALISTA (Jordan, Link, Diamand, Monge, Vance, etc.)
-            skill_file = settings.DATA_DIR / "skills" / matched_id / "SKILL.md"
-            skill_context = ""
-            if skill_file.exists():
-                with open(skill_file, "r", encoding="utf-8") as sf:
-                    skill_context = sf.read()[:8000]
-
-            prompt = (
-                f"Você é {matched_name} ({matched_role}), especialista treinado pelo Oráculo.\n"
-                f"Responda à seguinte dúvida do seu líder (Rodrigo) de forma objetiva, direta e aplicando seus conceitos reais estudados.\n\n"
-                f"BASE DE CONHECIMENTO & REGRAS:\n{skill_context}\n\n"
-                f"DÚVIDA DO RODRIGO: {question}"
-            )
-            resp_text = _call_gemini_resilient(prompt)
-            return f"{matched_avatar} **[{matched_name} — {matched_role}]**:\n\n{resp_text}"
+            from orchestration.agent_delegator import agent_delegator
+            return agent_delegator.consult(raw_agent, question)
         except Exception as e:
             return f"❌ Erro ao consultar especialista: {e}"
+
+    # 7.1. Tarefas Rápidas / Payloads do Edge Node (Gemma / Celular)
+    elif cmd_lower.startswith("/tarefa") or ("origem" in cmd_lower and "gemma_edge" in cmd_lower) or ('"especialista_alvo"' in cmd):
+        try:
+            from orchestration.agent_delegator import agent_delegator
+            tasks_dir = settings.DATA_DIR / "tasks"
+            tasks_dir.mkdir(parents=True, exist_ok=True)
+            data = {}
+            json_match = re.search(r"\{.*\}", cmd, re.DOTALL)
+            if json_match:
+                try:
+                    data = json.loads(json_match.group(0))
+                except Exception:
+                    pass
+
+            if not data:
+                parts = cmd.split(maxsplit=2)
+                target = "vance"
+                body = ""
+                if len(parts) >= 2 and parts[1].startswith("@"):
+                    target = parts[1].replace("@", "").strip().lower()
+                    body = parts[2] if len(parts) > 2 else ""
+                elif len(parts) >= 2:
+                    body = " ".join(parts[1:])
+                data = {
+                    "origem": "telegram_chat",
+                    "tipo": "tarefa",
+                    "especialista_alvo": target,
+                    "prioridade": "alta" if "urgente" in body.lower() else "normal",
+                    "titulo": body[:80] if body else "Nova Tarefa",
+                    "detalhes": body
+                }
+
+            target_agent = data.get("especialista_alvo", "vance").replace("@", "").lower()
+            title = data.get("titulo", "Tarefa sem título")
+            details = data.get("detalhes", "")
+            priority = data.get("prioridade", "normal")
+            origin = data.get("origem", "gemma_edge")
+
+            import time
+            task_id = f"task_{int(time.time())}"
+            data["id"] = task_id
+            data["created_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+
+            with open(tasks_dir / f"{task_id}.json", "w", encoding="utf-8") as tf:
+                json.dump(data, tf, indent=2, ensure_ascii=False)
+
+            opinion = agent_delegator.consult(target_agent, f"Tarefa registrada: {title}. Contexto: {details}. Dê seu parecer inicial.")
+
+            badge = "📱 [Gemma Edge Node ➔ Oráculo]" if origin == "gemma_edge" else "💬 [Cockpit Mobile ➔ Oráculo]"
+            return (
+                f"{badge}\n\n"
+                f"✅ **NOVA TAREFA REGISTRADA NO BACKLOG!**\n"
+                f"📌 **Título**: {title}\n"
+                f"🎯 **Responsável**: `@{target_agent}` | Prioridade: `{priority.upper()}`\n"
+                f"🆔 **ID**: `{task_id}`\n\n"
+                f"📝 **PARECER INICIAL DO ESPECIALISTA**:\n"
+                f"{opinion}"
+            )
+        except Exception as e:
+            return f"❌ Erro ao registrar tarefa: {e}"
+
+    elif cmd_lower.startswith("/tarefas") or "backlog de tarefas" in cmd_lower:
+        tasks_dir = settings.DATA_DIR / "tasks"
+        if not tasks_dir.exists():
+            return "ℹ️ Nenhuma tarefa pendente no backlog."
+        files = sorted(tasks_dir.glob("task_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        if not files:
+            return "ℹ️ Nenhuma tarefa pendente no backlog."
+        msg = f"📋 **BACKLOG DE TAREFAS** (`{len(files)} registradas`):\n\n"
+        for f in files[:6]:
+            try:
+                with open(f, "r", encoding="utf-8") as jf:
+                    d = json.load(jf)
+                msg += f"• **{d.get('titulo', 'Tarefa')}** (`@{d.get('especialista_alvo')}`)\n"
+                if d.get("detalhes"):
+                    msg += f"  _{d.get('detalhes')[:70]}..._\n"
+            except Exception:
+                continue
+        return msg
 
     # 8. Sincronização Forçada
     elif cmd_lower.startswith("/sync") or "sincronizar tudo" in cmd_lower:

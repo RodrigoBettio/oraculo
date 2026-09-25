@@ -2256,6 +2256,20 @@ async def oracle_chat(req: OracleChatRequest):
             if not target_agent:
                 raise HTTPException(status_code=404, detail="Agente não encontrado")
 
+            # Avalia competência e delega automaticamente se fora do escopo
+            from orchestration.agent_delegator import agent_delegator
+            decision = agent_delegator.evaluate_competency(target_agent, req.query)
+            if not decision.is_competent:
+                delegated_text = agent_delegator.consult(req.agent_id, req.query)
+                return {
+                    "mode": "delegated",
+                    "speaker": target_agent["name"],
+                    "avatar": target_agent.get("avatar", "🧠"),
+                    "role": target_agent["role"],
+                    "answer": delegated_text,
+                    "citations": []
+                }
+
             # Coleta fontes apenas dos cursos/grupos desse agente
             agent_groups = [s["group_name"].lower() for s in target_agent.get("sources", [])]
             relevant_context = []
