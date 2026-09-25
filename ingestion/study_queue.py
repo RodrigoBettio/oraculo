@@ -908,7 +908,6 @@ class StudyQueueManager:
                     try:
                         from models.project import DocumentArtifact, DocumentType
                         from orchestration.project_store import ProjectStore
-                        import shutil
                         
                         # Salva cópia permanente do PDF no repositório do cofre
                         vault_dir = settings.DATA_DIR / "vault_documents"
@@ -972,7 +971,6 @@ class StudyQueueManager:
                             
                             # Auto-sync para o Antigravity (~/.gemini/config/skills/)
                             try:
-                                import shutil
                                 agy_skill_dir = Path.home() / ".gemini" / "config" / "skills" / f"oraculo-{item.agent_id}"
                                 agy_skill_dir.mkdir(parents=True, exist_ok=True)
                                 shutil.copy2(skill_file, agy_skill_dir / "SKILL.md")

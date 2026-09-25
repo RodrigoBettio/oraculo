@@ -2,6 +2,7 @@ import os
 import json
 import subprocess
 import shutil
+import re
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 
@@ -359,7 +360,6 @@ Retorne estritamente um JSON com a seguinte estrutura:
                 # Fallback para arquivos maiores que 20MB via File API com nome ASCII seguro
                 safe_ascii_name = f"doc_{re.sub(r'[^a-zA-Z0-9_.-]', '_', pdf_id)}.pdf"
                 clean_pdf_file = temp_dir / safe_ascii_name
-                import shutil
                 shutil.copy2(pdf_path, clean_pdf_file)
                 pdf_part = self.client.files.upload(file=str(clean_pdf_file))
             

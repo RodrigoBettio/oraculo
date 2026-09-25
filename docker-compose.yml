@@ -16,6 +16,11 @@ services:
       - ./data:/app/data
       - ./credentials:/app/credentials
       - ./web:/app/web
+      - ./ingestion:/app/ingestion
+      - ./orchestration:/app/orchestration
+      - ./models:/app/models
+      - ./utils:/app/utils
+      - ./config.py:/app/config.py
     ports:
       - "8000:8000"
     healthcheck:
