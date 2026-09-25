@@ -430,13 +430,17 @@ class StudyQueueManager:
 
         # Se não há vídeos neste módulo/tema, mas há arquivos de apoio (ex: PDFs/Ebooks)
         if not videos and s_files:
+            valid_doc_exts = {".pdf", ".epub", ".docx", ".txt", ".md"}
             for s in s_files:
+                s_name = s.get("file_name", s.get("name", ""))
+                if Path(s_name).suffix.lower() not in valid_doc_exts:
+                    continue
                 if only_pending and s.get("is_studied"):
                     continue
                 item = await self.enqueue_drive_file(
                     agent_id=agent_id,
                     drive_file_id=s["id"],
-                    file_name=s.get("file_name", s.get("name")),
+                    file_name=s_name,
                     course_name=course_name,
                     theme_name=theme_name,
                     support_files=[],
@@ -464,6 +468,7 @@ class StudyQueueManager:
         dm = GoogleDriveManager()
         course_node = dm._inspect_course_folder(folder_id, course_name)
 
+        valid_doc_exts = {".pdf", ".epub", ".docx", ".txt", ".md"}
         enqueued = []
         # 1. Se o curso possui temas/módulos, enfileira respeitando cada tema e seus respectivos arquivos de apoio
         for theme in course_node.get("themes", []):
@@ -489,12 +494,15 @@ class StudyQueueManager:
             # Se o módulo/tema não possui vídeos, mas possui arquivos de apoio (ex: PDFs/Ebooks)
             if not t_videos and t_files:
                 for s in t_files:
+                    s_name = s.get("file_name", s.get("name", ""))
+                    if Path(s_name).suffix.lower() not in valid_doc_exts:
+                        continue
                     if only_pending and s.get("is_studied"):
                         continue
                     item = await self.enqueue_drive_file(
                         agent_id=agent_id,
                         drive_file_id=s["id"],
-                        file_name=s.get("file_name", s.get("name")),
+                        file_name=s_name,
                         course_name=course_name,
                         theme_name=t_name,
                         support_files=[],
@@ -525,12 +533,15 @@ class StudyQueueManager:
         # Se não há vídeos diretos, mas há arquivos de apoio diretos (ex: PDFs/Ebooks avulsos)
         if not direct_videos and direct_files:
             for s in direct_files:
+                s_name = s.get("file_name", s.get("name", ""))
+                if Path(s_name).suffix.lower() not in valid_doc_exts:
+                    continue
                 if only_pending and s.get("is_studied"):
                     continue
                 item = await self.enqueue_drive_file(
                     agent_id=agent_id,
                     drive_file_id=s["id"],
-                    file_name=s.get("file_name", s.get("name")),
+                    file_name=s_name,
                     course_name=course_name,
                     theme_name=None,
                     support_files=[],
