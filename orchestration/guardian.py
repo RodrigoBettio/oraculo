@@ -277,6 +277,10 @@ class ProductionGuardian:
                 # 3. Garante liveness de workers
                 worker_status = self.check_worker_liveness()
                 
+                # 3.5 Check daily report
+                from orchestration.daily_report import check_and_send_daily_report
+                await check_and_send_daily_report()
+                
                 # 4. Calcula índice de saúde (Health Score)
                 if not sqlite_status["healthy"]:
                     self.health_score = 40.0

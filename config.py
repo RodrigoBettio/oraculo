@@ -21,6 +21,14 @@ class Settings:
     TELEGRAM_SESSION_NAME: str = os.getenv("TELEGRAM_SESSION_NAME", "oraculo_session")
     TELEGRAM_TARGET_FOLDER: str = os.getenv("TELEGRAM_TARGET_FOLDER", "Estudos")
     TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+    TELEGRAM_BOT_TOKEN_BRAIN: str = os.getenv("TELEGRAM_BOT_TOKEN_BRAIN", "").strip()
+
+    # Relatório Diário Executivo
+    DAILY_REPORT_HOUR: int = int(os.getenv("DAILY_REPORT_HOUR", "8"))
+    DAILY_REPORT_MINUTE: int = int(os.getenv("DAILY_REPORT_MINUTE", "30"))
+
+    # Obsidian Vault (2º Cérebro)
+    OBSIDIAN_VAULT_PATH: Path = Path(os.getenv("OBSIDIAN_VAULT_PATH", ""))
 
     # Gemini API (Chave única ou Pool de múltiplas chaves rotativas)
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")

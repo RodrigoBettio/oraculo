@@ -21,6 +21,7 @@ logger = logging.getLogger("telegram_notifier")
 COCKPIT_KEYBOARD = [
     [Button.text("📊 Status & Fila"), Button.text("👥 Equipe & Agentes")],
     [Button.text("🚨 Relatório de GAPs"), Button.text("📁 Estudar Curso")],
+    [Button.text("📂 Navegar Drive"), Button.text("📊 Relatório do Dia")],
     [Button.text("💬 Consultar Especialista"), Button.text("🔄 Sincronizar Tudo")]
 ]
 
@@ -71,6 +72,107 @@ def get_action_proposal_keyboard(action_id: str):
             Button.inline("⚡ Executar Agora", data=f"action:exec_act:{action_id}".encode("utf-8"))
         ]
     ]
+
+
+def get_drive_explorer_keyboard(folder_data: dict) -> list:
+    """Gera teclado inline para navegação visual do Google Drive."""
+    buttons = []
+    # Subpastas (máx 6 por tela)
+    for sf in folder_data.get('subfolders', [])[:6]:
+        label = f"📁 {sf['name'][:22]}"
+        buttons.append([Button.inline(label, data=f"drv:f:{sf['id']}".encode())])
+    
+    # Contagem de vídeos pendentes
+    videos = folder_data.get('videos', [])
+    pending = [v for v in videos if not v.get('is_studied')]
+    studied = [v for v in videos if v.get('is_studied')]
+    
+    if videos:
+        stats_row = []
+        if pending:
+            stats_row.append(Button.inline(
+                f"⚡ Estudar {len(pending)} aulas",
+                data=f"drv:enq:{folder_data['current_folder']['id']}".encode()
+            ))
+        buttons.append(stats_row) if stats_row else None
+    
+    # Navegação
+    nav_row = []
+    parent_id = folder_data.get('current_folder', {}).get('parent_id')
+    if parent_id:
+        nav_row.append(Button.inline("⬆️ Voltar", data=f"drv:up:{parent_id}".encode()))
+    nav_row.append(Button.inline("🏠 Raiz", data=b"drv:root"))
+    buttons.append(nav_row)
+    
+    # Atribuição a agente (somente técnicos)
+    buttons.append([Button.inline(
+        "🎯 Atribuir a Agente",
+        data=f"drv:asgn:{folder_data['current_folder']['id']}".encode()
+    )])
+    buttons.append([Button.inline("🔙 Menu Principal", data=b"action:main_menu")])
+    return buttons
+
+
+def get_agent_selector_keyboard(folder_id: str) -> list:
+    """Gera teclado de seleção de agente (SOMENTE técnicos — gestores NÃO executam)."""
+    technical_agents = [
+        ("Alex Vance", "vance"),
+        ("Quinn QA", "quinn"),
+        ("Cláudio Cloud", "claudio"),
+        ("Bruno", "bruno"),
+        ("Jordan Belford", "jordan"),
+        ("André Diamand", "diamand"),
+        ("Jim Kwik", "jimkwik"),
+        ("O Monge", "monge"),
+        ("Link", "link"),
+        ("Ana", "ana"),
+    ]
+    buttons = []
+    for name, short in technical_agents:
+        cb_data = f"drv:ag:{short}:{folder_id}"
+        if len(cb_data.encode()) <= 64:
+            buttons.append([Button.inline(f"👤 {name}", data=cb_data.encode())])
+    buttons.append([Button.inline("⬅️ Voltar à Pasta", data=f"drv:f:{folder_id}".encode())])
+    return buttons
+
+
+def format_drive_folder_view(folder_data: dict) -> str:
+    """Formata a visualização de uma pasta do Drive para o Telegram."""
+    current = folder_data.get('current_folder', {})
+    breadcrumbs = folder_data.get('breadcrumbs', [])
+    subfolders = folder_data.get('subfolders', [])
+    videos = folder_data.get('videos', [])
+    support_files = folder_data.get('support_files', [])
+    
+    # Header com breadcrumbs
+    bc_text = " › ".join([b['name'][:15] for b in breadcrumbs]) if breadcrumbs else "Raiz"
+    
+    text = f"📂 **NAVEGADOR DO DRIVE**\n"
+    text += f"📍 `{bc_text}`\n"
+    text += f"━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+    
+    # Pasta atual
+    text += f"📁 **{current.get('name', 'Drive')}**\n\n"
+    
+    # Stats
+    pending = [v for v in videos if not v.get('is_studied')]
+    studied = [v for v in videos if v.get('is_studied')]
+    
+    if subfolders:
+        text += f"📂 {len(subfolders)} subpastas\n"
+    if videos:
+        text += f"🎬 {len(videos)} aulas"
+        if studied:
+            text += f" ({len(studied)} ✅ estudadas, {len(pending)} ⏳ pendentes)"
+        text += "\n"
+    if support_files:
+        text += f"📎 {len(support_files)} arquivos de apoio\n"
+    
+    if not subfolders and not videos:
+        text += "📭 _Pasta vazia_\n"
+    
+    text += f"\n💡 _Toque nas pastas para navegar ou atribua a um agente._"
+    return text
 
 _bot_client = None
 
@@ -153,6 +255,70 @@ async def handle_callback_query(event):
             await event.answer()
             main_text = await process_telegram_command("/menu")
             await event.edit(main_text, buttons=get_cockpit_inline_keyboard())
+
+        elif data_str == "action:daily_report":
+            await event.answer("📊 Gerando relatório executivo...", alert=False)
+            from orchestration.daily_report import get_daily_report_on_demand
+            report = await get_daily_report_on_demand()
+            await event.edit(report, buttons=get_back_keyboard())
+
+        elif data_str.startswith("drv:"):
+            parts = data_str.split(":")
+            drv_action = parts[1] if len(parts) > 1 else ""
+            
+            if drv_action in ("f", "up", "root"):
+                await event.answer("📂 Carregando pasta...", alert=False)
+                from ingestion.drive_client import GoogleDriveManager
+                dm = GoogleDriveManager()
+                folder_id = None if drv_action == "root" else parts[2] if len(parts) > 2 else None
+                try:
+                    folder_data = dm.explore_folder(folder_id)
+                    view_text = format_drive_folder_view(folder_data)
+                    keyboard = get_drive_explorer_keyboard(folder_data)
+                    await event.edit(view_text, buttons=keyboard)
+                except Exception as e:
+                    await event.edit(f"⚠️ Erro ao acessar Drive: {e}", buttons=get_back_keyboard())
+            
+            elif drv_action == "enq":
+                folder_id = parts[2] if len(parts) > 2 else None
+                if folder_id:
+                    await event.answer("⚡ Enfileirando curso para estudo...", alert=True)
+                    enqueue_text = await process_telegram_command(f"/estudar drive:{folder_id}")
+                    await event.edit(enqueue_text, buttons=get_back_keyboard())
+            
+            elif drv_action == "asgn":
+                folder_id = parts[2] if len(parts) > 2 else ""
+                await event.answer("🎯 Selecione o agente técnico...", alert=False)
+                await event.edit(
+                    "🎯 **ATRIBUIR ESTUDO A AGENTE**\n\n"
+                    "Selecione o agente técnico que deve estudar este conteúdo.\n\n"
+                    "⚠️ _Gestores (Helena, Ricardo, Camila) não executam — apenas delegam._",
+                    buttons=get_agent_selector_keyboard(folder_id)
+                )
+            
+            elif drv_action == "ag":
+                agent_short = parts[2] if len(parts) > 2 else ""
+                folder_id = parts[3] if len(parts) > 3 else ""
+                agent_map = {
+                    "vance": "agent_alex_vance", "quinn": "agent_quinn_qa_7781",
+                    "claudio": "agent_claudio_cloud_4421", "bruno": "agent_claude_code",
+                    "jordan": "agent_jordan_belford_5567", "diamand": "agent_andre_diamand_1281",
+                    "jimkwik": "agent_jim_kwik", "monge": "agent_o_monge_8324",
+                    "link": "agent_link_4211", "ana": "agent_ana_5058",
+                }
+                agent_id = agent_map.get(agent_short, "")
+                if agent_id and folder_id:
+                    await event.answer(f"✅ Atribuído ao {agent_short}!", alert=True)
+                    enqueue_text = await process_telegram_command(f"/estudar drive:{folder_id} @{agent_short}")
+                    await event.edit(
+                        f"✅ **ESTUDO ATRIBUÍDO**\n\n"
+                        f"📁 Pasta: `{folder_id[:20]}...`\n"
+                        f"👤 Agente: **{agent_short.title()}**\n\n"
+                        f"{enqueue_text}",
+                        buttons=get_back_keyboard()
+                    )
+                else:
+                    await event.answer("⚠️ Agente não encontrado.", alert=True)
 
         else:
             await event.answer("Comando processado.")
@@ -796,6 +962,11 @@ Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de 
             return f"🛑 **Ação Cancelada**: {res.get('message')}"
         return f"⚠️ {res.get('message')}"
 
+    # === Relatório Diário Executivo ===
+    elif cmd_lower.startswith("/relatorio") or cmd_lower.startswith("/relatório") or "relatório do dia" in cmd_lower:
+        from orchestration.daily_report import get_daily_report_on_demand
+        return await get_daily_report_on_demand()
+
     # 8. Sincronização Forçada
     elif cmd_lower.startswith("/sync") or "sincronizar tudo" in cmd_lower:
         try:
@@ -809,6 +980,18 @@ Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de 
             return f"✅ Compilação forçada concluída! `{count}` skills de especialistas foram atualizadas."
         except Exception as e:
             return f"❌ Erro no sync: {e}"
+
+    # === Navegar Google Drive ===
+    elif cmd_lower.startswith("/drive") or "navegar drive" in cmd_lower:
+        from ingestion.drive_client import GoogleDriveManager
+        dm = GoogleDriveManager()
+        parts = cmd.split(" ", 1)
+        folder_id = parts[1].strip() if cmd_lower.startswith("/drive") and len(parts) > 1 else None
+        try:
+            folder_data = dm.explore_folder(folder_id)
+            return format_drive_folder_view(folder_data)
+        except Exception as e:
+            return f"⚠️ Erro ao acessar Google Drive: {e}\n\nVerifique se a autenticação OAuth está configurada."
 
     # 9. Listagem e Gestão de Tópicos do Fórum
     elif cmd_lower.startswith("/topicos"):
@@ -1069,5 +1252,13 @@ async def start_telegram_listener():
 
         _listener_started = True
         print("📱 Telegram Mobile Cockpit Listener iniciado com sucesso (ouvindo em Mensagens Salvas, Bot e Grupos)!", flush=True)
+
+        # Inicia o Bot do 2º Cérebro (Obsidian Ingestion) se token configurado
+        try:
+            from ingestion.brain_bot import start_brain_bot
+            asyncio.create_task(start_brain_bot())
+            logger.info("🧠 Task do Bot do 2º Cérebro despachada com sucesso!")
+        except Exception as brain_err:
+            logger.warning(f"Não foi possível iniciar o Brain Bot: {brain_err}")
     except Exception as e:
         print(f"⚠️ Não foi possível iniciar o Telegram Mobile Listener: {e}", flush=True)
