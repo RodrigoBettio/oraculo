@@ -1098,6 +1098,26 @@ class StudyQueueManager:
                     except Exception as skill_err:
                         logger.warning(f"Não foi possível recompilar SKILL.md de {item.agent_id}: {skill_err}")
 
+                    # Notificação Push no Celular via Telegram (Fim de Curso ou Marcos de Estudo)
+                    try:
+                        from ingestion.telegram_notifier import send_telegram_notification
+                        is_milestone = (current_agent.total_videos_studied % 10 == 0)
+                        if not has_other_active or is_milestone:
+                            seniority = current_agent.get_seniority_info()
+                            badge = seniority.get("badge", "🥉")
+                            rank = seniority.get("rank", "Júnior")
+                            status_title = f"🎓 {current_agent.name} Concluiu Curso!" if not has_other_active else f"⚡ {current_agent.name} Atingiu Marco de {current_agent.total_videos_studied} Aulas!"
+                            msg_body = (
+                                f"🏷️ **Curso**: {item.group_name}\n"
+                                f"📚 **Aulas Estudadas**: `{current_agent.total_videos_studied}` aulas\n"
+                                f"⏱️ **Horas Absorvidas**: `{current_agent.total_hours_studied:.1f}h`\n"
+                                f"🏅 **Senioridade**: {badge} {rank}\n"
+                                f"🧠 **Skill Compilada**: Atualizada e pronta no Antigravity!"
+                            )
+                            asyncio.create_task(send_telegram_notification(status_title, msg_body))
+                    except Exception as notif_err:
+                        logger.warning(f"Falha ao enviar notificação Telegram: {notif_err}")
+
             item.status = "completed"
             item.progress_pct = 100.0
             item.current_step_text = "Estudo concluído com sucesso!"

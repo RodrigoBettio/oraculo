@@ -42,6 +42,11 @@ app.include_router(guardian_router)
 async def startup_guardian():
     from orchestration.guardian import guardian
     guardian.start()
+    try:
+        from ingestion.telegram_notifier import start_telegram_listener
+        asyncio.create_task(start_telegram_listener())
+    except Exception as e:
+        logger.warning(f"Não foi possível iniciar o Telegram Mobile Listener: {e}")
 
 @app.on_event("shutdown")
 async def shutdown_guardian():
