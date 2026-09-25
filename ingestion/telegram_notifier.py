@@ -24,6 +24,123 @@ COCKPIT_KEYBOARD = [
     [Button.text("💬 Consultar Especialista"), Button.text("🔄 Sincronizar Tudo")]
 ]
 
+# Teclados Interativos Dinâmicos (Inline Keyboards) para BotFather / Bot API
+def get_cockpit_inline_keyboard():
+    return [
+        [
+            Button.inline("🔄 Atualizar Status", data=b"action:refresh_status"),
+            Button.inline("🚨 Relatório de GAPs", data=b"action:view_gaps")
+        ],
+        [
+            Button.inline("👥 Organograma", data=b"action:view_agents"),
+            Button.inline("⚡ Alex Vance", data=b"action:consult_vance")
+        ],
+        [
+            Button.inline("🧪 Contratar QA", data=b"action:hire_qa"),
+            Button.inline("☁️ Contratar Cloud", data=b"action:hire_cloud")
+        ],
+        [
+            Button.url("🌐 Abrir Cockpit Web", "http://34.46.39.111")
+        ]
+    ]
+
+def get_gap_report_inline_keyboard():
+    return [
+        [
+            Button.inline("🧪 Contratar Quinn QA", data=b"action:hire_qa"),
+            Button.inline("☁️ Contratar Cláudio Cloud", data=b"action:hire_cloud")
+        ],
+        [
+            Button.inline("🔄 Reavaliar GAPs", data=b"action:view_gaps"),
+            Button.inline("🔙 Menu Principal", data=b"action:main_menu")
+        ]
+    ]
+
+def get_back_keyboard():
+    return [
+        [
+            Button.inline("🔙 Menu Principal", data=b"action:main_menu"),
+            Button.url("🌐 Abrir Cockpit Web", "http://34.46.39.111")
+        ]
+    ]
+
+_bot_client = None
+
+async def get_bot_client():
+    """Retorna a instância do cliente Bot (se TELEGRAM_BOT_TOKEN estiver configurado)."""
+    global _bot_client
+    bot_token = settings.TELEGRAM_BOT_TOKEN
+    if not bot_token:
+        return None
+    try:
+        from telethon import TelegramClient
+        if _bot_client is None:
+            bot_session_path = str(settings.DATA_DIR / "oraculo_bot")
+            _bot_client = TelegramClient(bot_session_path, settings.TELEGRAM_API_ID, settings.TELEGRAM_API_HASH)
+            await _bot_client.start(bot_token=bot_token)
+            logger.info("🤖 Bot Telethon inicializado com sucesso via TELEGRAM_BOT_TOKEN!")
+        elif not _bot_client.is_connected():
+            await _bot_client.connect()
+        return _bot_client
+    except Exception as e:
+        logger.warning(f"Não foi possível conectar o Bot Telethon: {e}")
+        return None
+
+async def handle_callback_query(event):
+    """Processa toques em botões inline no Telegram com atualização in-place e toasts nativos."""
+    try:
+        data_str = event.data.decode("utf-8", errors="ignore")
+        logger.info(f"🔘 Callback Query recebida: {data_str}")
+
+        if data_str == "action:refresh_status":
+            await event.answer("🔄 Atualizando status em tempo real...", alert=False)
+            status_text = await process_telegram_command("/status")
+            await event.edit(status_text, buttons=get_cockpit_inline_keyboard())
+
+        elif data_str == "action:view_gaps":
+            await event.answer("📋 Consultando memorando de Helena Torres...", alert=False)
+            gaps_text = await process_telegram_command("/gaps")
+            await event.edit(gaps_text, buttons=get_gap_report_inline_keyboard())
+
+        elif data_str == "action:view_agents":
+            await event.answer("👥 Carregando organograma completo...", alert=False)
+            agents_text = await process_telegram_command("/agentes")
+            await event.edit(agents_text, buttons=get_back_keyboard())
+
+        elif data_str == "action:consult_vance":
+            await event.answer("⚡ Alex Vance pronto para responder!", alert=False)
+            vance_msg = (
+                "⚡ **ALEX VANCE — ARQUITETO-CHEFE DE SOFTWARE & IA**\n\n"
+                "Para consultar o Alex Vance, envie:\n"
+                "`/perguntar @vance sua dúvida técnica`\n\n"
+                "💡 _Ou mande uma mensagem no tópico do Alex no Fórum!_"
+            )
+            await event.edit(vance_msg, buttons=get_back_keyboard())
+
+        elif data_str == "action:hire_qa":
+            res = await process_telegram_command("/contratar qa")
+            await event.answer("🧪 Quinn QA contratado com sucesso!", alert=True)
+            await event.edit(res, buttons=get_cockpit_inline_keyboard())
+
+        elif data_str == "action:hire_cloud":
+            res = await process_telegram_command("/contratar cloud")
+            await event.answer("☁️ Cláudio Cloud contratado com sucesso!", alert=True)
+            await event.edit(res, buttons=get_cockpit_inline_keyboard())
+
+        elif data_str == "action:main_menu":
+            await event.answer()
+            main_text = await process_telegram_command("/menu")
+            await event.edit(main_text, buttons=get_cockpit_inline_keyboard())
+
+        else:
+            await event.answer("Comando processado.")
+    except Exception as e:
+        logger.warning(f"Erro ao processar callback query: {e}")
+        try:
+            await event.answer("⚠️ Erro ao executar ação.", alert=False)
+        except Exception:
+            pass
+
 COCKPIT_GROUP_FILE = settings.DATA_DIR / "cockpit_group.json"
 
 def get_cockpit_group_id() -> Optional[int]:
@@ -86,34 +203,46 @@ def _record_sent_id(msg):
 async def send_telegram_notification(title: str, message: str, with_keyboard: bool = True) -> bool:
     """Envia uma notificação push para as Mensagens Salvas e para o Grupo Cockpit (se configurado)."""
     try:
-        from ingestion.telegram_client import TelegramManager
-        tm = TelegramManager()
-        client = await tm.get_client()
-        if not await client.is_user_authorized():
-            logger.warning("Telegram não autorizado para envio de notificação.")
-            return False
-
         formatted_msg = (
             f"🔮 **ORÁCULO NOTIFICAÇÃO**\n\n"
             f"📌 **{title}**\n\n"
             f"{message}"
         )
 
-        # 1. Envia para o Grupo Cockpit se houver
+        sent_any = False
         group_id = get_cockpit_group_id()
-        if group_id:
-            try:
-                g_msg = await client.send_message(group_id, formatted_msg)
-                _record_sent_id(g_msg)
-            except Exception as ge:
-                logger.warning(f"Erro ao enviar notificação para grupo {group_id}: {ge}")
+        bot = await get_bot_client()
 
-        # 2. Envia também para Mensagens Salvas ("me") com teclado tátil
-        kwargs = {"buttons": COCKPIT_KEYBOARD} if with_keyboard else {}
-        me_msg = await client.send_message("me", formatted_msg, **kwargs)
-        _record_sent_id(me_msg)
+        # 1. Se o Bot estiver ativo, envia no Grupo Cockpit com botões táteis inline
+        if bot and bot.is_connected() and group_id:
+            try:
+                inline_btns = get_cockpit_inline_keyboard() if with_keyboard else None
+                g_msg = await bot.send_message(group_id, formatted_msg, buttons=inline_btns)
+                _record_sent_id(g_msg)
+                sent_any = True
+            except Exception as bge:
+                logger.warning(f"Erro ao enviar via Bot para grupo {group_id}: {bge}")
+
+        # 2. Envia via User Client para Mensagens Salvas e grupo (se bot não enviou)
+        from ingestion.telegram_client import TelegramManager
+        tm = TelegramManager()
+        client = await tm.get_client()
+        if await client.is_user_authorized():
+            if group_id and not sent_any:
+                try:
+                    g_msg = await client.send_message(group_id, formatted_msg)
+                    _record_sent_id(g_msg)
+                    sent_any = True
+                except Exception as ge:
+                    logger.warning(f"Erro ao enviar notificação para grupo {group_id}: {ge}")
+
+            kwargs = {"buttons": COCKPIT_KEYBOARD} if with_keyboard else {}
+            me_msg = await client.send_message("me", formatted_msg, **kwargs)
+            _record_sent_id(me_msg)
+            sent_any = True
+
         logger.info(f"📲 Notificação enviada para o Telegram: {title}")
-        return True
+        return sent_any
     except Exception as e:
         logger.warning(f"Erro ao enviar notificação Telegram: {e}")
         return False
@@ -180,6 +309,7 @@ async def process_telegram_command(command_text: str) -> str:
             "💬 `/perguntar @agente <dúvida>` — Consultar qualquer especialista\n"
             "🏢 `/ativar_grupo` — Vincular o grupo atual como Quartel-General Oficial\n"
             "🔄 `/sync` — Forçar compilação de todas as skills\n"
+            "🤖 `/botfather` — Guia de configuração e comandos para menu dinâmico\n"
         )
 
     # 2. Status com Barra de Progresso Visual
@@ -576,6 +706,30 @@ Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de 
         msg += "\nEnvie `/vincular_topico @agente` dentro de qualquer tópico para vincular ou reatribuir."
         return msg
 
+    # 10. Guia de Configuração e Comandos do BotFather
+    elif cmd_lower.startswith("/botfather"):
+        return (
+            "🤖 **GUIA OFICIAL DO BOTFATHER & MENU INTERATIVO**\n\n"
+            "Para ter botões táteis no chat, menus dinâmicos e atualizações sem flood:\n\n"
+            "1️⃣ Abra a conversa com o **@BotFather** no Telegram.\n"
+            "2️⃣ Envie `/newbot` e escolha o nome (ex: `Oraculo Cockpit`) e username (ex: `oraculo_cockpit_bot`).\n"
+            "3️⃣ Copie o **Token HTTP API** (ex: `123456789:ABC...`).\n"
+            "4️⃣ Cole no arquivo `.env` do projeto (`TELEGRAM_BOT_TOKEN=...`).\n"
+            "5️⃣ No **@BotFather**, envie `/setcommands`, selecione seu bot e cole a lista abaixo:\n\n"
+            "```\n"
+            "status - Visão em tempo real de workers, fila e progresso\n"
+            "agentes - Organograma estruturado de especialistas\n"
+            "gaps - Relatório executivo de TI da Helena Torres\n"
+            "contratar - Provisionar novos especialistas (QA ou Cloud)\n"
+            "estudar - Enfileirar pasta de cursos do Google Drive\n"
+            "perguntar - Consultar especialista (@helena, @vance, etc.)\n"
+            "topicos - Ver e vincular tópicos no Fórum do grupo\n"
+            "sync - Forçar compilação e sincronização de skills\n"
+            "botfather - Ver este guia de comandos do BotFather\n"
+            "```\n\n"
+            "6️⃣ Adicione o bot como Administrador no seu grupo de estudos do Telegram!"
+        )
+
     return (
         "❓ Comando não reconhecido.\n"
         "Toque em um dos botões abaixo ou envie `/ajuda` para ver o menu."
@@ -584,7 +738,7 @@ Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de 
 _listener_started = False
 
 async def start_telegram_listener():
-    """Inicia o listener de mensagens no Telegram para comandos mobile em Mensagens Salvas e Grupos."""
+    """Inicia o gateway do Telegram (Bot API com botões táteis inline e Sessão de Usuário para grupos de estudo)."""
     global _listener_started
     if _listener_started:
         return
@@ -592,23 +746,27 @@ async def start_telegram_listener():
     try:
         from ingestion.telegram_client import TelegramManager
         tm = TelegramManager()
-        client = await tm.get_client()
+        user_client = None
+        try:
+            user_client = await tm.get_client()
+        except Exception as ue:
+            logger.warning(f"Sessão de usuário do Telegram não disponível: {ue}")
 
-        if not await client.is_user_authorized():
-            logger.info("Telegram não autorizado. Listener mobile não iniciado.")
+        bot_client = await get_bot_client()
+
+        has_user_auth = user_client and await user_client.is_user_authorized()
+        if not has_user_auth and not bot_client:
+            logger.info("Telegram não autorizado e sem Bot Token configurado. Listener mobile aguardando.")
             return
 
-        @client.on(events.NewMessage())
-        async def on_incoming_telegram_message(event):
+        async def handle_message_event(event, is_bot: bool):
             txt = (event.message.message or "").strip()
             if not txt:
                 return
 
-            # Ignora mensagens já processadas ou disparadas pelo próprio robô
             if event.message.id in _sent_message_ids:
                 return
 
-            # Ignora cabeçalhos gerados pelos agentes para evitar eco recursivo
             if txt.startswith(("🔮", "🧠 [", "🤖 [", "💎 [", "👩‍💼 [", "🏗️ [", "🧘 [", "⚙️ [", "🩺 [", "📈 [", "🧪 [", "☁️ [", "📊 **", "🚨 **", "👥 **", "📍 **", "❌ Erro")):
                 return
 
@@ -636,18 +794,20 @@ async def start_telegram_listener():
                     f"📊 **Comandos de Sistema Disponíveis no Grupo**:\n"
                     f"`/status` | `/agentes` | `/gaps` | `/contratar qa` | `/estudar <link>`"
                 )
-                sent = await event.reply(welcome_group)
+                btns = get_cockpit_inline_keyboard() if is_bot else None
+                sent = await event.reply(welcome_group, buttons=btns)
                 _record_sent_id(sent)
                 return
 
-            # CASO 2: Mensagens Salvas ("me")
-            is_me = (not is_group) and (event.is_private or event.chat_id == (await client.get_me()).id)
+            # CASO 2: Mensagens Privadas (Direto com o Bot ou em Mensagens Salvas)
+            is_me = (not is_group) and (event.is_private or (has_user_auth and event.chat_id == (await user_client.get_me()).id))
             if is_me:
                 is_button = any(txt.lower() in btn.text.lower() for row in COCKPIT_KEYBOARD for btn in row)
                 if txt.startswith("/") or is_button:
-                    print(f"📱 [Mensagens Salvas] Comando recebido: {txt}", flush=True)
+                    print(f"📱 [Telegram Privado] Comando recebido: {txt}", flush=True)
                     response = await process_telegram_command(txt)
-                    sent = await event.reply(response, buttons=COCKPIT_KEYBOARD)
+                    btns = get_cockpit_inline_keyboard() if is_bot else COCKPIT_KEYBOARD
+                    sent = await event.reply(response, buttons=btns)
                     _record_sent_id(sent)
                 return
 
@@ -702,7 +862,8 @@ async def start_telegram_listener():
                 if txt.startswith("/"):
                     print(f"📱 [Telegram Grupo] Comando recebido: {txt}", flush=True)
                     response = await process_telegram_command(txt)
-                    sent = await event.reply(response)
+                    btns = get_cockpit_inline_keyboard() if (is_bot and txt.lower() in ["/status", "/menu", "/cockpit"]) else None
+                    sent = await event.reply(response, buttons=btns)
                     _record_sent_id(sent)
                     return
 
@@ -753,7 +914,27 @@ async def start_telegram_listener():
                         _record_sent_id(sent)
                         return
 
+        # Registra no Bot Client (se token configurado)
+        if bot_client:
+            @bot_client.on(events.NewMessage())
+            async def on_bot_message(evt):
+                await handle_message_event(evt, is_bot=True)
+
+            @bot_client.on(events.CallbackQuery())
+            async def on_bot_callback(evt):
+                await handle_callback_query(evt)
+
+            logger.info("🤖 Bot Telethon configurado com listeners de mensagem e botões inline!")
+
+        # Registra no User Client (se usuário autenticado)
+        if has_user_auth:
+            @user_client.on(events.NewMessage())
+            async def on_user_message(evt):
+                await handle_message_event(evt, is_bot=False)
+
+            logger.info("👤 Sessão de Usuário Telethon configurada com listeners!")
+
         _listener_started = True
-        print("📱 Telegram Mobile Cockpit Listener iniciado com sucesso (ouvindo em Mensagens Salvas e Grupos)!", flush=True)
+        print("📱 Telegram Mobile Cockpit Listener iniciado com sucesso (ouvindo em Mensagens Salvas, Bot e Grupos)!", flush=True)
     except Exception as e:
         print(f"⚠️ Não foi possível iniciar o Telegram Mobile Listener: {e}", flush=True)
