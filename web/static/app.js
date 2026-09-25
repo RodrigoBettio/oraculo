@@ -315,12 +315,19 @@ function switchTab(tab) {
     ['agents', 'study', 'oracle', 'projects', 'documents'].forEach(t => {
         const section = document.getElementById(`tab-${t}`);
         const btn = document.getElementById(`tab-btn-${t}`);
-        if (t === tab) {
-            section.classList.remove('hidden');
-            btn.className = 'tab-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow-md';
-        } else {
-            section.classList.add('hidden');
-            btn.className = 'tab-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition-all';
+        if (section) {
+            if (t === tab) {
+                section.classList.remove('hidden');
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+        if (btn) {
+            if (t === tab) {
+                btn.className = 'tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-purple-600/20';
+            } else {
+                btn.className = 'tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/[0.04] transition-all';
+            }
         }
     });
 
