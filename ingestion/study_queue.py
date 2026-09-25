@@ -58,7 +58,7 @@ class StudyQueueManager:
         self._agent_file_lock = threading.RLock()
         self._download_semaphore = asyncio.Semaphore(4)
         self._analysis_semaphore = asyncio.Semaphore(2)
-        self.is_paused: bool = True  # Inicia pausado por segurança para não sobrecarregar APIs
+        self.is_paused: bool = False  # Ativo por padrão para iniciar processamento imediato ao enfileirar
         
         self._db_lock = threading.Lock()
         self._db_path = settings.DATA_DIR / 'oraculo.db'

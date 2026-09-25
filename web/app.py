@@ -1931,6 +1931,7 @@ async def enqueue_groups_batch_route(req: EnqueueBatchGroupsRequest):
         total_enqueued.extend(items)
 
     qm.interleave_queued_items()
+    qm.is_paused = False
     qm.ensure_worker()
 
     # Salva os parâmetros da sessão para permitir recuperação rápida em caso de suspensão/reinício
