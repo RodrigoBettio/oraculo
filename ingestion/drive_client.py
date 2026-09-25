@@ -320,6 +320,158 @@ class GoogleDriveManager:
         """Compatibilidade retroativa: lista apenas vídeos/áudios da pasta."""
         return self.list_folder_contents(folder_id, course_name=course_name, theme_name=theme_name)["videos"]
 
+    def explore_folder(self, folder_id: Optional[str] = None) -> Dict[str, Any]:
+        """Navega interativamente em qualquer pasta do Google Drive a partir da pasta raiz fixa.
+        Retorna metadados da pasta atual, breadcrumbs, subpastas diretas, vídeos e arquivos complementares."""
+        if not self.service:
+            return {
+                "error": "Google Drive não conectado",
+                "current_folder": None,
+                "subfolders": [],
+                "videos": [],
+                "support_files": []
+            }
+
+        root_id = getattr(settings, "GOOGLE_DRIVE_FOLDER_ID", "1cBDvRvFL4B5TmD7oXYfcTYvlHl40GXGG")
+        if not root_id:
+            root_id = "1cBDvRvFL4B5TmD7oXYfcTYvlHl40GXGG"
+
+        target_id = folder_id.strip() if (folder_id and folder_id.strip()) else root_id
+
+        # 1. Informações da pasta atual
+        try:
+            curr = self.service.files().get(
+                fileId=target_id,
+                fields="id, name, mimeType, parents",
+                supportsAllDrives=True
+            ).execute()
+        except Exception as e:
+            logger.error(f"Erro ao buscar pasta {target_id}: {e}")
+            return {
+                "error": f"Pasta não encontrada ou sem permissão de acesso: {e}",
+                "current_folder": None,
+                "subfolders": [],
+                "videos": [],
+                "support_files": []
+            }
+
+        curr_name = curr.get("name", "Pasta")
+        parents = curr.get("parents", [])
+        parent_id = parents[0] if parents else None
+
+        # 2. Subpastas diretas
+        subfolders = self.list_subfolders(target_id)
+        module_regex = re.compile(r'^\s*(\d+|m[oó]dulo|cap[ií]tulo|aula|ebook|parte|bonus|bônus)', re.IGNORECASE)
+        enhanced_subfolders = []
+        for sf in subfolders:
+            sf_name = sf.get("name", "")
+            is_module = bool(module_regex.search(sf_name))
+            enhanced_subfolders.append({
+                "id": sf["id"],
+                "name": sf_name,
+                "created_time": sf.get("createdTime"),
+                "modified_time": sf.get("modifiedTime"),
+                "is_module_candidate": is_module
+            })
+
+        # 3. Conteúdo direto (vídeos/áudios e arquivos complementares)
+        contents = self.list_folder_contents(target_id, course_name=curr_name)
+        videos = contents.get("videos", [])
+        support_files = contents.get("support_files", [])
+
+        # 4. Indicador de se a pasta atual se comporta como um Curso / Módulo
+        is_course = len(videos) > 0 or (
+            len(enhanced_subfolders) > 0 and any(sf["is_module_candidate"] for sf in enhanced_subfolders)
+        )
+
+        # 5. Breadcrumbs automáticos
+        breadcrumbs = [{"id": target_id, "name": curr_name}]
+        try:
+            trace_id = parent_id
+            depth = 0
+            while trace_id and trace_id != root_id and depth < 6:
+                p_meta = self.service.files().get(
+                    fileId=trace_id,
+                    fields="id, name, parents",
+                    supportsAllDrives=True
+                ).execute()
+                breadcrumbs.insert(0, {"id": p_meta["id"], "name": p_meta.get("name", "Pasta")})
+                p_parents = p_meta.get("parents", [])
+                trace_id = p_parents[0] if p_parents else None
+                depth += 1
+
+            if target_id != root_id:
+                root_name = "💎 DRIVE PREMIUM"
+                try:
+                    root_meta = self.service.files().get(
+                        fileId=root_id,
+                        fields="id, name",
+                        supportsAllDrives=True
+                    ).execute()
+                    root_name = root_meta.get("name", root_name)
+                except Exception:
+                    pass
+                breadcrumbs.insert(0, {"id": root_id, "name": root_name})
+        except Exception as b_err:
+            logger.debug(f"Erro ao traçar breadcrumbs de {target_id}: {b_err}")
+
+        videos_count = len(videos)
+        studied_count = sum(1 for v in videos if v.get("is_studied"))
+        pending_count = videos_count - studied_count
+
+        return {
+            "root_folder_id": root_id,
+            "is_root": target_id == root_id,
+            "current_folder": {
+                "id": target_id,
+                "name": curr_name,
+                "parent_id": parent_id
+            },
+            "breadcrumbs": breadcrumbs,
+            "subfolders": enhanced_subfolders,
+            "videos": videos,
+            "support_files": support_files,
+            "is_course": is_course,
+            "stats": {
+                "subfolders_count": len(enhanced_subfolders),
+                "videos_count": videos_count,
+                "studied_count": studied_count,
+                "pending_count": pending_count,
+                "support_files_count": len(support_files)
+            }
+        }
+
+    def search_drive_folders(self, query_text: str, limit: int = 25) -> List[Dict[str, Any]]:
+        """Busca pastas/cursos em todo o Google Drive pelo nome com alta velocidade."""
+        if not self.service or not query_text.strip():
+            return []
+
+        clean_query = query_text.strip().replace("'", "\\'")
+        q = f"name contains '{clean_query}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+
+        try:
+            response = self.service.files().list(
+                q=q,
+                spaces='drive',
+                fields='files(id, name, createdTime, modifiedTime, parents)',
+                supportsAllDrives=True,
+                includeItemsFromAllDrives=True,
+                pageSize=limit
+            ).execute()
+
+            results = []
+            for f in response.get('files', []):
+                results.append({
+                    "id": f["id"],
+                    "name": f["name"],
+                    "modified_time": f.get("modifiedTime"),
+                    "parents": f.get("parents", [])
+                })
+            return results
+        except Exception as e:
+            logger.error(f"Erro ao buscar pastas no Google Drive ('{query_text}'): {e}")
+            return []
+
     def _inspect_course_folder(self, folder_id: str, folder_name: str, area_name: Optional[str] = None, force_refresh: bool = False) -> Dict[str, Any]:
         """Inspeciona detalhadamente uma pasta de Curso, detectando seus temas/módulos (inclusive aninhados),
         aulas em vídeo e materiais de apoio complementares."""

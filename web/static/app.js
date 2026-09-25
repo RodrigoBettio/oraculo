@@ -4646,15 +4646,32 @@ function switchModalStudySource(mode) {
     }
 }
 
-async function loadDriveStatusAndTree() {
-    const statusContainer = document.getElementById('drive-status-container');
-    const coursesList = document.getElementById('drive-courses-list');
-    if (!statusContainer) return;
+// =========================================================================
+// GOOGLE DRIVE COMPARTILHADO: NAVEGADOR INTERATIVO, BUSCA GLOBAL & ENFILEIRAMENTO
+// =========================================================================
 
-    statusContainer.innerHTML = `
-        <div class="py-4 text-center text-gray-400 text-xs flex items-center justify-center space-x-2">
-            <i data-lucide="loader-2" class="w-4 h-4 animate-spin text-purple-400"></i>
-            <span>Verificando conexão com o Google Drive...</span>
+let currentStudySourceMode = 'drive'; // 'drive' ou 'telegram'
+let driveConnectionStatus = null;
+let currentDriveFolderId = '1cBDvRvFL4B5TmD7oXYfcTYvlHl40GXGG';
+let currentDriveFolderData = null;
+let driveNavBreadcrumbs = [];
+let driveSearchDebounceTimer = null;
+let isDriveSearchActive = false;
+let driveSearchResultsList = [];
+
+function openDriveExplorerModal() {
+    openNewStudyModal();
+    switchModalStudySource('drive');
+}
+
+async function loadDriveStatusAndTree() {
+    const explorerContainer = document.getElementById('drive-explorer-container') || document.getElementById('drive-status-container');
+    if (!explorerContainer) return;
+
+    explorerContainer.innerHTML = `
+        <div class="py-6 text-center text-gray-400 text-xs flex items-center justify-center space-x-2">
+            <i data-lucide="loader-2" class="w-5 h-5 animate-spin text-purple-400"></i>
+            <span>Conectando ao Google Drive e abrindo Navegador...</span>
         </div>
     `;
     if (window.lucide) lucide.createIcons();
@@ -4663,86 +4680,441 @@ async function loadDriveStatusAndTree() {
         const res = await fetch('/api/drive/status');
         driveConnectionStatus = await res.json();
 
-        if (!driveConnectionStatus.accessible) {
-            // Exibe formulário amigável de configuração
-            renderDriveSetupBox(statusContainer, driveConnectionStatus);
-            const driveHeader = document.getElementById('drive-courses-header');
-            if (driveHeader) driveHeader.classList.add('hidden');
-            if (coursesList) coursesList.classList.add('hidden');
+        if (!driveConnectionStatus.accessible && !driveConnectionStatus.is_configured) {
+            renderDriveSetupBox(explorerContainer, driveConnectionStatus);
             return;
         }
 
-        // Renderiza card de conexão ativa com o seletor e input de link do Drive SEMPRE visíveis e fáceis de editar
-        statusContainer.innerHTML = `
-            <div class="space-y-3">
-                <div class="p-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-between">
-                    <div class="flex items-center space-x-2.5 min-w-0">
-                        <div class="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                            ✓
-                        </div>
-                        <div class="min-w-0">
-                            <div class="text-xs font-bold text-white flex items-center space-x-1.5">
-                                <span>Pasta Atual Conectada:</span>
-                                <span class="text-emerald-300 font-mono truncate">${driveConnectionStatus.root_folder_name || 'Conectada'}</span>
-                                <span class="obsidian-tag obsidian-tag-green text-[9px]">#drive-ativo</span>
-                            </div>
-                            <div class="text-[10px] text-gray-400 font-mono truncate max-w-sm">
-                                ID: ${driveConnectionStatus.root_folder_id || '-'} • ${driveConnectionStatus.user_email || driveConnectionStatus.service_account_email || 'Conectado'}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <button type="button" onclick="disconnectGoogleDrive()" class="px-2.5 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded-lg text-xs font-semibold transition-all">
-                            Desconectar
-                        </button>
-                        <button type="button" onclick="loadDriveStatusAndTree()" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition-all text-xs flex items-center space-x-1" title="Atualizar">
-                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                        </button>
-                    </div>
-                </div>
+        // Inicia a navegação interativa na pasta raiz fixa
+        await navigateDriveFolder(currentDriveFolderId || driveConnectionStatus.root_folder_id || '');
 
-                <!-- Formulário Direto para Trocar a Pasta / Link do Drive -->
-                <div class="p-3.5 rounded-2xl border border-blue-500/30 bg-[#0e131f] space-y-2.5">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-blue-300 flex items-center space-x-1.5">
-                            <span>📁</span>
-                            <span>Trocar Pasta ou Link do Google Drive:</span>
-                        </span>
-                        <span class="text-[10px] text-gray-400 font-mono">Cole qualquer link ou ID abaixo</span>
-                    </div>
+    } catch (err) {
+        explorerContainer.innerHTML = `
+            <div class="p-4 rounded-xl bg-rose-500/10 text-rose-300 border border-rose-500/30 text-xs space-y-2">
+                <div class="font-bold">Erro ao conectar ao Google Drive:</div>
+                <div class="font-mono text-[11px]">${err.message}</div>
+                <button type="button" onclick="loadDriveStatusAndTree()" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-xs font-semibold">Tentar Novamente</button>
+            </div>
+        `;
+    } finally {
+        if (window.lucide) lucide.createIcons();
+    }
+}
 
-                    <div class="space-y-1">
-                        <label class="block text-[10px] font-mono text-gray-400 uppercase font-semibold">1. Selecionar das pastas compartilhadas comigo:</label>
-                        <select id="drive-shared-folders-select" onchange="onSharedFolderSelected(this.value)" class="w-full bg-[#121620] border border-blue-500/30 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-blue-400">
-                            <option value="">-- Carregando pastas compartilhadas... --</option>
-                        </select>
-                    </div>
+async function navigateDriveFolder(folderId = '', folderName = '') {
+    const explorerContainer = document.getElementById('drive-explorer-container') || document.getElementById('drive-status-container');
+    if (!explorerContainer) return;
 
-                    <div class="space-y-1">
-                        <label class="block text-[10px] font-mono text-gray-400 uppercase font-semibold">2. Ou cole o Link ou ID de qualquer outra pasta do Drive:</label>
-                        <div class="flex items-center space-x-2">
-                            <input type="text" id="drive-setup-folder-id" placeholder="Cole o link aqui: https://drive.google.com/drive/folders/..." 
-                                class="flex-1 bg-[#121620] border border-blue-500/30 rounded-xl px-3 py-2 text-xs text-white font-mono placeholder-gray-500 focus:outline-none focus:border-blue-400"
-                                value="${driveConnectionStatus.root_folder_id || ''}">
-                            <button type="button" onclick="saveDriveQuickConfig()" id="btn-save-drive-config" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs transition-all shadow flex items-center space-x-1.5 flex-shrink-0">
-                                <i data-lucide="save" class="w-3.5 h-3.5"></i>
-                                <span>Salvar & Carregar Pasta</span>
-                            </button>
-                        </div>
-                    </div>
+    isDriveSearchActive = false;
+
+    explorerContainer.innerHTML = `
+        <div class="py-8 text-center text-gray-400 text-xs flex flex-col items-center justify-center space-y-2">
+            <i data-lucide="loader-2" class="w-5 h-5 animate-spin text-blue-400"></i>
+            <span>Explorando pasta no Drive...</span>
+        </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+
+    try {
+        const url = folderId ? `/api/drive/explore?folder_id=${encodeURIComponent(folderId)}` : '/api/drive/explore';
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        currentDriveFolderData = data;
+        currentDriveFolderId = data.current_folder?.id || folderId;
+        driveNavBreadcrumbs = data.breadcrumbs || [];
+
+        renderDriveExplorerUI(explorerContainer, data);
+
+    } catch (err) {
+        explorerContainer.innerHTML = `
+            <div class="p-4 rounded-xl bg-rose-500/10 text-rose-300 border border-rose-500/30 text-xs space-y-2">
+                <div class="font-bold">Erro ao explorar pasta:</div>
+                <div class="font-mono text-[11px]">${err.message}</div>
+                <div class="flex items-center space-x-2 pt-2">
+                    <button type="button" onclick="navigateDriveFolder('')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold">
+                        Ir para Raiz do Drive
+                    </button>
+                    <button type="button" onclick="loadDriveStatusAndTree()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-xs font-semibold">
+                        Recarregar
+                    </button>
                 </div>
             </div>
         `;
-
-        populateSharedFoldersSelect(driveConnectionStatus.root_folder_id);
-
-        // Carrega e renderiza as pastas/cursos
-        await loadDriveTree(coursesList);
-
-    } catch (err) {
-        statusContainer.innerHTML = `<div class="p-3 rounded-xl bg-rose-500/10 text-rose-300 border border-rose-500/30 text-xs">Erro ao verificar Drive: ${err.message}</div>`;
     } finally {
         if (window.lucide) lucide.createIcons();
+    }
+}
+
+function renderDriveExplorerUI(container, data) {
+    const curr = data.current_folder || {};
+    const subfolders = data.subfolders || [];
+    const videos = data.videos || [];
+    const supportFiles = data.support_files || [];
+    const breadcrumbs = data.breadcrumbs || [];
+    const isRoot = data.is_root;
+    const parentId = curr.parent_id;
+
+    // Constrói HTML dos Breadcrumbs
+    let breadcrumbsHtml = breadcrumbs.map((b, idx) => {
+        const isLast = (idx === breadcrumbs.length - 1);
+        const icon = (idx === 0) ? '💎' : '📁';
+        if (isLast) {
+            return `<span class="text-white font-bold truncate max-w-[200px]" title="${b.name}">${icon} ${b.name}</span>`;
+        }
+        return `
+            <button type="button" onclick="navigateDriveFolder('${b.id}', '${b.name.replace(/'/g, "\\'")}')" class="text-blue-400 hover:text-blue-300 hover:underline truncate max-w-[150px] transition-colors" title="${b.name}">
+                ${icon} ${b.name}
+            </button>
+            <span class="text-gray-500">/</span>
+        `;
+    }).join(' ');
+
+    // Se houver vídeos diretos ou a pasta for um curso, monta a visualização de curso
+    let courseActionHtml = '';
+    const hasMedia = videos.length > 0;
+    if (hasMedia || data.is_course) {
+        const studiedCount = videos.filter(v => v.is_studied).length;
+        const pendingCount = videos.length - studiedCount;
+        
+        let agentOptions = agentsList.map(a => `<option value="${a.id}">${a.avatar || '👨‍💻'} ${a.name} (${a.role})</option>`).join('');
+        
+        courseActionHtml = `
+            <div class="p-3.5 rounded-2xl border border-purple-500/40 bg-gradient-to-r from-purple-950/40 via-indigo-950/30 to-purple-950/40 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <div class="text-xs font-bold text-white flex items-center space-x-2">
+                            <span>🎓</span>
+                            <span>Aulas e Materiais Detectados neste Nível</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">
+                                ${videos.length} aulas • ${supportFiles.length} materiais
+                            </span>
+                        </div>
+                        <div class="text-[11px] text-gray-400 font-mono mt-0.5">
+                            Status: <span class="text-emerald-400 font-bold">${studiedCount} estudadas</span> • <span class="text-amber-400 font-bold">${pendingCount} pendentes</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <select id="drive-quick-agent-select" class="bg-gray-900 border border-purple-500/30 rounded-xl px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-purple-400">
+                            ${agentOptions}
+                        </select>
+                        <button type="button" onclick="quickEnqueueCurrentCourse('${curr.id}', '${curr.name.replace(/'/g, "\\'")}')" id="btn-quick-enqueue-course" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-purple-600/30 transition-all flex items-center space-x-1.5 flex-shrink-0 cursor-pointer">
+                            <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-300"></i>
+                            <span>⚡ Estudar com Especialista</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Lista de Aulas e Arquivos Diretos -->
+                <div class="max-h-48 overflow-y-auto space-y-1 pr-1 bg-black/30 p-2 rounded-xl border border-gray-800/60">
+                    ${videos.map((v, i) => `
+                        <div class="flex items-center justify-between py-1 px-2 rounded bg-gray-900/60 hover:bg-gray-900 text-xs">
+                            <span class="truncate text-gray-300 flex items-center space-x-1.5 max-w-md">
+                                <span class="text-[11px]">🎬</span>
+                                <span class="truncate" title="${v.name}">${v.name}</span>
+                            </span>
+                            <div class="flex items-center space-x-2 text-[10px] font-mono flex-shrink-0">
+                                <span class="text-gray-500">${v.size_mb} MB</span>
+                                <span class="${v.is_studied ? 'text-emerald-400 font-bold' : 'text-amber-400'}">${v.is_studied ? '✓ Estudada' : 'Pendente'}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${supportFiles.map(s => `
+                        <div class="flex items-center justify-between py-0.5 px-2 rounded bg-gray-900/40 text-[11px]">
+                            <span class="truncate text-purple-300 flex items-center space-x-1 max-w-md">
+                                <span>📎</span>
+                                <span class="truncate" title="${s.name}">${s.name}</span>
+                            </span>
+                            <span class="text-[10px] text-gray-500 font-mono">${s.size_mb || 0} MB</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // Grid de Subpastas
+    let subfoldersHtml = '';
+    if (subfolders.length > 0) {
+        subfoldersHtml = `
+            <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-[11px] text-gray-400 font-mono">
+                    <span>Pastas & Categorias (${subfolders.length}):</span>
+                    <span>Clique em qualquer pasta para abrir</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
+                    ${subfolders.map(sf => {
+                        const isMod = sf.is_module_candidate;
+                        const safeName = sf.name.replace(/'/g, "\\'");
+                        return `
+                            <div onclick="navigateDriveFolder('${sf.id}', '${safeName}')" class="p-2.5 rounded-xl border border-gray-800 bg-[#121620] hover:bg-[#181d2a] hover:border-blue-500/40 cursor-pointer transition-all flex items-center justify-between group">
+                                <div class="flex items-center space-x-2.5 min-w-0">
+                                    <div class="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-xs flex-shrink-0 group-hover:scale-110 transition-transform">
+                                        ${isMod ? '🎓' : '📁'}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-xs font-semibold text-gray-200 group-hover:text-blue-300 truncate" title="${sf.name}">
+                                            ${sf.name}
+                                        </div>
+                                        <div class="text-[9px] text-gray-500 font-mono">
+                                            ${isMod ? 'Módulo / Aula' : 'Pasta / Subcategoria'}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-gray-500 group-hover:text-blue-400 text-xs flex-shrink-0">
+                                    →
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    } else if (!hasMedia) {
+        subfoldersHtml = `
+            <div class="p-8 text-center text-gray-500 text-xs font-mono">
+                Pasta vazia (nenhuma subpasta ou arquivo compatível encontrado).
+            </div>
+        `;
+    }
+
+    container.innerHTML = `
+        <div class="space-y-3">
+            <!-- Barra Superior: Identidade do Drive Fixo & Status -->
+            <div class="p-2.5 rounded-2xl border border-blue-500/30 bg-[#0d111a] flex items-center justify-between">
+                <div class="flex items-center space-x-2 min-w-0">
+                    <span class="text-base">💎</span>
+                    <div class="min-w-0">
+                        <div class="text-xs font-bold text-white flex items-center space-x-1.5">
+                            <span>Navegador do Google Drive</span>
+                            <span class="obsidian-tag obsidian-tag-green text-[9px]">#drive-fixo-ativo</span>
+                        </div>
+                        <div class="text-[10px] text-gray-400 font-mono truncate">
+                            ${driveConnectionStatus?.user_email || 'rodriguinhobettiojr@gmail.com'} • Acervo Mestre dos Cursos
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-1.5 flex-shrink-0">
+                    ${!isRoot ? `
+                        <button type="button" onclick="navigateDriveFolder('${parentId || ''}')" class="px-2.5 py-1 bg-gray-800 hover:bg-gray-700 text-gray-200 hover:text-white rounded-lg text-xs font-semibold transition-all flex items-center space-x-1" title="Subir um nível">
+                            <span>⬅️</span>
+                            <span>Voltar</span>
+                        </button>
+                        <button type="button" onclick="navigateDriveFolder('')" class="px-2.5 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 rounded-lg text-xs font-semibold transition-all flex items-center space-x-1" title="Ir para o início do Drive">
+                            <span>🏠</span>
+                            <span>Raiz</span>
+                        </button>
+                    ` : ''}
+                    <button type="button" onclick="navigateDriveFolder('${curr.id || ''}')" class="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition-all text-xs" title="Atualizar pasta atual">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Barra de Busca Global no Drive -->
+            <div class="relative">
+                <i data-lucide="search" class="w-4 h-4 text-gray-500 absolute left-3 top-2.5"></i>
+                <input type="text" id="drive-global-search-input" oninput="debounceDriveSearch(this.value)" placeholder="🔍 Pesquisar qualquer curso no Drive (ex: Python, Docker, Algoritmos, Finanças, React)..."
+                    class="w-full bg-[#121620] border border-blue-500/30 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-400 font-sans">
+                <button type="button" onclick="clearDriveSearch()" id="btn-clear-drive-search" class="hidden absolute right-2.5 top-2 text-gray-500 hover:text-white text-xs">✕</button>
+            </div>
+
+            <!-- Breadcrumbs da Navegação Atual -->
+            <div class="flex items-center space-x-1.5 overflow-x-auto py-1 px-2.5 rounded-xl bg-black/30 border border-gray-800 text-[11px] font-mono text-gray-400 whitespace-nowrap">
+                <span class="text-gray-500">Caminho:</span>
+                ${breadcrumbsHtml}
+            </div>
+
+            <!-- Área de Resultados de Busca OU Conteúdo da Pasta -->
+            <div id="drive-search-results-box" class="hidden space-y-2 max-h-72 overflow-y-auto pr-1"></div>
+
+            <div id="drive-folder-body" class="space-y-3">
+                ${courseActionHtml}
+                ${subfoldersHtml}
+            </div>
+
+            <!-- Opções Avançadas Retráteis (Colar Link Manual de Outro Drive se necessário) -->
+            <div class="pt-1 border-t border-gray-800/60">
+                <button type="button" onclick="toggleDriveManualLinkBox()" class="text-[10px] text-gray-500 hover:text-gray-300 font-mono flex items-center space-x-1">
+                    <span>⚙️</span>
+                    <span>Colar link manual de outra pasta (avançado)</span>
+                    <span id="icon-manual-toggle">▼</span>
+                </button>
+                <div id="drive-manual-link-box" class="hidden pt-2 space-y-2">
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="drive-setup-folder-id" placeholder="Cole qualquer link ou ID externo aqui..." 
+                            class="flex-1 bg-[#121620] border border-gray-700 rounded-xl px-3 py-1.5 text-xs text-white font-mono placeholder-gray-500 focus:outline-none focus:border-blue-400"
+                            value="${curr.id || ''}">
+                        <button type="button" onclick="navigateDriveFolder(document.getElementById('drive-setup-folder-id').value.trim())" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold">
+                            Abrir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    if (window.lucide) lucide.createIcons();
+}
+
+function debounceDriveSearch(val) {
+    if (driveSearchDebounceTimer) clearTimeout(driveSearchDebounceTimer);
+    const clearBtn = document.getElementById('btn-clear-drive-search');
+    if (clearBtn) clearBtn.classList.toggle('hidden', !val.trim());
+
+    if (!val || val.trim().length < 2) {
+        clearDriveSearch();
+        return;
+    }
+
+    driveSearchDebounceTimer = setTimeout(() => {
+        executeDriveGlobalSearch(val.trim());
+    }, 350);
+}
+
+function clearDriveSearch() {
+    const input = document.getElementById('drive-global-search-input');
+    if (input) input.value = '';
+    const clearBtn = document.getElementById('btn-clear-drive-search');
+    if (clearBtn) clearBtn.classList.add('hidden');
+
+    const searchBox = document.getElementById('drive-search-results-box');
+    const folderBody = document.getElementById('drive-folder-body');
+    if (searchBox) {
+        searchBox.classList.add('hidden');
+        searchBox.innerHTML = '';
+    }
+    if (folderBody) folderBody.classList.remove('hidden');
+}
+
+async function executeDriveGlobalSearch(query) {
+    const searchBox = document.getElementById('drive-search-results-box');
+    const folderBody = document.getElementById('drive-folder-body');
+    if (!searchBox || !folderBody) return;
+
+    folderBody.classList.add('hidden');
+    searchBox.classList.remove('hidden');
+    searchBox.innerHTML = `
+        <div class="py-6 text-center text-gray-400 text-xs flex items-center justify-center space-x-2">
+            <i data-lucide="loader-2" class="w-4 h-4 animate-spin text-purple-400"></i>
+            <span>Pesquisando '${query}' em todo o acervo do Google Drive...</span>
+        </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+
+    try {
+        const res = await fetch(`/api/drive/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        const results = data.results || [];
+
+        if (!results.length) {
+            searchBox.innerHTML = `
+                <div class="p-6 text-center text-gray-500 text-xs font-mono">
+                    Nenhum curso ou pasta encontrado com o termo '${query}'.
+                </div>
+            `;
+            return;
+        }
+
+        searchBox.innerHTML = `
+            <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-[11px] text-purple-300 font-mono px-1">
+                    <span>Resultados da Busca (${results.length} encontrados):</span>
+                    <button type="button" onclick="clearDriveSearch()" class="text-gray-400 hover:text-white underline">Voltar para pastas</button>
+                </div>
+                <div class="grid grid-cols-1 gap-2">
+                    ${results.map(r => {
+                        const safeName = r.name.replace(/'/g, "\\'");
+                        return `
+                            <div class="p-3 rounded-xl border border-purple-500/30 bg-[#141824] hover:border-purple-400 transition-all flex items-center justify-between">
+                                <div class="flex items-center space-x-2.5 min-w-0">
+                                    <span class="text-base">🎓</span>
+                                    <div class="min-w-0">
+                                        <div class="text-xs font-bold text-white truncate" title="${r.name}">${r.name}</div>
+                                        <div class="text-[10px] text-gray-400 font-mono truncate">ID: ${r.id}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2 flex-shrink-0">
+                                    <button type="button" onclick="navigateDriveFolder('${r.id}', '${safeName}')" class="px-3 py-1.5 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/40 rounded-lg text-xs font-semibold transition-all">
+                                        📂 Abrir Pasta
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    } catch (err) {
+        searchBox.innerHTML = `<div class="p-3 text-rose-400 text-xs">Erro na busca: ${err.message}</div>`;
+    } finally {
+        if (window.lucide) lucide.createIcons();
+    }
+}
+
+function toggleDriveManualLinkBox() {
+    const box = document.getElementById('drive-manual-link-box');
+    const icon = document.getElementById('icon-manual-toggle');
+    if (!box) return;
+    const isHidden = box.classList.toggle('hidden');
+    if (icon) icon.innerText = isHidden ? '▼' : '▲';
+}
+
+async function quickEnqueueCurrentCourse(folderId, courseName) {
+    const agentSelect = document.getElementById('drive-quick-agent-select');
+    const selectedAgentId = agentSelect ? agentSelect.value : (currentChannelAgentFilter !== 'all' ? currentChannelAgentFilter : 'agent_claude_code');
+    const btn = document.getElementById('btn-quick-enqueue-course');
+
+    if (!selectedAgentId) {
+        alert('Por favor, selecione um especialista para estudar este curso.');
+        return;
+    }
+
+    const agent = agentsList.find(a => a.id === selectedAgentId);
+    const agentName = agent ? agent.name : 'Especialista';
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Enfileirando...</span>`;
+        if (window.lucide) lucide.createIcons();
+    }
+
+    try {
+        const res = await fetch('/api/drive/enqueue-course', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                folder_id: folderId,
+                course_name: courseName,
+                agent_id: selectedAgentId,
+                tier: 'audio_only',
+                only_pending: true
+            })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || data.message || 'Falha ao enfileirar curso');
+
+        alert(`✅ Sucesso! ${data.count} aulas do curso '${courseName}' foram adicionadas à esteira de ${agentName}!`);
+        
+        // Fecha o modal e atualiza a fila de estudos
+        closeNewStudyModal();
+        switchTab('study');
+        await loadStudyQueue();
+
+    } catch (err) {
+        alert(`Erro ao enfileirar curso: ${err.message}`);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<i data-lucide="zap" class="w-3.5 h-3.5 text-amber-300"></i><span>⚡ Estudar com Especialista</span>`;
+            if (window.lucide) lucide.createIcons();
+        }
     }
 }
 

@@ -789,6 +789,11 @@
                         <span>+ Programar Nova Jornada</span>
                     </button>
 
+                    <button onclick="openDriveExplorerModal()" class="px-3.5 py-2.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 text-xs font-bold flex items-center space-x-2 transition-all cursor-pointer shadow-sm" title="Navegar no acervo fixo de cursos do Google Drive">
+                        <i data-lucide="folder-search" class="w-4 h-4 text-blue-400"></i>
+                        <span>📁 Navegar no Drive</span>
+                    </button>
+
                     <button id="btn-header-resume" onclick="resumeInterruptedStudy()" class="hidden text-xs text-amber-300 hover:text-white bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3.5 py-2.5 rounded-xl flex items-center space-x-1.5 transition-all shadow-sm">
                         <i data-lucide="play-circle" class="w-4 h-4 text-amber-400"></i>
                         <span id="header-resume-label">Retomar Estudos</span>
@@ -931,30 +936,14 @@
                             </div>
                         </div>
 
-                        <!-- Painel Google Drive -->
+                        <!-- Painel Google Drive (Navegador Interativo do Drive Fixo) -->
                         <div id="modal-pane-drive" class="space-y-3">
-                            <!-- Status do Drive / Setup Box -->
-                            <div id="drive-status-container">
-                                <!-- Preenchido dinamicamente via app.js -->
+                            <div id="drive-explorer-container" class="space-y-3">
+                                <!-- Preenchido dinamicamente via app.js com Navegador do Drive, Breadcrumbs e Busca Global -->
                             </div>
-                            <!-- Header de Ações dos Cursos/Módulos do Drive -->
-                            <div id="drive-courses-header" class="space-y-2 hidden">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[11px] text-gray-400">Pastas de Cursos/Módulos no Drive:</span>
-                                    <button type="button" onclick="toggleModalSelectAllDriveCourses()" id="modal-btn-select-all-drive" class="text-[10px] font-mono text-purple-400 hover:text-purple-300 px-2.5 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition-all font-semibold cursor-pointer">
-                                        Selecionar Todos os Módulos
-                                    </button>
-                                </div>
-                                <div class="relative">
-                                    <i data-lucide="search" class="w-3.5 h-3.5 text-gray-500 absolute left-3 top-2.5"></i>
-                                    <input type="text" id="modal-drive-search" oninput="onModalDriveSearch(this.value)" placeholder="Buscar curso ou módulo no Drive..."
-                                        class="w-full bg-[#171b26] border border-[#262b3a] rounded-xl pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500 font-mono">
-                                </div>
-                            </div>
-                            <!-- Árvore de Pastas/Cursos do Drive -->
-                            <div id="drive-courses-list" class="space-y-2 max-h-56 overflow-y-auto pr-1 hidden">
-                                <!-- Preenchido dinamicamente via app.js -->
-                            </div>
+                            <div id="drive-status-container" class="hidden"></div>
+                            <div id="drive-courses-header" class="hidden"></div>
+                            <div id="drive-courses-list" class="hidden"></div>
                         </div>
 
                         <!-- Painel Telegram -->
@@ -2059,7 +2048,7 @@
     </aside>
 
     <!-- Scripts -->
-    <script src="/static/app.js?v=5.3"></script>
+    <script src="/static/app.js?v=5.4"></script>
     <script>
         lucide.createIcons();
         // Registra Service Worker para PWA Mobile

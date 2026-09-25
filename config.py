@@ -40,8 +40,8 @@ class Settings:
     STUDY_MODELS: list[str] = ["gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-flash-latest", "gemini-3.7-flash"]
     ORCHESTRATION_MODELS: list[str] = ["gemini-3.8-flash", "gemini-pro-latest", "gemini-flash-latest"]
 
-    # Google Drive
-    GOOGLE_DRIVE_FOLDER_ID: str = os.getenv("GOOGLE_DRIVE_FOLDER_ID", "")
+    # Google Drive (Master Drive fixo como padrão: 💎 DRIVE PREMIUM - MESTRE DOS CURSOS)
+    GOOGLE_DRIVE_FOLDER_ID: str = (os.getenv("GOOGLE_DRIVE_FOLDER_ID") or "1cBDvRvFL4B5TmD7oXYfcTYvlHl40GXGG").strip()
     GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE: Path = BASE_DIR / os.getenv("GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE", "credentials/google_drive_service_account.json")
     GOOGLE_DRIVE_OAUTH_FILE: Path = BASE_DIR / os.getenv("GOOGLE_DRIVE_OAUTH_FILE", "credentials/credentials.json")
     GOOGLE_DRIVE_TOKEN_FILE: Path = BASE_DIR / os.getenv("GOOGLE_DRIVE_TOKEN_FILE", "credentials/token.json")

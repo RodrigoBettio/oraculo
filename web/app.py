@@ -958,6 +958,20 @@ def get_drive_status():
     dm = GoogleDriveManager()
     return dm.get_status()
 
+@app.get("/api/drive/explore")
+def explore_drive_folder(folder_id: Optional[str] = None):
+    """Navega interativamente por pastas e arquivos do Google Drive a partir da pasta raiz fixa."""
+    from ingestion.drive_client import GoogleDriveManager
+    dm = GoogleDriveManager()
+    return dm.explore_folder(folder_id)
+
+@app.get("/api/drive/search")
+def search_drive_folders_route(q: str = "", limit: int = 25):
+    """Busca pastas/cursos em todo o Google Drive pelo nome com alta velocidade."""
+    from ingestion.drive_client import GoogleDriveManager
+    dm = GoogleDriveManager()
+    return {"query": q, "results": dm.search_drive_folders(q, limit)}
+
 @app.get("/api/drive/tree")
 def get_drive_tree():
     """Retorna a árvore completa de Áreas, Cursos e Aulas mapeadas no Google Drive."""
