@@ -70,3 +70,35 @@ Nenhuma decisão estrutural deve ser tomada sem a consulta prévia ao especialis
 1. **Contrato de Verdade**: Este arquivo (`docs/spec.md`) e `docs/architecture.md` são a âncora de todo o projeto.
 2. **Auditoria Pré-Decisão**: Qualquer agente ou subagente atuando neste projeto deve consultar `docs/spec.md` antes de propor alterações funcionais.
 3. **Separação Estado vs. Código**: O código vive exclusivamente no GitHub; o conhecimento acumulado e banco de dados vivem em volumes protegidos fora do controle de versão.
+
+---
+
+## 5. Telegram Mobile Cockpit & Mesa Redonda Multi-Agente
+
+A interação móvel com o ecossistema ocorre via Telegram através de dois canais complementares:
+
+1. **Mensagens Salvas ("me") — Cockpit de Controle Pessoal**:
+   - Teclado tátil persistente com 6 botões de acesso rápido:
+     - `[📊 Status & Fila]` — Barra de progresso visual (`▰▰▰▰▰▰▰▱▱ 98.3%`), contagem de workers e fila.
+     - `[👥 Equipe & Agentes]` — Organograma completo categorizado (horas reais vs gestores).
+     - `[🚨 Relatório de GAPs]` — Diagnóstico executivo de defasagens intelectuais da equipe técnica.
+     - `[📁 Estudar Curso]` — Enfileiramento remoto de cursos do Google Drive.
+     - `[💬 Consultar Especialista]` — Ajuda e sintaxe para diálogos individuais.
+     - `[🔄 Sincronizar Tudo]` — Força re-sincronização de skills.
+
+2. **Grupo Telegram — Mesa Redonda dos Especialistas ("Quartel-General")**:
+   - Ativação simplificada: Enviar `/ativar_grupo` em qualquer grupo para vinculá-lo como o QG oficial.
+   - **Roteamento de Menções (@)**: Os agentes respondem diretamente no grupo com suas respectivas personas e conhecimentos:
+     - `@link <pergunta>` ➔ Link (Especialista em LinkedIn e Autoridade)
+     - `@jordan <pergunta>` ➔ Jordan Belford (Mestre em Vendas e Fechamento)
+     - `@diamand <pergunta>` ➔ André Diamand (Metodologia Sexy Canvas)
+     - `@helena <pergunta>` ➔ Helena Torres (VP de TI: consulta Alex Vance primeiro e sintetiza com visão executiva)
+     - `@vance <pergunta>` ➔ Alex Vance (Arquiteto de Software & Engenharia)
+     - `@monge <pergunta>` ➔ O Monge (Espiritualidade e Clareza Mental)
+     - `@oraculo <pergunta>` ➔ Central Operacional do Oráculo (Visão macro)
+   - **Protocolo de Delegação Executiva**: Helena Torres **nunca** responde sobre código sozinha; ela consulta Alex Vance nos bastidores e entrega o parecer sintetizado com estratégia executiva (prazos, custos, riscos e alocação).
+   - **Auditoria de Gaps & Contratação 1-Clique**:
+     - `/gaps` gera auditoria de defasagens da equipe técnica.
+     - `/contratar qa` provisiona o agente Quinn (QA & Test Automation).
+     - `/contratar cloud` provisiona o agente Claudio (Cloud Infrastructure & DevOps).
+
