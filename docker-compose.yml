@@ -15,6 +15,7 @@ services:
     volumes:
       - ./data:/app/data
       - ./credentials:/app/credentials
+      - ./web:/app/web
     ports:
       - "8000:8000"
     healthcheck:
