@@ -20,6 +20,8 @@ services:
       - ./orchestration:/app/orchestration
       - ./models:/app/models
       - ./utils:/app/utils
+      - ./scripts:/app/scripts
+      - ./tests:/app/tests
       - ./config.py:/app/config.py
     ports:
       - "8000:8000"
