@@ -3,6 +3,8 @@ import uuid
 import logging
 import threading
 import sqlite3
+import shutil
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Dict, Any
@@ -56,8 +58,10 @@ class StudyQueueManager:
         self._worker_task: Optional[asyncio.Task] = None
         self._lock = asyncio.Lock()
         self._agent_file_lock = threading.RLock()
-        self._download_semaphore = asyncio.Semaphore(4)
-        self._analysis_semaphore = asyncio.Semaphore(2)
+        self._download_tg_semaphore = asyncio.Semaphore(getattr(settings, "MAX_TELEGRAM_WORKERS", 4))
+        self._download_drive_semaphore = asyncio.Semaphore(getattr(settings, "MAX_DRIVE_WORKERS", 16))
+        self._download_semaphore = self._download_tg_semaphore  # retrocompatibilidade
+        self._analysis_semaphore = asyncio.Semaphore(16)
         self.is_paused: bool = False  # Ativo por padrão para iniciar processamento imediato ao enfileirar
         
         self._db_lock = threading.Lock()
@@ -195,10 +199,17 @@ class StudyQueueManager:
                 self._db_update(item)
 
     @property
+    def max_telegram_workers(self) -> int:
+        return getattr(settings, "MAX_TELEGRAM_WORKERS", 4)
+
+    @property
+    def max_drive_workers(self) -> int:
+        return getattr(settings, "MAX_DRIVE_WORKERS", 16)
+
+    @property
     def max_workers(self) -> int:
-        """Calcula o teto de workers em paralelo com base no pool de chaves e configuração."""
-        configured = getattr(settings, "MAX_STUDY_WORKERS", 4)
-        return max(1, min(configured, 6))
+        """Calcula o teto total de workers em paralelo combinando as fontes ativas."""
+        return self.max_telegram_workers + self.max_drive_workers
 
     @max_workers.setter
     def max_workers(self, value: int):
@@ -649,6 +660,8 @@ class StudyQueueManager:
             "is_paused": getattr(self, "is_paused", False),
             "active_count": len(self.active_items) if not getattr(self, "is_paused", False) else 0,
             "max_workers": self.max_workers,
+            "max_telegram_workers": self.max_telegram_workers,
+            "max_drive_workers": self.max_drive_workers,
             "active_items": active_list,
             "active_item": active_list[0] if active_list else None,
             "queue_count": len(queued_items),
@@ -731,9 +744,13 @@ class StudyQueueManager:
                     break
 
 
-                available_slots = self.max_workers - len(self.active_items)
-                if available_slots > 0 and queued_items:
-                    # Distribuição balanceada e justa (Round-Robin) entre os especialistas
+                active_tg = sum(1 for it in self.active_items.values() if getattr(it, "source_type", "telegram") == "telegram")
+                active_drive = sum(1 for it in self.active_items.values() if getattr(it, "source_type", "telegram") == "google_drive")
+
+                avail_tg = max(0, self.max_telegram_workers - active_tg)
+                avail_drive = max(0, self.max_drive_workers - active_drive)
+
+                if (avail_tg > 0 or avail_drive > 0) and queued_items:
                     from collections import Counter
                     active_counts = Counter(it.agent_id for it in self.active_items.values())
 
@@ -742,31 +759,48 @@ class StudyQueueManager:
                     for it in queued_items:
                         agent_queues.setdefault(it.agent_id, []).append(it)
 
-                    # Intercala entre os agentes priorizando quem tem menos workers rodando
                     to_process = []
-                    while len(to_process) < available_slots and any(agent_queues.values()):
+                    tg_slots_left = avail_tg
+                    drive_slots_left = avail_drive
+
+                    while (tg_slots_left > 0 or drive_slots_left > 0) and any(agent_queues.values()):
                         sorted_agents = sorted(
                             [aid for aid, q in agent_queues.items() if q],
-                            key=lambda aid: (active_counts[aid], len(to_process))
+                            key=lambda aid: active_counts[aid]
                         )
                         if not sorted_agents:
                             break
+                        progress_made = False
                         for aid in sorted_agents:
-                            if len(to_process) >= available_slots:
-                                break
-                            if agent_queues[aid]:
-                                item = agent_queues[aid].pop(0)
-                                to_process.append(item)
-                                active_counts[aid] += 1
+                            queue_for_agent = agent_queues[aid]
+                            for i, candidate in enumerate(queue_for_agent):
+                                is_drive = (getattr(candidate, "source_type", "telegram") == "google_drive")
+                                if is_drive and drive_slots_left > 0:
+                                    item = queue_for_agent.pop(i)
+                                    to_process.append(item)
+                                    drive_slots_left -= 1
+                                    active_counts[aid] += 1
+                                    progress_made = True
+                                    break
+                                elif not is_drive and tg_slots_left > 0:
+                                    item = queue_for_agent.pop(i)
+                                    to_process.append(item)
+                                    tg_slots_left -= 1
+                                    active_counts[aid] += 1
+                                    progress_made = True
+                                    break
+                        if not progress_made:
+                            break
 
-                    logger.info(f"📤 Despachando {len(to_process)} aulas para workers (ativos: {len(self.active_items)}, fila: {len(queued_items)}, slots: {available_slots})")
-                    for item in to_process:
-                        item.status = "downloading"
-                        item.current_step_text = "Iniciando download..."
-                        self._db_update(item)
-                        self.active_items[item.id] = item
-                        asyncio.create_task(run_worker(item, worker_counter))
-                        worker_counter += 1
+                    if to_process:
+                        logger.info(f"📤 Despachando {len(to_process)} aulas (Telegram: {avail_tg - tg_slots_left}/{self.max_telegram_workers}, Drive: {avail_drive - drive_slots_left}/{self.max_drive_workers})")
+                        for item in to_process:
+                            item.status = "downloading"
+                            item.current_step_text = "Iniciando download..."
+                            self._db_update(item)
+                            self.active_items[item.id] = item
+                            asyncio.create_task(run_worker(item, worker_counter))
+                            worker_counter += 1
 
                 await asyncio.sleep(0.8)
         except Exception as e:
@@ -809,7 +843,7 @@ class StudyQueueManager:
                 course_video_dir.mkdir(parents=True, exist_ok=True)
                 target_file_path = course_video_dir / item.file_name
 
-                async with self._download_semaphore:
+                async with self._download_drive_semaphore:
                     video_path = await asyncio.to_thread(
                         dm.download_file,
                         file_id=item.drive_file_id,
@@ -819,7 +853,7 @@ class StudyQueueManager:
             else:
                 tg = TelegramManager()
                 group_video_dir = settings.VIDEOS_DIR / item.group_name
-                async with self._download_semaphore:
+                async with self._download_tg_semaphore:
                     video_path = await tg.download_video(
                         group_id=item.group_id,
                         message_id=item.message_id,

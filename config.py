@@ -31,8 +31,10 @@ class Settings:
             keys = [self.GEMINI_API_KEY.strip()]
         return keys
 
-    # Configuração de Concorrência de Treinamento (modo ideal: 4 workers na VM e2-standard-4)
-    MAX_STUDY_WORKERS: int = int(os.getenv("MAX_STUDY_WORKERS", "4"))
+    # Concorrência Assimétrica por Fonte (Dual-Engine: Drive em alta vazão na nuvem, Telegram seguro anti-flood)
+    MAX_TELEGRAM_WORKERS: int = int(os.getenv("MAX_TELEGRAM_WORKERS", "4"))
+    MAX_DRIVE_WORKERS: int = int(os.getenv("MAX_DRIVE_WORKERS", "16"))
+    MAX_STUDY_WORKERS: int = int(os.getenv("MAX_STUDY_WORKERS", "20"))
 
     # Modelos Oficiais de Produção (com fallback resiliente de alta velocidade)
     STUDY_MODELS: list[str] = ["gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-flash-latest", "gemini-3.7-flash"]
