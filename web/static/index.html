@@ -937,6 +937,20 @@
                             <div id="drive-status-container">
                                 <!-- Preenchido dinamicamente via app.js -->
                             </div>
+                            <!-- Header de Ações dos Cursos/Módulos do Drive -->
+                            <div id="drive-courses-header" class="space-y-2 hidden">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] text-gray-400">Pastas de Cursos/Módulos no Drive:</span>
+                                    <button type="button" onclick="toggleModalSelectAllDriveCourses()" id="modal-btn-select-all-drive" class="text-[10px] font-mono text-purple-400 hover:text-purple-300 px-2.5 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition-all font-semibold cursor-pointer">
+                                        Selecionar Todos os Módulos
+                                    </button>
+                                </div>
+                                <div class="relative">
+                                    <i data-lucide="search" class="w-3.5 h-3.5 text-gray-500 absolute left-3 top-2.5"></i>
+                                    <input type="text" id="modal-drive-search" oninput="onModalDriveSearch(this.value)" placeholder="Buscar curso ou módulo no Drive..."
+                                        class="w-full bg-[#171b26] border border-[#262b3a] rounded-xl pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500 font-mono">
+                                </div>
+                            </div>
                             <!-- Árvore de Pastas/Cursos do Drive -->
                             <div id="drive-courses-list" class="space-y-2 max-h-56 overflow-y-auto pr-1 hidden">
                                 <!-- Preenchido dinamicamente via app.js -->

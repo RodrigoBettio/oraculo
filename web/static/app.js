@@ -4606,6 +4606,7 @@ function toggleStudyDrawer() {
 let currentStudySourceMode = 'drive'; // 'drive' ou 'telegram'
 let driveConnectionStatus = null;
 let driveTreeData = null;
+let allDriveCoursesCached = [];
 
 function switchModalStudySource(mode) {
     currentStudySourceMode = mode;
@@ -4652,6 +4653,8 @@ async function loadDriveStatusAndTree() {
         if (!driveConnectionStatus.accessible) {
             // Exibe formulário amigável de configuração
             renderDriveSetupBox(statusContainer, driveConnectionStatus);
+            const driveHeader = document.getElementById('drive-courses-header');
+            if (driveHeader) driveHeader.classList.add('hidden');
             if (coursesList) coursesList.classList.add('hidden');
             return;
         }
@@ -4911,6 +4914,9 @@ async function saveDriveQuickConfig() {
 
 async function loadDriveTree(container) {
     if (!container) return;
+    const header = document.getElementById('drive-courses-header');
+    if (header) header.classList.add('hidden');
+
     container.innerHTML = `
         <div class="py-4 text-center text-gray-400 text-xs flex items-center justify-center space-x-2">
             <i data-lucide="loader-2" class="w-4 h-4 animate-spin text-purple-400"></i>
@@ -4948,59 +4954,16 @@ async function loadDriveTree(container) {
             return;
         }
 
-        container.innerHTML = allCourses.map((c, cIdx) => {
-            const themes = c.themes || [];
-            const directVideos = c.direct_videos || [];
-            const directSupport = c.direct_support_files || [];
-            const isLazy = c.lazy || (!themes.length && !directVideos.length && !directSupport.length);
-            const detailsId = `drive-course-details-${cIdx}`;
-            const safeCourseName = (c.name || '').replace(/'/g, "\\'");
+        allDriveCoursesCached = allCourses;
+        if (header) {
+            header.classList.remove('hidden');
+            const searchInput = document.getElementById('modal-drive-search');
+            if (searchInput) searchInput.value = '';
+            const btn = document.getElementById('modal-btn-select-all-drive');
+            if (btn) btn.innerText = 'Selecionar Todos os Módulos';
+        }
 
-            let themesHtml = '';
-            if (themes.length > 0) {
-                themesHtml = renderDriveThemesHtml(themes);
-            } else if (directVideos.length > 0 || directSupport.length > 0) {
-                themesHtml = renderDriveDirectContentsHtml(directVideos, directSupport);
-            }
-
-            return `
-                <div class="rounded-xl border border-[#232733] bg-[#151923] hover:border-purple-500/30 transition-all overflow-hidden">
-                    <div class="p-3 flex items-center justify-between cursor-pointer group" onclick="toggleDriveCourseAccordion('${detailsId}', '${c.id}', '${safeCourseName}', event)">
-                        <div class="flex items-center space-x-3 min-w-0">
-                            <input type="checkbox" name="modal-drive-course-cb" value="${c.id}" data-coursename="${c.name}" class="rounded text-purple-600 bg-gray-900 border-gray-700" onclick="event.stopPropagation()" onchange="updateModalSelectedCount()">
-                            <div class="min-w-0">
-                                <div class="font-bold text-white group-hover:text-purple-300 truncate flex items-center space-x-1.5 text-xs">
-                                    <span>📁</span>
-                                    <span>${c.name}</span>
-                                </div>
-                                <div id="subtitle-${detailsId}" class="text-[10px] text-gray-400 font-mono">
-                                    ${isLazy ? `${c.areaName} • Toque para ver módulos, aulas e arquivos de apoio` : `${c.areaName} • ${themes.length} temas/módulos • ${c.support_files_count || 0} arquivos de apoio • ${c.total_size_mb} MB`}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-3 flex-shrink-0">
-                            <div id="badges-${detailsId}" class="text-right font-mono">
-                                ${isLazy ? `
-                                    <div class="text-[11px] text-purple-400 font-semibold">Ver detalhes</div>
-                                ` : `
-                                    <div class="text-[11px] text-purple-300 font-bold">${c.videos_count} aulas</div>
-                                    <div class="text-[10px] ${c.pending_count > 0 ? 'text-amber-400' : 'text-emerald-400'}">
-                                        ${c.pending_count > 0 ? `${c.pending_count} pendentes` : '100% estudado'}
-                                    </div>
-                                `}
-                            </div>
-                            <button type="button" class="text-gray-400 hover:text-white p-1 rounded-lg text-xs" title="Ver temas e arquivos">
-                                <span id="icon-${detailsId}">▼</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="${detailsId}" data-loaded="${isLazy ? 'false' : 'true'}" class="hidden p-3 pt-0 border-t border-gray-800/60 space-y-2 mt-2">
-                        ${themesHtml || '<div class="text-gray-500 text-xs py-2">Carregando temas...</div>'}
-                    </div>
-                </div>
-            `;
-        }).join('');
-
+        renderDriveCoursesHtmlList(container, allCourses);
         updateModalSelectedCount();
 
     } catch (err) {
@@ -5008,6 +4971,78 @@ async function loadDriveTree(container) {
     } finally {
         if (window.lucide) lucide.createIcons();
     }
+}
+
+function renderDriveCoursesHtmlList(container, courses) {
+    if (!courses || !courses.length) {
+        container.innerHTML = `<div class="text-center py-6 text-gray-500 text-xs">Nenhum curso ou módulo encontrado com este filtro.</div>`;
+        return;
+    }
+
+    container.innerHTML = courses.map((c, cIdx) => {
+        const themes = c.themes || [];
+        const directVideos = c.direct_videos || [];
+        const directSupport = c.direct_support_files || [];
+        const isLazy = c.lazy || (!themes.length && !directVideos.length && !directSupport.length);
+        const detailsId = `drive-course-details-${cIdx}`;
+        const safeCourseName = (c.name || '').replace(/'/g, "\\'");
+
+        let themesHtml = '';
+        if (themes.length > 0) {
+            themesHtml = renderDriveThemesHtml(themes);
+        } else if (directVideos.length > 0 || directSupport.length > 0) {
+            themesHtml = renderDriveDirectContentsHtml(directVideos, directSupport);
+        }
+
+        return `
+            <div class="rounded-xl border border-[#232733] bg-[#151923] hover:border-purple-500/30 transition-all overflow-hidden">
+                <div class="p-3 flex items-center justify-between cursor-pointer group" onclick="toggleDriveCourseAccordion('${detailsId}', '${c.id}', '${safeCourseName}', event)">
+                    <div class="flex items-center space-x-3 min-w-0">
+                        <input type="checkbox" name="modal-drive-course-cb" value="${c.id}" data-coursename="${c.name}" class="rounded text-purple-600 bg-gray-900 border-gray-700" onclick="event.stopPropagation()" onchange="updateModalSelectedCount()">
+                        <div class="min-w-0">
+                            <div class="font-bold text-white group-hover:text-purple-300 truncate flex items-center space-x-1.5 text-xs">
+                                <span>📁</span>
+                                <span>${c.name}</span>
+                            </div>
+                            <div id="subtitle-${detailsId}" class="text-[10px] text-gray-400 font-mono">
+                                ${isLazy ? `${c.areaName} • Toque para ver módulos, aulas e arquivos de apoio` : `${c.areaName} • ${themes.length} temas/módulos • ${c.support_files_count || 0} arquivos de apoio • ${c.total_size_mb} MB`}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 flex-shrink-0">
+                        <div id="badges-${detailsId}" class="text-right font-mono">
+                            ${isLazy ? `
+                                <div class="text-[11px] text-purple-400 font-semibold">Ver detalhes</div>
+                            ` : `
+                                <div class="text-[11px] text-purple-300 font-bold">${c.videos_count} aulas</div>
+                                <div class="text-[10px] ${c.pending_count > 0 ? 'text-amber-400' : 'text-emerald-400'}">
+                                    ${c.pending_count > 0 ? `${c.pending_count} pendentes` : '100% estudado'}
+                                </div>
+                            `}
+                        </div>
+                        <button type="button" class="text-gray-400 hover:text-white p-1 rounded-lg text-xs" title="Ver temas e arquivos">
+                            <span id="icon-${detailsId}">▼</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="${detailsId}" data-loaded="${isLazy ? 'false' : 'true'}" class="hidden p-3 pt-0 border-t border-gray-800/60 space-y-2 mt-2">
+                    ${themesHtml || '<div class="text-gray-500 text-xs py-2">Carregando temas...</div>'}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function onModalDriveSearch(query) {
+    const container = document.getElementById('drive-courses-list');
+    if (!container || !allDriveCoursesCached) return;
+    const q = (query || '').trim().toLowerCase();
+    const filtered = allDriveCoursesCached.filter(c => 
+        !q || (c.name || '').toLowerCase().includes(q) || (c.areaName || '').toLowerCase().includes(q)
+    );
+    renderDriveCoursesHtmlList(container, filtered);
+    updateModalSelectedCount();
+    if (window.lucide) lucide.createIcons();
 }
 
 function renderDriveThemesHtml(themes) {
@@ -5201,16 +5236,39 @@ function toggleModalSelectAllChannels() {
     updateModalSelectedCount();
 }
 
+function toggleModalSelectAllDriveCourses() {
+    const checkboxes = document.querySelectorAll('input[name="modal-drive-course-cb"]');
+    if (!checkboxes.length) return;
+    const anyUnchecked = Array.from(checkboxes).some(cb => !cb.checked);
+    checkboxes.forEach(cb => cb.checked = anyUnchecked);
+    
+    const btn = document.getElementById('modal-btn-select-all-drive');
+    if (btn) btn.innerText = anyUnchecked ? 'Desmarcar Todos' : 'Selecionar Todos os Módulos';
+    updateModalSelectedCount();
+}
+
 function updateModalSelectedCount() {
     const summary = document.getElementById('modal-summary-selected');
     if (!summary) return;
 
     if (currentStudySourceMode === 'drive') {
         const checked = document.querySelectorAll('input[name="modal-drive-course-cb"]:checked');
-        summary.innerText = `${checked.length} curso(s) do Google Drive selecionado(s)`;
+        summary.innerText = `${checked.length} módulo(s)/curso(s) do Google Drive selecionado(s)`;
+        const btn = document.getElementById('modal-btn-select-all-drive');
+        const checkboxes = document.querySelectorAll('input[name="modal-drive-course-cb"]');
+        if (btn && checkboxes.length > 0) {
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            btn.innerText = allChecked ? 'Desmarcar Todos' : 'Selecionar Todos os Módulos';
+        }
     } else {
         const checked = document.querySelectorAll('input[name="modal-channel-cb"]:checked');
         summary.innerText = `${checked.length} canal(is) do Telegram selecionado(s)`;
+        const btn = document.getElementById('modal-btn-select-all');
+        const checkboxes = document.querySelectorAll('input[name="modal-channel-cb"]');
+        if (btn && checkboxes.length > 0) {
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            btn.innerText = allChecked ? 'Desmarcar Todos' : 'Selecionar Todos';
+        }
     }
 }
 
