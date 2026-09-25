@@ -20,6 +20,15 @@ from orchestration.manager_sync import sync_all_managers_mappings
 
 app = FastAPI(title="Oráculo", version="1.0.0")
 
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 from web.auth_routes import router as auth_router
 app.include_router(auth_router)
 

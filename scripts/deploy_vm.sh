@@ -53,6 +53,6 @@ echo "🛡️ Guardian SRE Status: $GUARDIAN_STATUS"
 
 echo "============================================================"
 echo "🎉 DEPLOY CONCLUÍDO COM SUCESSO!"
-echo "Acesse o painel pelo IP externo da VM:"
-echo "👉 http://$(curl -s ifconfig.me):8000"
+echo "Acesse o painel pelo IP externo da VM (Porta 80 / Nginx):"
+echo "👉 http://$(curl -s ifconfig.me)"
 echo "============================================================"
