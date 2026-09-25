@@ -25,6 +25,17 @@ data/oraculo.db
 data/oraculo.db-shm
 data/oraculo.db-wal
 
+# Estado dinâmico dos agentes e conhecimento gerado (mantido na VM / sincronizado via script)
+data/agents/
+data/processed/
+data/skills/
+data/workspaces/
+data/token_usage.json
+data/token_usage.tmp
+data/*.mp4
+data/deploy.log
+data/last_study_session.json
+
 # IDE
 .idea/
 .vscode/
