@@ -1,23 +1,31 @@
 """
-Oráculo Mobile Telegram Gateway
-Envia notificações push para o celular (via 'Mensagens Salvas' ou Bot)
-e processa comandos interativos (/status, /estudar, /agentes, /perguntar).
+Oráculo Mobile Telegram Gateway — Cockpit Supremo
+Envia notificações push para o celular (com botões de toque rápido)
+e processa comandos interativos (/status, /agentes, /gaps, /contratar, /estudar, /perguntar).
 """
 
 import asyncio
+import json
 import logging
 import re
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any, List
 
-from telethon import events
+from telethon import events, Button
 
 from config import settings
 
 logger = logging.getLogger("telegram_notifier")
 
-async def send_telegram_notification(title: str, message: str) -> bool:
-    """Envia uma notificação push para as Mensagens Salvas do Telegram do usuário."""
+# Teclado Tátil Fixo (Custom Reply Keyboard) para acesso em 1 toque no celular
+COCKPIT_KEYBOARD = [
+    [Button.text("📊 Status & Fila"), Button.text("👥 Equipe & Agentes")],
+    [Button.text("🚨 Relatório de GAPs"), Button.text("📁 Estudar Curso")],
+    [Button.text("💬 Consultar Especialista"), Button.text("🔄 Sincronizar Tudo")]
+]
+
+async def send_telegram_notification(title: str, message: str, with_keyboard: bool = True) -> bool:
+    """Envia uma notificação push para as Mensagens Salvas do Telegram do usuário com teclado tátil."""
     try:
         from ingestion.telegram_client import TelegramManager
         tm = TelegramManager()
@@ -29,10 +37,10 @@ async def send_telegram_notification(title: str, message: str) -> bool:
         formatted_msg = (
             f"🔮 **ORÁCULO NOTIFICAÇÃO**\n\n"
             f"📌 **{title}**\n\n"
-            f"{message}\n\n"
-            f"⏱️ _{asyncio.get_event_loop().time():.0f}_"
+            f"{message}"
         )
-        await client.send_message("me", formatted_msg)
+        kwargs = {"buttons": COCKPIT_KEYBOARD} if with_keyboard else {}
+        await client.send_message("me", formatted_msg, **kwargs)
         logger.info(f"📲 Notificação enviada para o Telegram: {title}")
         return True
     except Exception as e:
@@ -55,74 +63,248 @@ async def process_telegram_command(command_text: str) -> str:
     cmd = command_text.strip()
     cmd_lower = cmd.lower()
 
-    if cmd_lower in ["/start", "/ajuda", "/help"]:
+    # 1. Menu Principal & Ajuda
+    if cmd_lower in ["/start", "/ajuda", "/help", "/menu"]:
         return (
-            "🔮 **ORÁCULO MOBILE COCKPIT**\n\n"
-            "Comandos disponíveis direto do celular:\n\n"
-            "📊 `/status` — Status dos workers, fila de estudos e tokens\n"
-            "👥 `/agentes` — Lista de especialistas e horas acumuladas\n"
-            "📁 `/estudar <link_drive>` — Iniciar estudo de uma pasta do Google Drive\n"
-            "💬 `/perguntar @agente <pergunta>` — Consultar um especialista\n"
+            "🔮 **ORÁCULO MOBILE COCKPIT — PAINEL DE CONTROLE**\n\n"
+            "Olá Rodrigo! Use os botões táteis abaixo ou digite os comandos:\n\n"
+            "📊 `/status` — Visão em tempo real de workers, fila e tokens\n"
+            "👥 `/agentes` — Lista estruturada da equipe (horas reais vs gestores)\n"
+            "🚨 `/gaps` — Relatório executivo da Helena Torres (carências de QA e Cloud)\n"
+            "➕ `/contratar <qa|cloud>` — Provisionar novo especialista solicitado pela Helena\n"
+            "📁 `/estudar <link_drive>` — Enfileirar curso do Drive direto pelo celular\n"
+            "💬 `/perguntar @agente <dúvida>` — Consultar qualquer especialista\n"
             "🔄 `/sync` — Forçar compilação de todas as skills\n"
         )
 
-    elif cmd_lower.startswith("/status"):
+    # 2. Status com Barra de Progresso Visual
+    elif cmd_lower.startswith("/status") or "status & fila" in cmd_lower:
         try:
             from ingestion.study_queue import StudyQueueManager
             sq = StudyQueueManager()
             status = sq.get_status(summary_only=True)
 
-            active = len(status.get("active_items", []))
+            active_items = status.get("active_items", [])
+            active_count = len(active_items)
             total = status.get("total_items", 0)
             pending = status.get("pending_count", 0)
             completed = total - pending
 
             pct = (completed / total * 100) if total > 0 else 100.0
 
+            # Barra gráfica unicode de 20 blocos
+            filled_blocks = int((completed / total) * 20) if total > 0 else 20
+            bar = "▰" * filled_blocks + "▱" * (20 - filled_blocks)
+
             active_details = ""
-            for item in status.get("active_items", [])[:3]:
-                active_details += f"• **{item.get('agent_name', 'Agente')}**: {item.get('file_name', '')[:30]} ({item.get('progress_pct', 0):.0f}%)\n"
+            for it in active_items[:3]:
+                active_details += f"• **{it.get('agent_name', 'Agente')}**: `{it.get('file_name', '')[:28]}` ({it.get('progress_pct', 0):.0f}%)\n"
 
             msg = (
-                f"📊 **STATUS DO SISTEMA ORÁCULO**\n\n"
-                f"⚙️ **Workers Ativos**: `{active}` processando agora\n"
-                f"🎓 **Aulas Concluídas**: `{completed} / {total}` (`{pct:.1f}%`)\n"
-                f"⏳ **Restantes**: `{pending}` aulas na fila\n"
+                f"📊 **STATUS DO ECOSSISTEMA ORÁCULO**\n\n"
+                f"🎓 **Progresso Geral**: `{completed} / {total}` aulas (`{pct:.1f}%`)\n"
+                f"{bar}\n\n"
+                f"⚙️ **Workers Ativos**: `{active_count}` processando na nuvem\n"
+                f"⏳ **Aulas Restantes na Fila**: `{pending}`\n"
             )
             if active_details:
                 msg += f"\n🔥 **Em Execução Agora**:\n{active_details}"
             else:
-                msg += "\n💤 **Fila Ociosa**: Nenhum worker processando no momento."
+                msg += "\n💤 **Fila Ociosa**: Todos os estudos enfileirados foram concluídos!"
 
             return msg
         except Exception as e:
             return f"❌ Erro ao consultar status: {e}"
 
-    elif cmd_lower.startswith("/agentes"):
+    # 3. Lista de Agentes Agrupada por Papel Real
+    elif cmd_lower.startswith("/agentes") or "equipe & agentes" in cmd_lower:
         try:
             from web.app import load_all_agents
             agents = load_all_agents()
             if not agents:
                 return "ℹ️ Nenhum agente cadastrado no sistema."
 
-            msg = "👥 **ESPECIALISTAS DO ORÁCULO**\n\n"
+            trained = []
+            managers = []
+            skeletons = []
+
             for ag in agents:
+                hours = ag.get("total_hours_studied", 0.0)
+                agent_type = ag.get("agent_type", "tecnico")
+                if agent_type == "gestor":
+                    managers.append(ag)
+                elif hours > 0.5:
+                    trained.append(ag)
+                else:
+                    skeletons.append(ag)
+
+            # Ordena treinados por horas decrescentes
+            trained.sort(key=lambda x: x.get("total_hours_studied", 0.0), reverse=True)
+
+            msg = "👥 **ORGANOGRAMA DO ORÁCULO**\n\n"
+
+            msg += "🎓 **ESPECIALISTAS COM CARGA HORÁRIA REAL**:\n"
+            for ag in trained:
                 seniority = ag.get("seniority", {})
                 badge = seniority.get("badge", "🥉")
                 rank = seniority.get("rank", "Júnior")
-                msg += f"{ag.get('avatar', '🧠')} **{ag.get('name', 'Agente')}** ({ag.get('role', 'Consultor')})\n"
-                msg += f"   • Horas: `{ag.get('total_hours_studied', 0.0):.1f}h` | Aulas: `{ag.get('total_videos_studied', 0)}` | Nível: {badge} {rank}\n\n"
+                msg += f"{ag.get('avatar', '🧠')} **{ag.get('name')}** ({ag.get('role')})\n"
+                msg += f"   • `{ag.get('total_hours_studied', 0.0):.1f}h` estudadas | `{ag.get('total_videos_studied', 0)}` aulas | {badge} {rank}\n"
+
+            msg += "\n👑 **LIDERANÇA EXECUTIVA (C-LEVEL)**:\n"
+            for ag in managers:
+                msg += f"{ag.get('avatar', '👩‍💼')} **{ag.get('name')}** — {ag.get('role')}\n"
+
+            if skeletons:
+                msg += "\n🐣 **CARGOS PLANEJADOS (AGUARDANDO CURSOS NO DRIVE)**:\n"
+                for ag in skeletons:
+                    msg += f"{ag.get('avatar', '🤖')} **{ag.get('name')}** ({ag.get('role')})\n"
+
             return msg
         except Exception as e:
             return f"❌ Erro ao listar agentes: {e}"
 
-    elif cmd_lower.startswith("/estudar"):
+    # 4. Relatório de Defasagens Intelectuais da Helena Torres (Skill Gaps)
+    elif cmd_lower.startswith("/gaps") or cmd_lower.startswith("/defasagens") or "relatório de gaps" in cmd_lower:
+        try:
+            from orchestration.manager_sync import analyze_manager_skill_gaps
+            gap_data = analyze_manager_skill_gaps("gestor_tech_cto")
+            if "error" in gap_data:
+                return f"❌ Erro na análise de gaps: {gap_data['error']}"
+
+            manager_name = gap_data.get("manager_name", "Helena Torres")
+            team_status = gap_data.get("team_status", "Auditoria de equipe em andamento.")
+            gaps = gap_data.get("identified_gaps", [])
+            recs = gap_data.get("recommendations", [])
+            delegation = gap_data.get("immediate_delegation_strategy", "")
+
+            msg = (
+                f"👩‍💼 **MEMORANDO EXECUTIVO DE T.I. — SKILL GAP REPORT**\n"
+                f"**De**: {manager_name} (VP de Tecnologia & Inovação Digital)\n"
+                f"**Para**: Rodrigo Bettio Jr.\n\n"
+                f"📋 **Diagnóstico da Equipe Atual**:\n_{team_status}_\n\n"
+                f"🚨 **LACUNAS CRÍTICAS IDENTIFICADAS**:\n"
+            )
+
+            for g in gaps:
+                impact_badge = "🔴" if g.get("impact") == "Crítico" else "🟡"
+                msg += f"{impact_badge} **{g.get('gap_name')}** (Impacto: {g.get('impact')})\n"
+                msg += f"   • Motivo: {g.get('why_current_team_doesnt_cover')}\n\n"
+
+            msg += "💡 **RECOMENDAÇÕES DE CONTRATAÇÃO & ESTUDO**:\n"
+            for r in recs:
+                msg += f"• **{r.get('target_agent')}** ({r.get('action_type')})\n"
+                msg += f"  _Justificativa_: {r.get('rationale')}\n"
+                materials = ", ".join(r.get("requested_study_materials", []))
+                if materials:
+                    msg += f"  _Cursos necessários no Drive_: {materials}\n"
+
+            msg += (
+                f"\n🎯 **Estratégia Imediata de Delegação**:\n_{delegation}_\n\n"
+                f"👉 **Aprovar Contratações**:\n"
+                f"• Para contratar QA: envie `/contratar qa`\n"
+                f"• Para contratar Cloud: envie `/contratar cloud`"
+            )
+            return msg
+        except Exception as e:
+            return f"❌ Erro ao gerar relatório de gaps: {e}"
+
+    # 5. Provisionamento / Contratação de Novos Especialistas Sugeridos
+    elif cmd_lower.startswith("/contratar"):
         parts = cmd.split(maxsplit=1)
         if len(parts) < 2:
-            return "⚠️ Uso correto: `/estudar <link_do_drive_ou_folder_id>`"
+            return "⚠️ Uso correto: `/contratar qa` ou `/contratar cloud`"
+
+        role_target = parts[1].strip().lower()
+
+        if "qa" in role_target or "teste" in role_target:
+            agent_id = "agent_quinn_qa_7781"
+            agent_name = "Quinn QA"
+            role_desc = "Especialista em QA & Testes Automatizados (SDET)"
+            avatar = "🧪"
+            topics = [
+                "Test-Driven Development (TDD)",
+                "Testes Unitários e Integração com PyTest",
+                "Automação End-to-End com Playwright",
+                "Garantia de Qualidade em CI/CD",
+                "Mocks, Spies e Fixtures",
+                "Testes de Carga e Stress"
+            ]
+        elif "cloud" in role_target or "devops" in role_target or "sre" in role_target:
+            agent_id = "agent_claudio_cloud_4421"
+            agent_name = "Cláudio Cloud"
+            role_desc = "Especialista em Infraestrutura Cloud & DevOps/SRE"
+            avatar = "☁️"
+            topics = [
+                "Google Cloud Platform (GCP)",
+                "Docker & Containerização de Produção",
+                "Pipelines CI/CD & Deploy Contínuo",
+                "Kubernetes & Orquestração",
+                "Monitoramento & Observabilidade SRE",
+                "Segurança de Redes, Nginx e SSL"
+            ]
+        else:
+            return f"⚠️ Posição '{role_target}' não mapeada. Opções disponíveis: `/contratar qa` ou `/contratar cloud`."
+
+        # Salva o novo agente
+        try:
+            from web.app import save_agent
+            from models.agent import AgentProfile
+
+            out_file = settings.AGENTS_DIR / f"{agent_id}.json"
+            if out_file.exists():
+                return f"ℹ️ O especialista **{agent_name}** já foi contratado anteriormente e está ativo no organograma."
+
+            profile = AgentProfile(
+                id=agent_id,
+                name=agent_name,
+                role=role_desc,
+                avatar=avatar,
+                area_id="tech",
+                agent_type="tecnico",
+                topics_mastered=topics,
+                capabilities=["answer_questions", "generate_specs", "write_code"]
+            )
+            save_agent(profile)
+
+            # Cria pasta inicial de skill
+            skill_dir = settings.DATA_DIR / "skills" / agent_id
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            skill_file = skill_dir / "SKILL.md"
+            with open(skill_file, "w", encoding="utf-8") as sf:
+                sf.write(f"""---
+name: oraculo-{agent_name.lower().replace(' ', '-')}
+description: {role_desc}. Domina: {', '.join(topics[:4])}.
+---
+
+# Skill: {agent_name} - {role_desc}
+Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de cursos no Google Drive.
+""")
+
+            return (
+                f"🎉 **NOVO ESPECIALISTA CONTRATADO COM SUCESSO!**\n\n"
+                f"{avatar} **Nome**: {agent_name}\n"
+                f"💼 **Cargo**: {role_desc}\n"
+                f"🏢 **Área**: Tecnologia & Desenvolvimento\n"
+                f"🎯 **Tópicos Alvo**: {', '.join(topics[:3])}...\n\n"
+                f"📁 **Próximo Passo**: Coloque os cursos de {role_target.upper()} na pasta do Google Drive (`Mestre dos Cursos`) e use `/estudar` para iniciar o treinamento!"
+            )
+        except Exception as e:
+            return f"❌ Erro ao contratar especialista: {e}"
+
+    # 6. Enfileirar Estudo do Google Drive
+    elif cmd_lower.startswith("/estudar") or "estudar curso" in cmd_lower:
+        parts = cmd.split(maxsplit=1)
+        if len(parts) < 2:
+            return (
+                "📁 **ENFILEIRAR CURSO DO GOOGLE DRIVE**\n\n"
+                "Para enfileirar uma pasta do Google Drive, envie:\n"
+                "`/estudar <link_da_pasta_ou_id>`\n\n"
+                "Exemplo:\n"
+                "`/estudar https://drive.google.com/drive/folders/1MNK7q4Nj8eCIlpuzV4_2NVP7wcUQbS1R`"
+            )
 
         target = parts[1].strip()
-        # Extrai folder ID se for URL
         match = re.search(r"folders/([a-zA-Z0-9_-]+)", target)
         folder_id = match.group(1) if match else target
 
@@ -136,13 +318,12 @@ async def process_telegram_command(command_text: str) -> str:
             folder_name = details.get("current_folder", {}).get("name", "Pasta Drive")
             lessons_count = details.get("lessons_count", 0)
 
-            # Enfileira para estudo
             from ingestion.study_queue import StudyQueueManager
             sq = StudyQueueManager()
             enqueued = sq.enqueue_drive_course(
                 folder_id=folder_id,
                 course_name=folder_name,
-                agent_id="agent_alex_vance", # default ou mapeado
+                agent_id="agent_alex_vance",
                 agent_name="Alex Vance"
             )
 
@@ -156,11 +337,19 @@ async def process_telegram_command(command_text: str) -> str:
         except Exception as e:
             return f"❌ Erro ao enfileirar curso do Drive: {e}"
 
-    elif cmd_lower.startswith("/perguntar"):
-        # Formato: /perguntar @link <pergunta> ou /perguntar link <pergunta>
+    # 7. Consultar Especialista com Loop de Delegação da Helena Torres
+    elif cmd_lower.startswith("/perguntar") or "consultar especialista" in cmd_lower:
         parts = cmd.split(maxsplit=2)
         if len(parts) < 3:
-            return "⚠️ Uso correto: `/perguntar @nome_do_agente sua pergunta aqui...`\nExemplo: `/perguntar @link Como melhorar meu título?`"
+            return (
+                "💬 **CONSULTAR ESPECIALISTA**\n\n"
+                "Uso correto:\n"
+                "`/perguntar @nome_do_agente sua pergunta aqui...`\n\n"
+                "Exemplos:\n"
+                "• `/perguntar @helena Como você planeja a cobertura de testes da nossa stack?`\n"
+                "• `/perguntar @link Como melhorar meu título no LinkedIn?`\n"
+                "• `/perguntar @jordan Como quebrar a objeção de 'está caro'?`"
+            )
 
         raw_agent = parts[1].replace("@", "").strip().lower()
         question = parts[2].strip()
@@ -187,7 +376,47 @@ async def process_telegram_command(command_text: str) -> str:
             if not matched_id:
                 return f"❌ Especialista `@{raw_agent}` não encontrado. Use `/agentes` para ver os disponíveis."
 
-            # Lê a skill compilada do especialista se houver
+            client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
+            # DELEGAÇÃO HIERÁRQUICA: Se a pergunta for para Helena Torres (VP de TI)
+            if "helena" in matched_id.lower() or "gestor_tech" in matched_id.lower():
+                # 1. Helena consulta Alex Vance (Arquiteto) para embasamento técnico
+                vance_file = settings.DATA_DIR / "skills" / "agent_alex_vance" / "SKILL.md"
+                vance_skills = ""
+                if vance_file.exists():
+                    with open(vance_file, "r", encoding="utf-8") as vf:
+                        vance_skills = vf.read()[:6000]
+
+                vance_prompt = (
+                    f"Você é Alex Vance (⚡), Arquiteto-Chefe de Software & IA do Oráculo.\n"
+                    f"Sua VP de TI (Helena Torres) precisa do seu parecer técnico aprofundado para responder ao fundador Rodrigo.\n"
+                    f"BASE TÉCNICA ABSORVIDA:\n{vance_skills}\n\n"
+                    f"PERGUNTA DO RODRIGO: {question}\n\n"
+                    f"Emita seu parecer técnico de arquitetura, padrões, viabilidade e riscos de forma direta."
+                )
+                vance_resp = client.models.generate_content(
+                    model="gemini-3.8-flash",
+                    contents=vance_prompt
+                )
+                vance_opinion = vance_resp.text.strip()
+
+                # 2. Helena sintetiza com sua visão executiva
+                helena_prompt = (
+                    f"Você é Helena Torres (👩‍💼), VP de Tecnologia & Inovação Digital do Oráculo.\n"
+                    f"Você NUNCA programa ou faz trabalho braçal. Seu papel é liderança executiva, priorização e estratégia.\n"
+                    f"Você consultou seu Arquiteto-Chefe Alex Vance sobre a demanda do Rodrigo.\n\n"
+                    f"PARECER TÉCNICO DO ALEX VANCE:\n{vance_opinion}\n\n"
+                    f"PERGUNTA ORIGINAL DO RODRIGO: {question}\n\n"
+                    f"Responda ao Rodrigo iniciando informando que consultou o Alex Vance, sintetizando a solução técnica dele, "
+                    f"e acrescentando a sua recomendação executiva de liderança (prazos, riscos, alocação de equipe e próximos passos)."
+                )
+                helena_resp = client.models.generate_content(
+                    model="gemini-3.8-flash",
+                    contents=helena_prompt
+                )
+                return f"👩‍💼 **Helena Torres (VP de TI) Reporta**:\n\n{helena_resp.text.strip()}"
+
+            # CONSULTA DIRETA A ESPECIALISTA (Jordan, Link, Diamand, Monge, Vance, etc.)
             skill_file = settings.DATA_DIR / "skills" / matched_id / "SKILL.md"
             skill_context = ""
             if skill_file.exists():
@@ -200,18 +429,16 @@ async def process_telegram_command(command_text: str) -> str:
                 f"BASE DE CONHECIMENTO & REGRAS:\n{skill_context}\n\n"
                 f"DÚVIDA DO RODRIGO: {question}"
             )
-
-            client = genai.Client(api_key=settings.GEMINI_API_KEY)
             resp = client.models.generate_content(
                 model="gemini-3.8-flash",
                 contents=prompt
             )
-            ans = resp.text.strip()
-            return f"{matched_avatar} **{matched_name} Responde**:\n\n{ans}"
+            return f"{matched_avatar} **{matched_name} Responde**:\n\n{resp.text.strip()}"
         except Exception as e:
             return f"❌ Erro ao consultar especialista: {e}"
 
-    elif cmd_lower.startswith("/sync"):
+    # 8. Sincronização Forçada
+    elif cmd_lower.startswith("/sync") or "sincronizar tudo" in cmd_lower:
         try:
             from web.app import load_all_agents, compile_agent_rich_skill
             agents = load_all_agents()
@@ -226,7 +453,7 @@ async def process_telegram_command(command_text: str) -> str:
 
     return (
         "❓ Comando não reconhecido.\n"
-        "Envie `/ajuda` para ver os comandos disponíveis."
+        "Toque em um dos botões abaixo ou envie `/ajuda` para ver o menu."
     )
 
 _listener_started = False
@@ -249,11 +476,13 @@ async def start_telegram_listener():
         @client.on(events.NewMessage(chats="me"))
         async def on_saved_message(event):
             txt = (event.message.message or "").strip()
-            if txt.startswith("/"):
-                # É um comando para o Oráculo
+            # Se for comando com barra ou texto de um dos botões do teclado
+            is_button = any(txt.lower() in btn.text.lower() for row in COCKPIT_KEYBOARD for btn in row)
+            if txt.startswith("/") or is_button:
                 logger.info(f"📱 Comando recebido do celular: {txt}")
                 response = await process_telegram_command(txt)
-                await event.reply(response)
+                # Responde com o teclado persistente garantido
+                await event.reply(response, buttons=COCKPIT_KEYBOARD)
 
         _listener_started = True
         logger.info("📱 Telegram Mobile Cockpit Listener iniciado com sucesso (ouvindo em Mensagens Salvas)!")
