@@ -592,7 +592,7 @@ async def start_telegram_listener():
             if is_me:
                 is_button = any(txt.lower() in btn.text.lower() for row in COCKPIT_KEYBOARD for btn in row)
                 if txt.startswith("/") or is_button:
-                    logger.info(f"📱 Comando recebido em Mensagens Salvas: {txt}")
+                    print(f"📱 [Mensagens Salvas] Comando recebido: {txt}", flush=True)
                     response = await process_telegram_command(txt)
                     sent = await event.reply(response, buttons=COCKPIT_KEYBOARD)
                     _record_sent_id(sent)
@@ -603,7 +603,7 @@ async def start_telegram_listener():
             if is_group and is_cockpit:
                 # Comandos de barra diretos no grupo
                 if txt.startswith("/"):
-                    logger.info(f"📱 Comando de grupo recebido: {txt}")
+                    print(f"📱 [Telegram Grupo] Comando recebido: {txt}", flush=True)
                     response = await process_telegram_command(txt)
                     sent = await event.reply(response)
                     _record_sent_id(sent)
@@ -636,13 +636,13 @@ async def start_telegram_listener():
                     for trigger, aid in matched:
                         clean_q = re.sub(trigger, "", txt, flags=re.IGNORECASE).strip()
                         cmd_synth = f"/perguntar @{aid} {clean_q if clean_q else txt}"
-                        logger.info(f"👥 Roteando mensagem de grupo para @{aid}")
+                        print(f"👥 [Telegram Grupo] Roteando para @{aid}: {clean_q[:50]}", flush=True)
                         ans = await process_telegram_command(cmd_synth)
                         sent = await event.reply(ans)
                         _record_sent_id(sent)
                     return
 
         _listener_started = True
-        logger.info("📱 Telegram Mobile Cockpit Listener iniciado com sucesso (ouvindo em Mensagens Salvas e Grupos)!")
+        print("📱 Telegram Mobile Cockpit Listener iniciado com sucesso (ouvindo em Mensagens Salvas e Grupos)!", flush=True)
     except Exception as e:
-        logger.warning(f"Não foi possível iniciar o Telegram Mobile Listener: {e}")
+        print(f"⚠️ Não foi possível iniciar o Telegram Mobile Listener: {e}", flush=True)
