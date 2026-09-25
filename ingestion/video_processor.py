@@ -58,21 +58,38 @@ class VideoProcessor:
         return 0.0
 
     def extract_audio(self, video_path: Path, output_audio_path: Optional[Path] = None) -> Path:
-        """Extrai o áudio compactado em MP3 a partir do vídeo MP4 usando ffmpeg."""
+        """Extrai o áudio compactado em MP3 a partir do vídeo MP4 usando ffmpeg com tratamento robusto para streams corrompidas."""
         if not output_audio_path:
             output_audio_path = video_path.with_suffix(".mp3")
 
+        # Tentativa 1: Extração estéreo com tolerância a pacotes com erro e rematrix seguro
         cmd = [
             "ffmpeg", "-y",
+            "-err_detect", "ignore_err",
             "-i", str(video_path),
             "-vn",
+            "-ac", "2",
+            "-ar", "44100",
             "-acodec", "libmp3lame",
             "-q:a", "4",
             str(output_audio_path)
         ]
         result = subprocess.run(cmd, capture_output=True, text=True, errors="replace")
-        if result.returncode != 0:
-            raise RuntimeError(f"Erro ao extrair áudio com ffmpeg: {result.stderr}")
+        if result.returncode != 0 or not output_audio_path.exists() or output_audio_path.stat().st_size == 0:
+            # Fallback: Força mono simples sem matriz complexa de canais
+            cmd_fallback = [
+                "ffmpeg", "-y",
+                "-err_detect", "ignore_err",
+                "-i", str(video_path),
+                "-vn",
+                "-ac", "1",
+                "-acodec", "libmp3lame",
+                "-q:a", "5",
+                str(output_audio_path)
+            ]
+            result_fb = subprocess.run(cmd_fallback, capture_output=True, text=True, errors="replace")
+            if result_fb.returncode != 0:
+                raise RuntimeError(f"Erro ao extrair áudio com ffmpeg: {result.stderr}\nFallback error: {result_fb.stderr}")
         
         return output_audio_path
 
