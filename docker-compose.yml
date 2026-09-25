@@ -1,0 +1,52 @@
+# ============================================================
+# ORÁCULO - Docker Compose
+# ============================================================
+# Deploy:  docker compose up -d
+# Logs:    docker compose logs -f app
+# Update:  docker compose build && docker compose up -d
+# ============================================================
+
+services:
+  app:
+    build: .
+    container_name: oraculo-app
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./credentials:/app/credentials
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  nginx:
+    image: nginx:alpine
+    container_name: oraculo-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certbot/conf:/etc/letsencrypt:ro
+      - ./nginx/certbot/www:/var/www/certbot:ro
+      - ./web/static:/var/www/static:ro
+    depends_on:
+      app:
+        condition: service_healthy
+
+  # Certbot para certificados HTTPS (Let's Encrypt)
+  # Obter certificado: docker compose run --rm certbot certonly --webroot -w /var/www/certbot -d oraculo.seudominio.com
+  # Renovar: docker compose run --rm certbot renew
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    profiles:
+      - certbot

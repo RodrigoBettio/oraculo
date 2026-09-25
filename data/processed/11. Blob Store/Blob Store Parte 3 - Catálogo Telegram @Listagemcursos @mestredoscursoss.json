@@ -1,0 +1,33 @@
+{
+  "video_id": "Blob Store Parte 3 - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "Blob Store Parte 3 - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "11. Blob Store",
+  "telegram_message_id": 0,
+  "duration_seconds": 130.24,
+  "tier_used": "audio_only",
+  "title": "Blob Store",
+  "summary": "Esta aula finaliza a sequência sobre Blob Store, abordando diferentes tipos de Blob Store, casos de uso para armazenamento de logs em massa para data warehouses, e comparando as soluções mais populares do mercado, como AWS S3, Google Cloud Storage, Azure, Cloudflare R2 e MinIO.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "Tipos de Blob Store e Casos de Uso",
+    "Armazenamento de Logs e Data Warehouse",
+    "AWS S3 e suas Vantagens",
+    "Google Cloud Storage (GCS)",
+    "Azure Blob Storage",
+    "Cloudflare R2 e Compatibilidade com S3",
+    "MinIO para Testes Locais e Self-Hosted"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "02:04",
+      "text": "Finalizando a sequência de aulas sobre Blob Store, discutindo diferentes tipos e usos, especialmente para logs e data warehouses, além de comparar opções de mercado como AWS S3, GCS, Azure, R2 e MinIO.",
+      "visual_description": "Apresentador contextualizando os tipos de Blob Store e soluções de mercado.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# Blob Store\n\n## Resumo\nA aula encerra o módulo sobre Blob Store, detalhando cenários de uso como o armazenamento de grandes volumes de logs para ingestão em data warehouses e comparando os principais provedores de nuvem (AWS S3, Google Cloud Storage, Azure Blob Storage, Cloudflare R2 e MinIO).\n\n## Tópicos Abordados\n- Tipos de Blob Store e Casos de Uso\n- Logs em Massa e Data Warehouse\n- AWS S3 (Ecossistema, IAM, Ciclo de Vida)\n- Google Cloud Storage (GCS)\n- Azure Blob Storage\n- Cloudflare R2 (Compatibilidade S3)\n- MinIO (Solução Self-Hosted para Testes Locais)\n\n## Conclusão\nEncerramento da série de Blob Store com abertura para dúvidas nos comentários.",
+  "processed_at": "2026-09-23T17:38:03.753276Z"
+}

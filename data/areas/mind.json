@@ -1,0 +1,16 @@
+{
+  "id": "mind",
+  "name": "Mente, Foco & Super Cérebro",
+  "icon": "🧠",
+  "color": "#a855f7",
+  "description": "Leitura dinâmica, técnicas de memorização, foco inabalável e biohacking mental.",
+  "manager_agent_id": "gestor_mind_wellness",
+  "subagent_ids": [
+    "agent_jim_kwik",
+    "agent_o_monge_8324"
+  ],
+  "health_score": 100,
+  "routines_count": 0,
+  "projects_count": 0,
+  "meetings_count": 0
+}

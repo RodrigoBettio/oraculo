@@ -1,0 +1,66 @@
+{
+  "id": "agent_claude_code",
+  "name": "Bruno",
+  "role": "Engenheiro de Software S\u00eanior & Automa\u00e7\u00e3o de C\u00f3digo",
+  "avatar": "\ud83e\udd16",
+  "status": "ativo",
+  "current_task": null,
+  "area_id": "tech",
+  "agent_type": "tecnico",
+  "sources": [
+    {
+      "group_name": "Claude Code Architect - Bruno Bracaioli",
+      "videos_count": 2,
+      "hours_studied": 0.08,
+      "last_studied_at": "2026-09-15T01:10:02.594145Z",
+      "lessons": [
+        {
+          "lesson_id": "aula_04_hooks",
+          "title": "Automa\u00e7\u00e3o com Hooks no Claude Code",
+          "duration_hours": 0.05,
+          "duration_seconds": 145.0,
+          "studied_at": "2026-09-15T00:16:19.885632Z",
+          "topics": [
+            "O que s\u00e3o Hooks no Claude Code",
+            "Tipos de eventos (PreToolUse, PostToolUse, UserPromptSubmit, Stop)",
+            "Casos de uso para automa\u00e7\u00e3o (Linting, Typecheck, Seguran\u00e7a e Notifica\u00e7\u00f5es)",
+            "Configura\u00e7\u00e3o de Hooks no arquivo settings.json"
+          ]
+        },
+        {
+          "lesson_id": "video_44",
+          "title": "Configura\u00e7\u00e3o do Diret\u00f3rio /docs e Automa\u00e7\u00e3o de Documenta\u00e7\u00e3o",
+          "duration_hours": 0.03,
+          "duration_seconds": 120.896667,
+          "studied_at": "2026-09-15T01:10:02.594162Z",
+          "topics": [
+            "Cria\u00e7\u00e3o e organiza\u00e7\u00e3o do diret\u00f3rio /docs",
+            "Configura\u00e7\u00e3o de hooks para atualiza\u00e7\u00e3o cont\u00ednua de documenta\u00e7\u00e3o",
+            "Manuten\u00e7\u00e3o de contexto e mem\u00f3ria entre sess\u00f5es de IA",
+            "Produtividade e organiza\u00e7\u00e3o para transfer\u00eancia/venda de c\u00f3digo"
+          ]
+        }
+      ]
+    }
+  ],
+  "total_hours_studied": 0.08,
+  "total_videos_studied": 2,
+  "topics_mastered": [
+    "Hooks no Claude Code",
+    "PreToolUse & PostToolUse",
+    "Automa\u00e7\u00e3o Determin\u00edstica",
+    "settings.json",
+    "Cria\u00e7\u00e3o e organiza\u00e7\u00e3o do diret\u00f3rio /docs",
+    "Configura\u00e7\u00e3o de hooks para atualiza\u00e7\u00e3o cont\u00ednua de documenta\u00e7\u00e3o",
+    "Manuten\u00e7\u00e3o de contexto e mem\u00f3ria entre sess\u00f5es de IA",
+    "Produtividade e organiza\u00e7\u00e3o para transfer\u00eancia/venda de c\u00f3digo"
+  ],
+  "system_prompt": null,
+  "capabilities": [
+    "answer_questions",
+    "generate_specs",
+    "write_code"
+  ],
+  "created_at": "2026-09-15T00:16:19.885560Z",
+  "updated_at": "2026-09-15T01:10:02.594206Z"
+}

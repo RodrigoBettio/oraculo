@@ -1,0 +1,54 @@
+{
+  "video_id": "07. Event Driven - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "07. Event Driven - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "14. Conceitos Adicionais e Padrões de Arquitetura",
+  "telegram_message_id": 0,
+  "duration_seconds": 365.483,
+  "tier_used": "audio_only",
+  "title": "Event-Driven Architecture (Arquitetura Orientada a Eventos)",
+  "summary": "Nesta aula do módulo de Conceitos Adicionais e Padrões de Arquitetura, é apresentada a Arquitetura Orientada a Eventos (Event-Driven Architecture - EDA). É explicado o conceito fundamental de um evento (registro imutável de algo que aconteceu), suas principais características (assincronismo, imutabilidade e desacoplamento), e como se diferencia do modelo tradicional de Request-Response. Também são abordados exemplos práticos (sistema estilo Uber), brokers de mensageria populares (Kafka, RabbitMQ, BullMQ, AWS SQS/SNS), padrões correlatos (Pub/Sub, Event Streaming, Event Sourcing, CQRS) e os pontos positivos e negativos desta abordagem.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "O que é um Evento",
+    "Características dos Eventos (Assincronismo, Imutabilidade, Desacoplamento)",
+    "Modelo Pub/Sub e Exemplo Prático",
+    "Ferramentas de Mensageria (Kafka, RabbitMQ, BullMQ, AWS SNS/SQS)",
+    "Diferenças entre Request-Response e Event-Driven",
+    "Padrões de Event-Driven (Event Streaming, Event Sourcing, CQRS)",
+    "Vantagens e Desvantagens da Arquitetura Orientada a Eventos"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "01:18",
+      "text": "Explicação do conceito de evento como um registro de algo que aconteceu no sistema (ex: compra realizada, falha no pagamento, entrega efetuada). Apresentação das propriedades essenciais dos eventos: são assíncronos, imutáveis e desacoplados dos consumidores.",
+      "visual_description": "Exposição conceitual sobre o que é um evento em arquitetura de software.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "01:18",
+      "end_time": "03:00",
+      "text": "Exemplo ilustrativo de funcionamento no modelo Pub/Sub utilizando o cenário de solicitação de corrida no Uber. O passageiro atua como Publisher/Produtor e os motoristas como Subscribers/Consumidores. Apresentação das ferramentas de mensageria envolvidas na ponte de comunicação (Kafka, BullMQ, RabbitMQ, AWS SNS/SQS).",
+      "visual_description": "Desenho esquemático representando o modelo Pub/Sub com celular do cliente (Publisher), broker central e motoristas (Subscribers).",
+      "code_snippets": []
+    },
+    {
+      "start_time": "03:00",
+      "end_time": "04:42",
+      "text": "Comparação entre o modelo mental de Request-Response (pull de informação) e Event-Driven (push/publicação de informação). Discussão sobre baixo acoplamento e como múltiplos consumidores (Estoque, Pagamentos, Analytics) podem reagir de forma independente ao mesmo evento.",
+      "visual_description": "Esquema mostrando múltiplos sistemas consumidores (Estoque, Pagamento, Analytics) reagindo ao evento de Produto Comprado.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "04:42",
+      "end_time": "06:06",
+      "text": "Mencionados os diferentes padrões dentro do ecossistema de EDA (Pub/Sub, Event Streaming, Event Sourcing, CQRS). Lista de pontos positivos (escalabilidade, flexibilidade, tempo real) e pontos negativos (alta complexidade de infraestrutura/código, dificuldade de debug, versionamento e retrocompatibilidade de schemas).",
+      "visual_description": "Lista de prós e contras da Arquitetura Orientada a Eventos apresentada em tópicos.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# Event-Driven Architecture (Arquitetura Orientada a Eventos)\n\n## Resumo\nNesta aula, exploramos os fundamentos da **Arquitetura Orientada a Eventos (Event-Driven Architecture - EDA)**, uma das abordagens mais populares para construção de sistemas distribuídos, reativos e altamente escaláveis.\n\nCompreendemos que um **evento** representa um fato/registro de algo que aconteceu no passado (ex: `UsuarioComprouItem`, `PagamentoFalhou`). Os eventos são assíncronos, imutáveis e desacoplados de quem os consome.\n\n--- \n\n## Conceitos Chave\n\n### 1. O que é um Evento?\n- Um registro de uma ação tomada por um usuário ou detectada pelo sistema.\n- **Exemplos:**\n  - Usuário X comprou o item Y.\n  - Pagamento Z falhou no gateway Stripe.\n  - Item W foi entregue pela transportadora.\n\n### 2. Propriedades de um Evento\n- **Assíncrono:** Produtores e consumidores não precisam estar conectados ou ativos ao mesmo tempo.\n- **Imutável:** O fato ocorreu e não pode ser apagado/alterado. Se houver um erro ou reversão, emite-se um novo evento compensatório (ex: `TransacaoRevertida`).\n- **Desacoplado:** O produtor não sabe quem (ou quantos) consumidores irão processar o evento.\n\n### 3. Modelo Pub/Sub e Mensageria\n- **Publisher (Produtor):** Emite o evento na rede/broker.\n- **Subscriber (Consumidor):** Escuta e reage aos eventos de seu interesse.\n- **Brokers Famosos:** Apache Kafka, RabbitMQ, BullMQ, AWS SQS / SNS.\n\n### 4. Event-Driven vs. Request-Response\n- **Request-Response (Pull):** O cliente faz uma requisição buscando (\"puxando\") uma resposta imediata.\n- **Event-Driven (Push/Publish):** O emissor apenas publica que algo aconteceu. Os interessados reagem de forma independente.\n\n--- \n\n## Prós e Contras da EDA\n\n### Vantagens (Pontos Positivos)\n- **Altamente Escalável:** Consumidores podem ser escalados de forma independente.\n- **Baixo Acoplamento:** Adicionar ou remover novos serviços não quebra os existentes.\n- **Flexibilidade:** Excelente para processamento em tempo real (Real-time).\n- **Resiliência:** Se um consumidor falhar, outros consumidores continuam funcionando normalmente.\n\n### Desvantagens (Pontos Negativos)\n- **Complexidade Elevada:** Infraestrutura de mensageria, consistência eventual e código mais complexo.\n- **Dificuldade de Debug:** Rastrear o fluxo de uma mensagem através de múltiplos microsserviços é desafiador.\n- **Evolução de Schemas:** Exige cuidado com versionamento de dados e retrocompatibilidade para não quebrar consumidores antigos.\n\n---\n\n## Segmentos e Timestamps\n\n- **00:00 - 01:18**: Definição de evento e suas 3 características fundamentais.\n- **01:18 - 03:00**: Exemplo prático de Pub/Sub com Uber e principais ferramentas de mensageria.\n- **03:00 - 04:42**: Comparativo Request-Response vs. Event-Driven e baixo acoplamento.\n- **04:42 - 06:06**: Padrões derivados (Sourcing, CQRS), prós e contras da arquitetura.",
+  "processed_at": "2026-09-23T17:11:42.697461Z"
+}

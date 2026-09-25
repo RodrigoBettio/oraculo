@@ -1,0 +1,26 @@
+{
+  "id": "agent_jim_kwik",
+  "name": "Jim Kwik",
+  "role": "Treinador de Leitura Din\u00e2mica & Supermem\u00f3ria",
+  "avatar": "\ud83e\udde0",
+  "status": "ativo",
+  "current_task": null,
+  "area_id": "mind",
+  "agent_type": "tecnico",
+  "sources": [],
+  "total_hours_studied": 0.0,
+  "total_videos_studied": 0,
+  "topics_mastered": [
+    "Leitura R\u00e1pida",
+    "Mnem\u00f4nica",
+    "Otimiza\u00e7\u00e3o de Foco",
+    "Adapta\u00e7\u00e3o Antigravity"
+  ],
+  "system_prompt": null,
+  "capabilities": [
+    "answer_questions",
+    "study_methods"
+  ],
+  "created_at": "2026-09-15T01:02:04.861851Z",
+  "updated_at": "2026-09-15T01:02:12.902204Z"
+}

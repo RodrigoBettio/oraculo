@@ -1,0 +1,46 @@
+{
+  "video_id": "02. SLA - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "02. SLA - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "16. Requisitos e Estimativas",
+  "telegram_message_id": 0,
+  "duration_seconds": 487.633333,
+  "tier_used": "audio_only",
+  "title": "16. Requisitos e Estimativas",
+  "summary": "O vídeo aborda os conceitos de confiabilidade e resiliência em sistemas, explicando a importância da redundância, os tiers de redundância, o cálculo de uptime (os 'noves') e o impacto das falhas. Discute também a utilização de health checks e APIs gateways para garantir a alta disponibilidade, além de entrar detalhadamente no conceito de SLA (Service Level Agreement) e no esforço de engenharia necessário para atingir níveis elevados de disponibilidade, como 99.9% ou 99.99%.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "Confiabilidade e Resiliência",
+    "Redundância de Servidores e Bancos de Dados",
+    "Uptime e o conceito de 'Noves'",
+    "Health Checks e API Gateways",
+    "SLA (Service Level Agreement)",
+    "Esforço de Engenharia para alta disponibilidade"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "02:00",
+      "text": "Introdução aos conceitos de confiabilidadade e resiliência, destacando a necessidade de algum grau ou camada de redundância em sistemas para evitar falhas catastróficas.",
+      "visual_description": "Explicação teórica inicial sobre tolerância a falhas.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "02:00",
+      "end_time": "05:50",
+      "text": "Explicação dos SLAs e dos 'noves' no cálculo de uptime, detalhando o tempo máximo de indisponibilidade permitido para cada nível (99%, 99.9%, etc.).",
+      "visual_description": "Apresentação dos conceitos de 9s, uptime, downtimes e o impacto de falhas.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "05:50",
+      "end_time": "08:10",
+      "text": "Discussão sobre a necessidade de roteamento global, replicação e arquiteturas de data centers redundantes para garantir altíssima disponibilidade, evidenciando o esforço exponencial de engenharia requerido.",
+      "visual_description": "Análise aprofundada de failover, roteamento, e multi-region deployment.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# 16. Requisitos e Estimativas\n\n## Resumo\nO vídeo aborda os conceitos fundamentais de confiabilidade, resiliência e redundância em sistemas. Explica como os serviços lidam com falhas através da duplicação de componentes, replicação de bancos de dados e uso de health checks com API Gateways. A aula detalha o significado do uptime (os 'noves'), a métrica de SLA e o impacto no esforço de engenharia para mitigar downtimes e garantir alta disponibilidade.\n\n## Tópicos Principais\n- Confiabilidade e Resiliência\n- Camadas de Redundância\n- Uptime e os 'Noves' (99%, 99.9%, etc.)\n- Health Checks e API Gateways\n- Service Level Agreement (SLA)\n- Esforço de Engenharia para Alta Disponibilidade\n\n## Segmentos e Timestamps\n- **00:00 - 02:00**: Introdução aos conceitos de confiabilidade e resiliência.\n- **02:00 - 05:50**: Explicação dos SLAs, uptime e o cálculo dos 'noves'.\n- **05:50 - 08:10**: Arquiteturas de alta disponibilidade, roteamento global e esforço de engenharia.",
+  "processed_at": "2026-09-23T17:54:49.199969Z"
+}

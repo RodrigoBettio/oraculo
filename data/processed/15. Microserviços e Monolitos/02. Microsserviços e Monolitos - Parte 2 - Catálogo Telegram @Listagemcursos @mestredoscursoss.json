@@ -1,0 +1,46 @@
+{
+  "video_id": "02. Microsserviços e Monolitos - Parte 2 - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "02. Microsserviços e Monolitos - Parte 2 - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "15. Microserviços e Monolitos",
+  "telegram_message_id": 0,
+  "duration_seconds": 766.101,
+  "tier_used": "audio_only",
+  "title": "15. Microserviços e Monolitos",
+  "summary": "Uma análise detalhada sobre monolitos e microsserviços, discutindo quando escolher cada arquitetura, suas vantagens e desvantagens, padrões de comunicação, escalabilidade de equipes e o impacto dessas escolhas no design de software.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "Monolitos vs Microsserviços",
+    "Escalabilidade e Modularidade",
+    "Padrões de Comunicação (Chamadas de Rede vs Chamadas Locais)",
+    "Independência de Equipes e Deploy",
+    "Complexidade Operacional e Observabilidade",
+    "Bancos de dados compartilhados vs dedicados"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "05:20",
+      "text": "Introdução ao tema de microsserviços e monolitos. Em entrevistas de system design, há uma forte tendência de pender para microsserviços, mas é importante entender que não existem soluções inerentemente melhores ou piores. Discute-se a definição de monolito (aplicação onde a lógica principal é empacotada, distribuída e executada junta) e como microsserviços separam responsabilidades em serviços independentes com níveis e responsabilidades bem definidos.",
+      "visual_description": "Apresentação inicial sobre a comparação entre microsserviços e monolitos.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "05:20",
+      "end_time": "12:00",
+      "text": "Aprofundamento na comunicação entre serviços, escalabilidade independente, trade-offs de banco de dados (monolitos usam banco compartilhado na maioria das vezes, enquanto microsserviços tendem a ter bases dedicadas), e o impacto na estrutura organizacional e escalabilidade de equipes.",
+      "visual_description": "Explicação sobre bancos de dados e independência de serviços.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "12:00",
+      "end_time": "20:00",
+      "text": "Discussão sobre falhas, resiliência, testes end-to-end em microsserviços versus monolitos, e como a complexidade aumenta com o crescimento da arquitetura distribuída.",
+      "visual_description": "Análise de resiliência e testes em microsserviços.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# 15. Microserviços e Monolitos\n\n## Resumo\nA aula aborda a comparação conceitual e prática entre monolitos e microsserviços. Discute-se quando optar por cada abordagem, os impactos na escalabilidade de sistemas e equipes, padrões de comunicação, complexidade de deploy, testes e o gerenciamento de bancos de dados.\n\n## Tópicos Abordados\n- Monolitos vs Microsserviços\n- Escalabilidade e Modularidade\n- Padrões de Comunicação\n- Independência de Equipes\n- Complexidade Operacional e Observabilidade\n\n## Segmentos Principais\n- **00:00 - 05:20**: Introdução aos conceitos fundamentais.\n- **05:20 - 12:00**: Arquitetura de microsserviços, bancos de dados e equipes.\n- **12:00 - 20:00**: Resiliência, testes e complexidade distribuída.",
+  "processed_at": "2026-09-23T17:53:45.528600Z"
+}

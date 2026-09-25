@@ -1,0 +1,79 @@
+{
+  "video_id": "04 - Aula 4 - Plataformas para Nova Ordem Mundial",
+  "file_name": "04 - Aula 4 - Plataformas para Nova Ordem Mundial.mp4",
+  "group_name": "1º BLOCO - FIM DOS TEMPOS Princípio das dores",
+  "telegram_message_id": 0,
+  "duration_seconds": 2261.525333,
+  "tier_used": "audio_only",
+  "title": "1º BLOCO - FIM DOS TEMPOS Princípio das dores",
+  "summary": "Esta aula aborda o tema 'Fim dos Tempos e o Princípio das Dores', analisando passagens bíblicas sobre escatologia, perseguições históricas a cristãos, o sofrimento humano e a perspectiva espiritual sobre os eventos globais e pessoais. O instrutor discute o conceito de apostasia, o sofrimento dos crentes, a relação entre religiões e o impacto da pandemia e de falsas doutrinas baseadas na física e na teologia.",
+  "theme_name": null,
+  "companion_files": [
+    "01 Aula - Material - Guia de Leitura - Fim dos Tempos - Aula 1 _ Agenda 2023.pdf",
+    "02 Aula - Material - Guia de Leitura - Aula 2.pdf",
+    "03 Aula - Material - guia-de-leitura.pdf",
+    "04 Aula - Material - guia-de-leitura.pdf"
+  ],
+  "topics": [
+    "Escatologia e o Fim dos Tempos",
+    "Apostasia e Perseguição aos Cristãos",
+    "O Sofrimento Humano e o Papel da Fé",
+    "A Relação entre Religiões e Violência Histórica",
+    "Análise de Textos Bíblicos (Apocalipse, Daniel, Gênesis)",
+    "Física e Teologia: A Equivalência de Massa e Energia Aplicada ao Estudo Bíblico"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "05:20",
+      "text": "Introdução ao tema sobre o Fim dos Tempos e o princípio das dores, com discussões profundas sobre a fé inabalável dos primeiros cristãos, a interpretação das profecias bíblicas e o conceito de arrebatamento e sofrimento.",
+      "visual_description": "Apresentação inicial com introdução ao tema central da aula.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "05:20",
+      "end_time": "12:30",
+      "text": "Discussão teológica sobre a perseguição aos primeiros cristãos, mártires, a herança do cristianismo e a falta de distinção inicial entre as comunidades que geravam o verdadeiro amor e caridade.",
+      "visual_description": "Exposição teológica com referências a historiadores antigos.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "12:30",
+      "end_time": "25:00",
+      "text": "Análise de textos do Apocalipse, o papel dos mártires, a perseguição histórica e a distorção do sistema religioso ao longo dos séculos.",
+      "visual_description": "Leitura comentada de passagens do livro de Apocalipse e Atos dos Apóstolos.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "25:00",
+      "end_time": "35:00",
+      "text": "Abordagem sobre a dor, o luto, a perda de entes queridos, o suicídio e a depressão sob a ótica espiritual, e como a fé e o acolhimento familiar são fundamentais na superação desses momentos.",
+      "visual_description": "Relato pessoal e orientações práticas de apoio emocional e espiritual.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "35:00",
+      "end_time": "45:00",
+      "text": "Discussão sobre a relação entre ciência e espiritualidade, abordando a equação de Einstein (E=mc²) aplicada ao conceito de energia vital e massa espiritual.",
+      "visual_description": "Explicação conceitual relacionando física moderna com princípios espirituais.",
+      "code_snippets": [
+        {
+          "timestamp": "31:10",
+          "language": "text",
+          "code": "Energia = Massa * (Velocidade da Luz)^2\nE = m * c^2",
+          "description": null
+        }
+      ]
+    }
+  ],
+  "extracted_codes": [
+    {
+      "timestamp": "31:10",
+      "language": "text",
+      "code": "Energia = Massa * (Velocidade da Luz)^2\nE = m * c^2",
+      "description": null
+    }
+  ],
+  "full_markdown": "# 1º BLOCO - FIM DOS TEMPOS Princípio das dores\n\n## Resumo\nA aula explora passagens centrais da escatologia bíblica, focando no 'Princípio das Dores' e nos sinais do fim dos tempos. Discute-se a história dos mártires cristãos, a apostasia, o papel do sofrimento humano, a depressão e o luto, além de paralelos entre a ciência (como a equivalência de massa e energia de Einstein) e os conceitos espirituais e bíblicos.\n\n## Tópicos Principais\n- Escatologia e o Fim dos Tempos\n- Perseguições e Mártires na História\n- Sofrimento, Luto e Depressão\n- Paralelos entre Física e Teologia\n\n## Segmentos e Notas\n- **00:00 - 05:20**: Introdução geral ao tema.\n- **05:20 - 12:30**: Estudo sobre os primeiros cristãos e a fé inabalável.\n- **12:30 - 25:00**: Análise do Apocalipse e profecias.\n- **25:00 - 35:00**: Apoio emocional, luto e superação da dor.\n- **35:00 - 45:00**: Aplicação de conceitos físicos à teologia (E=mc²).",
+  "processed_at": "2026-09-23T20:01:47.085604Z"
+}

@@ -1,0 +1,47 @@
+{
+  "video_id": "04. HTTPfome e o processo cognitivo - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "04. HTTPfome e o processo cognitivo - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "07. Networking",
+  "telegram_message_id": 0,
+  "duration_seconds": 379.051,
+  "tier_used": "audio_only",
+  "title": "07. Networking: HTTP e QUIC",
+  "summary": "Nesta aula sobre HTTP e QUIC, o professor aborda o protocolo QUIC (Quick UDP Internet Connections), explicando como ele funciona construído em cima do UDP para corrigir falhas do UDP tradicional, garantindo baixa latência, alta performance e confiabilidade. Em seguida, discute-se o protocolo HTTP/3, sua utilização em cima do QUIC comparada ao HTTP/1 e HTTP/2 (que usam TCP), e detalha-se a anatomia de um request HTTP, incluindo métodos, headers, response e a natureza stateless do protocolo.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "Protocolo QUIC",
+    "HTTP/1, HTTP/2 vs HTTP/3",
+    "Anatomia de um Request HTTP",
+    "Métodos HTTP (GET, POST, PUT, PATCH, DELETE)",
+    "Headers e Body",
+    "Natureza Stateless do HTTP",
+    "Cookies, Sessions e Tokens"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "02:00",
+      "text": "Introdução ao protocolo QUIC (Quick UDP Internet Connections), explicando que ele é construído em cima do UDP, utiliza o UDP por debaixo dos panos, mas corrige falhas do UDP para garantir baixa latência, alta performance e confiabilidade.",
+      "visual_description": "Explicação teórica inicial sobre QUIC e UDP.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "02:00",
+      "end_time": "05:00",
+      "text": "Explicação do funcionamento de DNS resolution, conexão TCP/TLS handshake e o envio de requisições HTTP. Detalha-se a anatomia de um request HTTP (métodos, host, path, headers, body) e os códigos de status.",
+      "visual_description": "Explicação detalhada dos componentes de uma requisição e resposta HTTP.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "05:00",
+      "end_time": "06:18",
+      "text": "Discussão sobre o comportamento stateless do HTTP e como utilizar cookies, sessions e tokens para gerenciar o estado do usuário. Encerra com uma visão geral sobre APIs REST.",
+      "visual_description": "Conclusão da aula com tópicos sobre estado em HTTP e APIs REST.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# 07. Networking: HTTP e QUIC\n\n## Resumo\nA aula aborda o funcionamento de redes e protocolos de comunicação, focando na transição de UDP para o protocolo QUIC e como o HTTP/3 se beneficia dele. São detalhados os conceitos de requisições e respostas HTTP, headers, métodos (GET, POST, etc.) e o gerenciamento de estado (stateless) através de cookies, sessions e tokens.\n\n## Tópicos Principais\n- Protocolo QUIC (Quick UDP Internet Connections)\n- HTTP/1, HTTP/2 e HTTP/3\n- Anatomia de um Request HTTP\n- Métodos HTTP\n- Headers e Body\n- Natureza Stateless e Gerenciamento de Estado\n\n## Código e Timestamps\nNesta aula não foram exibidos blocos de código específicos de programação, mas sim a estrutura conceitual dos requests/responses e headers HTTP.",
+  "processed_at": "2026-09-23T17:26:58.307791Z"
+}

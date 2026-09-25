@@ -1,0 +1,70 @@
+{
+  "video_id": "01. Deploys - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "01. Deploys - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "17. Deploys e Escalabilidade",
+  "telegram_message_id": 0,
+  "duration_seconds": 740.267,
+  "tier_used": "audio_only",
+  "title": "17. Deploys e Escalabilidade",
+  "summary": "Nesta aula do curso '17. Deploys e Escalabilidade', são abordados os diferentes tipos de deploys, desde o manual até o automatizado, discutindo estratégias avançadas como Recreate, Rolling Deployment, Blue-Green Deployment, Canary e Shadow Deployment. O instrutor detalha as vantagens, desvantagens e complexidades de gerenciar versões paralelas (como v1 e v2) de microsserviços, garantindo compatibilidade com bancos de dados e utilizando feature flags para mitigar riscos.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "Deploy Manual vs. Automatizado",
+    "Deploy Automático com CI/CD",
+    "Estratégias de Deploy: Recreate e Rolling Deployment",
+    "Estratégia Blue-Green Deployment",
+    "Estratégia Canary",
+    "Estratégia Shadow Deployment",
+    "Compatibilidade de Banco de Dados e Microsserviços",
+    "Uso de Feature Flags",
+    "Continuous Deploys"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "03:11",
+      "text": "Introdução aos diferentes tipos de deploy, diferenciando o deploy manual do automatizado e apresentando os passos tradicionais de um deploy manual (SSH, push de arquivos, execução de NPM run ou reinicialização de servidores). Explica-se também como o deploy automático funciona através de ferramentas como GitHub Actions e regras de versionamento ou merge.",
+      "visual_description": "Explicação teórica sobre os tipos de deploy.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "03:11",
+      "end_time": "06:26",
+      "text": "Discussão sobre a distinção entre deploy e delivery, a importância de separar o deploy de código do release de funcionalidades usando feature flags, e a introdução da primeira estratégia de deploy automatizado: o Recreate.",
+      "visual_description": "Esquemas conceituais sobre deploy vs delivery e a estratégia recreate.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "06:26",
+      "end_time": "10:11",
+      "text": "Aprofundamento na estratégia de Recreate (com seu downtime inerente) e introdução ao Rolling Deployment (deploy rolante), que permite atualizar a aplicação de forma mais segura sem downtime, embora traga desafios relacionados à compatibilidade de banco de dados entre versões paralelas.",
+      "visual_description": "Explicação detalhada sobre Rolling Deployment e seus impactos.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "10:11",
+      "end_time": "14:15",
+      "text": "Análise da estratégia Blue-Green Deployment, onde duas versões rodam simultaneamente em ambientes separados, permitindo um redirecionamento seguro de tráfego e fácil rollback caso ocorram falhas.",
+      "visual_description": "Ilustração do funcionamento de Blue-Green Deployments.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "14:15",
+      "end_time": "18:25",
+      "text": "Discussão sobre estratégias de Canary e Shadow Deployment para testes em produção com menor risco, abordando a duplicação de tráfego e monitoramento de métricas.",
+      "visual_description": "Diagramas e explicações sobre Canary e Shadow Deployments.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "18:25",
+      "end_time": "22:00",
+      "text": "Considerações finais sobre Continuous Deployment, mitigação de bugs e a importância da automação e feature flags na engenharia de software moderna.",
+      "visual_description": "Resumo das melhores práticas de escalabilidade e deploy.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# 17. Deploys e Escalabilidade\n\n## Resumo\nA aula aborda de forma abrangente as diversas estratégias de deploy de software, comparando métodos manuais e automatizados baseados em CI/CD. São discutidas técnicas avançadas para minimizar o downtime e mitigar riscos em produção, incluindo:\n- **Recreate:** Substituição direta com downtime.\n- **Rolling Deployment:** Atualização gradual de instâncias.\n- **Blue-Green Deployment:** Uso de dois ambientes paralelos (v1 e v2) para troca instantânea de tráfego.\n- **Canary:** Liberação gradual de tráfego para um subconjunto de usuários.\n- **Shadow Deployment:** Duplicação de tráfego para testes em ambiente real sem afetar os usuários.\n\nTambém são abordados temas críticos como compatibilidade de bancos de dados, versionamento de microsserviços e o uso essencial de *Feature Flags* para desacoplar o deploy do release de funcionalidades.\n\n## Tópicos Abordados\n1. Deploy Manual e Automatizado\n2. Ferramentas de CI/CD (GitHub Actions)\n3. Recreate Deployment\n4. Rolling Deployment\n5. Blue-Green Deployment\n6. Canary e Shadow Deployments\n7. Compatibilidade de Banco de Dados\n8. Feature Flags e Continuous Deployment\n\n## Código e Timestamps\nNesta aula o foco principal foi conceitual e arquitetural, detalhando o funcionamento de pipelines de CI/CD e estratégias de infraestrutura.",
+  "processed_at": "2026-09-23T17:57:51.266280Z"
+}

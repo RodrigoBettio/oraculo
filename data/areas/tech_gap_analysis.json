@@ -1,0 +1,45 @@
+{
+  "manager_name": "Helena Torres",
+  "area_id": "tech",
+  "team_status": "A equipe atual apresenta uma assimetria preocupante de maturidade e foco: Alex Vance possui uma base sólida e horas investidas em arquitetura, IA e sistemas de identidade avançados, mas está sobrecarregado com múltiplos domínios críticos. Em contrapartida, Bruno possui baixíssima carga horária de estudo (0.1h), estando extremamente nichado em automação com Claude Code e documentação, deixando lacunas operacionais massivas em engenharia de software tradicional, infraestrutura de produção, QA e resiliência de sistemas.",
+  "identified_gaps": [
+    {
+      "gap_name": "Engenharia de Confiabilidade (SRE) & Infraestrutura Cloud (DevOps)",
+      "impact": "Crítico",
+      "why_current_team_doesnt_cover": "Alex foca estritamente em arquitetura de alto nível, IA e identidade, enquanto Bruno está focado apenas em automação de Claude Code e docs. Nenhum possui foco em pipelines CI/CD, monitoramento, observabilidade ou gestão de infraestrutura em nuvem."
+    },
+    {
+      "gap_name": "Garantia de Qualidade (QA), Testes Automatizados & TDD",
+      "impact": "Alto",
+      "why_current_team_doesnt_cover": "Apesar de Alex fazer code reviews rigorosos, a equipe carece de um especialista dedicado a metodologias de teste (unitários, integração, ponta a ponta) e automação de qualidade, competência essa ausente no escopo atual de Bruno."
+    },
+    {
+      "gap_name": "Desenvolvimento de Produto & Engenharia Full-Stack",
+      "impact": "Alto",
+      "why_current_team_doesnt_cover": "Falta capacidade de execução diária de features de ponta a ponta no produto. Bruno está restrito a hooks e documentação, e sobrecarregar o Arquiteto-Chefe Alex com codificação diária comprometeria a visão estratégica e de segurança."
+    }
+  ],
+  "recommendations": [
+    {
+      "action_type": "upskill_existing",
+      "target_agent": "Bruno",
+      "requested_study_materials": [
+        "Documentação oficial de Docker e Kubernetes",
+        "Livro 'Site Reliability Engineering' (Google SRE)",
+        "Guias avançados de CI/CD com GitHub Actions"
+      ],
+      "rationale": "Bruno tem baixa carga horária registrada (0.1h) e precisa urgentemente expandir seu escopo além de automações do Claude Code para assumir responsabilidades reais de engenharia, DevOps e sustentação de sistemas."
+    },
+    {
+      "action_type": "hire_new_agent",
+      "target_agent": "Especialista em QA & Engenharia de Testes (SDET)",
+      "requested_study_materials": [
+        "Livro 'Implementing Automated Software Testing' (Elfriede Dustin)",
+        "Documentação de Playwright e Jest para testes automatizados",
+        "Padrões de Test-Driven Development (TDD) por Kent Beck"
+      ],
+      "rationale": "A ausência de uma camada dedicada de testes e garantia de qualidade coloca em risco a estabilidade do produto do Oráculo, não devendo ser delegada nem ao arquiteto (Alex) nem ao engenheiro de automação de ambiente (Bruno)."
+    }
+  ],
+  "immediate_delegation_strategy": "Enquanto as lacunas não são sanadas, Alex Vance concentrará seus esforços exclusivamente em decisões arquiteturais críticas, revisões de código de alto risco e diretrizes de segurança e identidade, evitando ao máximo o desenvolvimento operacional. Bruno terá suas horas de estudo redirecionadas e assumirá a automação dos pipelines básicos de CI/CD utilizando sua expertise atual em ferramentas, enquanto a liderança avalia a contratação de um especialista em QA para mitigar o risco de qualidade."
+}

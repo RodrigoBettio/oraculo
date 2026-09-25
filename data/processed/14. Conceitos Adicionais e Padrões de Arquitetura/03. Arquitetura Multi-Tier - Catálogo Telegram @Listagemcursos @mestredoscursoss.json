@@ -1,0 +1,66 @@
+{
+  "video_id": "03. Arquitetura Multi-Tier - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "03. Arquitetura Multi-Tier - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "14. Conceitos Adicionais e Padrões de Arquitetura",
+  "telegram_message_id": 0,
+  "duration_seconds": 362.709,
+  "tier_used": "audio_only",
+  "title": "14. Conceitos Adicionais e Padrões de Arquitetura",
+  "summary": "Nesta aula, são apresentados três padrões de arquitetura que podem ser utilizados em conjunto: Multi-Tier, Event-Driven e Microsserviços. A aula aborda a definição superficial e prática de cada um, destacando suas camadas, vantagens, desvantagens e formas de comunicação, permitindo uma melhor escalabilidade, autonomia de times e separação de responsabilidades.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "Multi-Tier Architecture",
+    "Event-Driven Architecture",
+    "Microsserviços",
+    "Separação de responsabilidades",
+    "Escalabilidade e Autonomia de Times"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "00:58",
+      "text": "Nas próximas três aulas, a gente vai falar sobre três padrões de arquitetura que podem ser utilizados em conjunto. Eles não são padrões que você usa um, ou outro, ou outro. A gente pode usar os três em conjunto. Eu vou primeiro passar de maneira superficial o que que são eles. Depois nessa aula a gente vai ver Multi-Tier, na próxima aula Event Driven e na aula depois dessa, Microsserviços.",
+      "visual_description": "Introdução aos três padrões de arquitetura abordados no curso.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "00:58",
+      "end_time": "01:37",
+      "text": "Event Driven é baseado em eventos. Então você tem coisas que produzem eventos e coisas que consomem eventos. Imagina que você tem um aplicativo que recebe notificações sempre que tiver um acidente na rua. Você vai ter o produtor, que é geralmente um servidor ou o cliente de outra pessoa, que vai produzir esse evento e o seu celular, o seu aplicativo que vai consumir esse evento.",
+      "visual_description": "Explicação do padrão Event-Driven.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "01:37",
+      "end_time": "02:08",
+      "text": "Microsserviços é o ato de você pegar e fazer uma vertical inteira em cima de uma única parte do seu sistema. Então o catálogo pode ser uma única parte do nosso sistema e a gente faz um serviço inteiro, uma vertical inteira para isso, em que ele vai ter de repente a própria apresentação, a própria lógica, o próprio servidor, o próprio banco de dados.",
+      "visual_description": "Explicação de microsserviços.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "02:08",
+      "end_time": "03:03",
+      "text": "Vamos para a nossa aula de Multi-Tier. O clássico de multi-tier foi o que a gente apresentou aqui, em que na apresentação fica a GUI, graphical user interface, interface gráfica do usuário. Fica o front end, fica o UI, UX. Na camada de lógica ficam as regras de negócio. Fica a aplicação, a lógica da aplicação vai estar aqui. O orquestrador das aquisições, aquilo que vai armazenar os dados, buscar os dados, conectar com a API externa, servir o front end, é a cola do nosso sistema.",
+      "visual_description": "Detalhando a arquitetura Multi-Tier e suas camadas.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "03:03",
+      "end_time": "05:16",
+      "text": "Essa ideia de multi-tier nos dá uma vantagem muito clara, que a gente pode fazer separações claras aqui, né? E cada camada tem as suas responsabilidades. A camada de apresentação não se preocupa com como está organizado o banco de dados. Essas camadas vão se comunicar através de interfaces, ou no caso, front end se comunica com o cliente, se comunica com o servidor através de uma API geralmente, e o servidor vai se comunicar com o banco de dados também através de uma interface de um porte aqui. Isso também permite autonomia dos times.",
+      "visual_description": "Vantagens da separação em camadas, autonomia dos times e comunicação via APIs.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "05:16",
+      "end_time": "06:02",
+      "text": "Este tipo de arquitetura é bem padrãozinho, tá? Eu diria até que na web é provavelmente o padrão mais forte que você vai encontrar por aí. A gente tem uma certa escalabilidade, porque isso permite que a gente escale camadas diferentes com de maneiras diferentes. Tem uma estrutura bastante clara e o socket, né? Separation of concerns.",
+      "visual_description": "Prós e contras da arquitetura Multi-Tier e considerações sobre design de software.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# 14. Conceitos Adicionais e Padrões de Arquitetura\n\n## Resumo\nNesta aula, são introduzidos três padrões fundamentais de arquitetura de software: Multi-Tier, Event-Driven e Microsserviços. A aula detalha como utilizá-los em conjunto, focando inicialmente na arquitetura Multi-Tier e suas vantagens em termos de separação de responsabilidades, escalabilidade e autonomia de equipes.\n\n## Tópicos Abordados\n- Multi-Tier Architecture\n- Event-Driven Architecture\n- Microsserviços\n- Separação de responsabilidades (Separation of Concerns)\n- Escalabilidade e Autonomia de Times\n\n## Código e Timestamps\n- 00:00 - Introdução aos três padrões de arquitetura.\n- 00:58 - Explicação do conceito de Event-Driven.\n- 01:37 - Definição e escopo de Microsserviços.\n- 02:08 - Aprofundamento no padrão Multi-Tier, suas camadas (Apresentação, Lógica e Dados).\n- 03:03 - Vantagens de Multi-Tier, separação de responsabilidades e autonomia de times.\n- 05:16 - Prós e contras da arquitetura Multi-Tier e considerações de design.",
+  "processed_at": "2026-09-23T17:46:03.894352Z"
+}

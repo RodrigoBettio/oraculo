@@ -1,0 +1,36 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Dados volumosos (montados como volume)
+data/videos/*
+data/temp/*
+data/oraculo.db*
+
+# Sessão Telegram (montada como volume)
+*.session
+*.session-shm
+*.session-wal
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+
+# Credenciais (montadas como volume)
+credentials/
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# OS
+Thumbs.db
+.DS_Store

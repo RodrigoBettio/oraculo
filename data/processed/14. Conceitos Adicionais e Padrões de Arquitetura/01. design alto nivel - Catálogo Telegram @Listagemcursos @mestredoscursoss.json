@@ -1,0 +1,46 @@
+{
+  "video_id": "01. design alto nivel - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "01. design alto nivel - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "14. Conceitos Adicionais e Padrões de Arquitetura",
+  "telegram_message_id": 0,
+  "duration_seconds": 841.176009,
+  "tier_used": "audio_only",
+  "title": "14. Conceitos Adicionais e Padrões de Arquitetura",
+  "summary": "Nesta aula, são abordados os conceitos adicionais e padrões de arquitetura para a criação de URLs encurtadas, discutindo em detalhes o design de alto nível, o tratamento de hash functions, o armazenamento e as estratégias para lidar com o crescimento de dados e o escalonamento horizontal e vertical de servidores e bancos de dados em um sistema de encurtamento de URL.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "Design de alto nível para encurtador de URL",
+    "Uso de hash functions e mapeamento de caracteres",
+    "Geração de IDs sequenciais e legibilidade de URLs",
+    "Escalonamento de banco de dados e estratégias de replicação",
+    "Arquiteturas serverless (AWS Lambda) e uso de API Gateways",
+    "Trade-offs entre arquiteturas baseadas em servidores e serverless"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "05:00",
+      "text": "Introdução ao design de alto nível para o encurtador de URL, definindo as features principais (POST para criar uma URL encurtada e GET para redirecionar) e os desafios associados ao mapeamento de URLs grandes para URLs pequenas.",
+      "visual_description": "Explicação conceitual dos requisitos iniciais e das features do sistema.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "05:00",
+      "end_time": "10:00",
+      "text": "Discussão sobre o uso de hash functions e a quantificação dos dígitos e caracteres possíveis (0-9, a-z, A-Z) para calcular o espaço de armazenamento e os limites de URLs suportadas.",
+      "visual_description": "Análise matemática e combinatória para cálculo do espaço de URLs.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "10:00",
+      "end_time": "15:00",
+      "text": "Explicação sobre a geração de IDs sequenciais, o armazenamento em banco de dados e as implicações de visibilidade e ordem sequencial dos IDs gerados.",
+      "visual_description": "Detalhamento da estruturação de IDs sequenciais e suas vantagens/desvantagens.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# 14. Conceitos Adicionais e Padrões de Arquitetura\n\n## Resumo\nA aula aborda o design de alto nível para sistemas de encurtamento de URL, explorando o uso de hash functions, geração de IDs sequenciais, estratégias de banco de dados e escalabilidade com arquiteturas baseadas em servidores e serverless.\n\n## Tópicos Abordados\n- Design de alto nível para encurtador de URL\n- Funções de hash e espaço de caracteres\n- IDs sequenciais e trade-offs\n- Estratégias de escalabilidade e replicação de dados\n- Arquiteturas serverless (AWS Lambda)",
+  "processed_at": "2026-09-23T17:44:29.115783Z"
+}

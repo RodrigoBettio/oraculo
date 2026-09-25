@@ -1,0 +1,56 @@
+{
+  "video_id": "aula_04_hooks",
+  "file_name": "04_Hooks_Controle_Deterministico_do_Claude_Code.mp4",
+  "group_name": "Claude Code Architect",
+  "telegram_message_id": 48,
+  "duration_seconds": 0.0,
+  "tier_used": "multimodal_ocr",
+  "title": "Automação com Hooks no Claude Code",
+  "summary": "Nesta aula é explicado o conceito de Hooks no Claude Code, que permite transformar eventos em comandos automatizados. É demonstrado como definir scripts que executam antes ou depois de cada ação do agente (como PreToolUse, PostToolUse e Stop) para garantir padrões não negociáveis no projeto, como linting, formatação, gates de segurança e atualização de documentação.",
+  "topics": [
+    "O que são Hooks no Claude Code",
+    "Tipos de eventos (PreToolUse, PostToolUse, UserPromptSubmit, Stop)",
+    "Casos de uso para automação (Linting, Typecheck, Segurança e Notificações)",
+    "Configuração de Hooks no arquivo settings.json"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "00:40",
+      "text": "Apresentação do conceito de Hooks como ações ativadas por eventos do agente. Explicação sobre os tipos de eventos, destacando os ciclo de vida PreToolUse e PostToolUse, e como eles funcionam antes ou depois de ações executadas pelo Claude.",
+      "visual_description": "Slide com o título 'Hooks — eventos viram comandos.' exibindo os botões de tipo de eventos 'PreToolUse', 'PostToolUse', 'UserPromptSubmit' e 'Stop', além de um exemplo em código JSON à direita.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "00:40",
+      "end_time": "01:43",
+      "text": "Detalhamento de exemplos práticos de uso dos Hooks: bloqueio preventivo de acesso a arquivos de ambiente (.env), verificação de formatação/linting de código após edição, checagens de segurança e automação da abordagem 'Docs as Code' para manter documentações sincronizadas.",
+      "visual_description": "O instrutor gesticula explicando os casos de uso enquanto o slide permanece visível com o exemplo de configuração de hooks em JSON.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "01:43",
+      "end_time": "02:25",
+      "text": "Explicação de como estruturar a configuração no arquivo settings.json e como utilizar scripts externos (.sh ou JavaScript) para implementar regras mais simples ou complexas.",
+      "visual_description": "Slide exibe o arquivo de configuração `.claude/settings.json - hooks` mostrando a estrutura com PostToolUse e Stop.",
+      "code_snippets": [
+        {
+          "timestamp": "00:15",
+          "language": "json",
+          "code": "// .claude/settings.json - hooks\n{\n  \"hooks\": {\n    \"PostToolUse\": [{\n      \"matcher\": \"Edit|Write\",\n      \"hooks\": [\n        { \"command\": \"npm run lint -- --fix\" },\n        { \"command\": \"npm run typecheck\" }\n      ]\n    }],\n    \"Stop\": [{\n      \"hooks\": [\n        { \"command\": \"./scripts/notify-discord.sh\" }\n      ]\n    }]\n  }\n}",
+          "description": "Exemplo de configuração de Hooks no settings.json ativando lint/typecheck após edições de código e notificação no Discord ao encerrar a execução."
+        }
+      ]
+    }
+  ],
+  "extracted_codes": [
+    {
+      "timestamp": "00:15",
+      "language": "json",
+      "code": "// .claude/settings.json - hooks\n{\n  \"hooks\": {\n    \"PostToolUse\": [{\n      \"matcher\": \"Edit|Write\",\n      \"hooks\": [\n        { \"command\": \"npm run lint -- --fix\" },\n        { \"command\": \"npm run typecheck\" }\n      ]\n    }],\n    \"Stop\": [{\n      \"hooks\": [\n        { \"command\": \"./scripts/notify-discord.sh\" }\n      ]\n    }]\n  }\n}",
+      "description": "Exemplo de configuração de Hooks no settings.json ativando lint/typecheck após edições de código e notificação no Discord ao encerrar a execução."
+    }
+  ],
+  "full_markdown": "# Automação com Hooks no Claude Code\n\n## Resumo\nNesta aula é apresentado o conceito de **Hooks** no Claude Code, que permite associar eventos de execução do agente a comandos de terminal ou scripts personalizados. Os Hooks garantem que automações essenciais (como testes, linting, regras de segurança e notificação) sejam executadas de forma transparente e obrigatória.\n\n---\n\n## Principais Conceitos\n- **PreToolUse:** Executa ações antes que o agente utilize uma ferramenta (ex: bloquear leitura de arquivo `.env`).\n- **PostToolUse:** Executa ações imediatamente após o agente utilizar uma ferramenta (ex: formatar código com `npm run lint -- --fix`).\n- **Stop:** Executa um script ao finalizar a tarefa (ex: enviar notificação via webhook).\n- **UserPromptSubmit:** Permite intercetar ou tratar prompts antes do envio.\n\n---\n\n## Exemplo de Configuração (`.claude/settings.json`)\n\n```json\n// .claude/settings.json - hooks\n{\n  \"hooks\": {\n    \"PostToolUse\": [{\n      \"matcher\": \"Edit|Write\",\n      \"hooks\": [\n        { \"command\": \"npm run lint -- --fix\" },\n        { \"command\": \"npm run typecheck\" }\n      ]\n    }],\n    \"Stop\": [{\n      \"hooks\": [\n        { \"command\": \"./scripts/notify-discord.sh\" }\n      ]\n    }]\n  }\n}\n```\n\n---\n\n## Timestamps & Conteúdo Detalhado\n- **00:00 - 00:40**: O que são Hooks e tipos de eventos (`PreToolUse`, `PostToolUse`).\n- **00:40 - 01:43**: Casos práticos (segurança, linters, 'Doc as Code').\n- **01:43 - 02:25**: Configurando scripts `.sh` e `JavaScript` no `settings.json`.",
+  "processed_at": "2026-09-15T00:15:46.387284Z"
+}

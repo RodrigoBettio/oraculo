@@ -1,0 +1,37 @@
+# Ambiente Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Credenciais e segredos
+.env
+credentials/credentials.json
+credentials/token.json
+credentials/google_drive_service_account.json
+
+# Sessão Telegram
+*.session
+*.session-shm
+*.session-wal
+
+# Dados volumosos (vídeos baixados)
+data/videos/
+data/temp/
+
+# Banco SQLite (recriado automaticamente)
+data/oraculo.db
+data/oraculo.db-shm
+data/oraculo.db-wal
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store

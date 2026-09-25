@@ -1,0 +1,41 @@
+{
+  "video_id": "04. estimativas back of envelop-1 - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "04. estimativas back of envelop-1 - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "16. Requisitos e Estimativas",
+  "telegram_message_id": 0,
+  "duration_seconds": 1057.2,
+  "tier_used": "audio_only",
+  "title": "16. Requisitos e Estimativas",
+  "summary": "Nesta aula sobre estimativas no System Design, o instrutor explica que estimativas não são obrigatórias, mas ajudam a ter uma sensação do tamanho do sistema a ser desenvolvido. Ele aborda a importância das estimativas em entrevistas de diferentes níveis, como lidar com Big Techs versus outras empresas, a diferença entre sistemas de baixa e alta escala, o conceito de SLA, o uso do livro de System Design Interview (Google 2010), a importância das ordens de grandeza, e a conversão e compressão de dados (bytes, KB, MB, GB, TB). Também discute o impacto do cache, o tempo de busca em disco (Disk Seek), o acesso à rede e a latência de round trip, além de fornecer exemplos práticos de dimensionamento para Instagram, comparando serviços globais, cache, e o armazenamento de fotos e metadados.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "Importância das estimativas em System Design",
+    "Entrevistas de alto e baixo nível",
+    "SLAs (Service Level Agreements) e Ordens de Grandeza",
+    "Conversão e Compressão de Dados",
+    "Latência de Rede e Round Trip",
+    "Busca em Disco (Disk Seek) vs Leitura em Memória",
+    "Dimensionamento prático e cache",
+    "Estudo de caso do Instagram"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "05:20",
+      "text": "Vamos falar sobre estimativas. Não é uma parte necessariamente obrigatória de uma entrevista de System Design, mas é algo que a gente pode fazer para ter um feeling, assim, uma sensação do tamanho do sistema que a gente está desenvolvendo. E, claro, algumas entrevistas mais avançadas de System Design vão acabar pedindo por algo nesse sentido, tá? Vai acabar sendo esperado que você faça uma estimativa. Lembro quando a gente falou de entrevistas de alto nível e entrevistas de baixo nível, quanto mais baixo o nível da entrevista, mais importante vai ser a gente ter alguma estimativa de fato. Agora, você que está entrevistando aí para uma vaga de repente pleno, de repente sênior, numa empresa que não é uma Big Tech, quase impossível isso daqui ser requerido de você. Em Big Techs pode ser interessante você trazer essa estimativa, ou então sempre pode ser interessante você trazer essa estimativa, mas não necessariamente é uma expectativa, uma obrigatoriedade, tá bom? Mas é legal a gente entender o porquê disso aqui, que isso aqui ajuda a desenvolver sistemas melhores.",
+      "visual_description": "Introdução ao tópico de estimativas em System Design, explicando quando e por que aplicá-las.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "05:20",
+      "end_time": "10:00",
+      "text": "A ideia aqui é realmente chutar as coisas, certo, numa estimativa, um chute, porque a entrevista, ela dura uma hora, no máximo, do máximo, três horas, se for uma entrevista muito robusta para Staff Engineer. Então, né, como a gente não tem um mês, é tudo um chute, não é um cálculo de verdade, assim, vai ser um chute, e o seu chute vai estar ali mais ou menos dentro da realidade, a pessoa vai perceber que você tem um tato decente para as ordens de grandeza que são executadas, né? Já vai ficar claro com a explicação. Para a gente levantar os requisitos de um sistema, a gente precisa entender o que que esse sistema faz e quais os tamanhos das coisas que esse sistema lida. Conforme falado anteriormente, né, na aula de SLA, de Service Level Agreement, a gente viu que montar um sistema que tem que ficar disponível 99% do tempo é extremamente diferente de montar um sistema que tem que ficar disponível 99,999% do tempo. São sistemas totalmente diferentes.",
+      "visual_description": "Explicação sobre a precisão das estimativas, o uso de chutes calibrados e a importância de SLAs.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# 16. Requisitos e Estimativas\n\n## Resumo\nNesta aula sobre estimativas no System Design, o instrutor detalha como realizar estimativas aproximadas (chutes calibrados) durante entrevistas de System Design. São abordados conceitos de ordens de grandeza, SLAs, conversão de unidades de armazenamento (bytes a terabytes), latência de rede, tempo de acesso a disco (Disk Seek) versus memória principal (Main Memory), e um estudo de caso prático simulando o dimensionamento para uma aplicação estilo Instagram.\n\n## Tópicos Abordados\n- Importância das estimativas em System Design\n- SLAs e Ordens de Grandeza\n- Conversão e Compressão de Dados\n- Latência de Rede e Round Trip\n- Disk Seek vs Main Memory\n- Estudo de caso do Instagram\n\n## Código e Timestamps\n*Nenhum código de programação puro foi apresentado nesta aula, apenas conceitos de cálculo de estimativas e arquitetura.*",
+  "processed_at": "2026-09-23T17:56:34.082985Z"
+}

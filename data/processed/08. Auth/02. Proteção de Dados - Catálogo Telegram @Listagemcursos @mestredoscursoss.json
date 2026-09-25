@@ -1,0 +1,48 @@
+{
+  "video_id": "02. Proteção de Dados - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "02. Proteção de Dados - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "08. Auth",
+  "telegram_message_id": 0,
+  "duration_seconds": 277.952,
+  "tier_used": "audio_only",
+  "title": "Proteção de Dados",
+  "summary": "Aula focado em proteção de dados dentro do módulo de Autenticação (Auth), abordando riscos comuns, diretrizes de boas práticas como o uso do princípio de menor privilégio, rotação de chaves de API, criptografia com TLS, e o manuseio adequado de logs para evitar a exposição de dados sensíveis.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "Riscos à proteção de dados (acessos não autorizados, vazamentos, falhas de configuração)",
+    "Princípio de menor privilégio",
+    "Rotação de chaves de API",
+    "LGPD e GDPR no contexto de proteção de dados",
+    "Minimização de dados sensíveis",
+    "Protocolo TLS e criptografia",
+    "API Gateway e centralização de fluxo de dados",
+    "Cuidados com log e mascaramento de dados"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "02:04",
+      "text": "Introdução à proteção de dados em system design. Discussão sobre riscos comuns como acesso não autorizado, vazamentos, falhas de configuração e ameaças internas.",
+      "visual_description": "Apresentação inicial sobre proteção de dados e seus principais riscos.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "02:05",
+      "end_time": "03:12",
+      "text": "Princípio de menor privilégio, rotação de chaves, e regulamentações como LGPD e GDPR. Coleta mínima de dados sensíveis.",
+      "visual_description": "Explicação sobre privilégios mínimos e conformidade legal.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "03:13",
+      "end_time": "04:36",
+      "text": "Uso de API Gateways para centralizar o tráfego, criptografia com TLS, e cuidados essenciais no registro de logs para evitar vazamento de credenciais.",
+      "visual_description": "Detalhes sobre API Gateway, TLS e boas práticas de log.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# Proteção de Dados\n\n## Resumo\nA aula aborda os conceitos fundamentais de proteção de dados no design de sistemas, focando em segurança, conformidade com a LGPD e GDPR, minimização de dados, criptografia em trânsito (TLS) e em repouso, além de cuidados rigorosos com logs e credenciais.\n\n## Tópicos Principais\n- Riscos e ameaças à segurança de dados\n- Princípio de menor privilégio\n- Rotação regular de credenciais e chaves de API\n- Conformidade (LGPD e GDPR)\n- Minimização de dados coletados\n- Uso de HTTPS/TLS\n- API Gateway\n- Cuidados com logs de requisições e credenciais\n\n## Detalhes dos Segmentos\n- **00:00 - 02:04**: Visão geral dos riscos de proteção de dados.\n- **02:05 - 03:12**: Princípio de menor privilégio e regulamentações.\n- **03:13 - 04:36**: TLS, API Gateways e segurança em logs.",
+  "processed_at": "2026-09-23T17:28:39.605711Z"
+}

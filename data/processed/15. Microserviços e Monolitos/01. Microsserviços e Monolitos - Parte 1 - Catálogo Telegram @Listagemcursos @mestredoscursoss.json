@@ -1,0 +1,39 @@
+{
+  "video_id": "01. Microsserviços e Monolitos - Parte 1 - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "01. Microsserviços e Monolitos - Parte 1 - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "15. Microserviços e Monolitos",
+  "telegram_message_id": 0,
+  "duration_seconds": 446.336,
+  "tier_used": "audio_only",
+  "title": "15. Microserviços e Monolitos",
+  "summary": "Nesta aula sobre microserviços e monolitos, são abordados os conceitos fundamentais de microserviços, sua independência, arquiteturas baseadas em microsserviços versus monolitos, vantagens como escalabilidade horizontal e isolamento de falhas, além dos desafios associados, como complexidade de deploy, rastreamento (tracing) e consistência.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "Definição de Microsserviços",
+    "Microsserviços vs Monolitos",
+    "Independência e Escalabilidade",
+    "Comunicação entre Microsserviços",
+    "Vantagens e Desvantagens",
+    "Complexidade de Deploy e Tracing"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "01:00",
+      "text": "Vamos então para nossa aulinha de microsserviços, e aqui vai ficar muito claro que microsserviço é ortogonal às outras duas que a gente apresentou. Você não precisa escolher um ou outro, inclusive o seu próprio microsserviço pode aplicar uma camada de, uma arquitetura de três camadas, por exemplo, tá?",
+      "visual_description": "Introdução ao conceito de microsserviços no curso.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "01:00",
+      "end_time": "03:00",
+      "text": "A diferença de um microsserviço para a alternativa, que seria um monolito, é que num monolito todos esses serviços aqui, serviços de catálogo, serviços de descontos, serviços de pedidos, serviços de carrinho, são todos um único servição.",
+      "visual_description": "Explicação comparativa entre microsserviços e arquitetura monolítica.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# 15. Microserviços e Monolitos\n\n## Resumo\nAula focada em entender a arquitetura de microsserviços em oposição aos monolitos, explorando autonomia, comunicação, escalabilidade de equipes e serviços, bem como as complexidades operacionais inerentes.\n\n## Tópicos Abordados\n- O que são microsserviços\n- Comparação com Monolitos\n- Vantagens de Escalabilidade e Isolamento\n- Desafios de Tracing e Deploy",
+  "processed_at": "2026-09-23T17:53:23.957174Z"
+}

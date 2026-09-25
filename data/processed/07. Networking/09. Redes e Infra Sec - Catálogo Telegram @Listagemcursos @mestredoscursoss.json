@@ -1,0 +1,71 @@
+{
+  "video_id": "09. Redes e Infra Sec - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "09. Redes e Infra Sec - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "07. Networking",
+  "telegram_message_id": 0,
+  "duration_seconds": 851.819,
+  "tier_used": "audio_only",
+  "title": "Redes e Segurança de Infraestrutura",
+  "summary": "Aula focado em compilar os principais conhecimentos sobre a segurança de redes e infraestrutura ao desenhar e projetar sistemas distribuídos, abordando ameaças comuns, topologias de VPCs, subnets, balanceadores de carga, firewalls e estratégias de Zero Trust.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "DDOS e Man-in-the-Middle",
+    "Port Scanning e Exploitation",
+    "Engenharia Social e Personificação",
+    "Serviços Comprometidos e Permissões Inadequadas",
+    "Ataques Internos e Vulnerabilidades em VPCs",
+    "Segmentação e Isolamento de Redes",
+    "Load Balancers e API Gateways",
+    "Reverse Proxy e Firewalls de Aplicação (WAF)",
+    "Subnets Privadas e Públicas",
+    "Zero Trust e Gerenciamento de Secrets"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "02:51",
+      "text": "Introdução sobre redes e segurança de infraestrutura para sistemas distribuídos, cobrindo ameaças comuns como DDOS, Man-in-the-Middle, port scanning, exploitation e ataques genéricos de bots.",
+      "visual_description": "Apresentação inicial sobre os principais riscos de segurança em redes e infraestruturas distribuídas.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "02:52",
+      "end_time": "06:31",
+      "text": "Discussão sobre a importância do System Design em arquiteturas distribuídas e a necessidade de segmentação de redes para diminuir a superfície de ataque e mitigar danos.",
+      "visual_description": "Explicação detalhada sobre arquitetura distribuída, segmentação de rede e isolamento de partes críticas.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "06:32",
+      "end_time": "10:32",
+      "text": "Detalhamento sobre VPCs, Subnets, balanceadores de carga, load balancers, firewalls e topologias de rede seguras. Explicação de como funciona o acesso interno versus externo.",
+      "visual_description": "Esquema conceitual de VPCs, subnets públicas e privadas, Load Balancers e isolamento de servidores.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "10:33",
+      "end_time": "14:10",
+      "text": "Abordagem sobre Web Application Firewall (WAF), regras de rate-limit, proteção contra SQL injection e boas práticas de segurança em camadas de borda.",
+      "visual_description": "Explicação do funcionamento do WAF e mitigação de ataques em aplicações web.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "14:11",
+      "end_time": "18:00",
+      "text": "Introdução ao conceito de Zero Trust e autenticação estrita para comunicação entre serviços em redes privadas e públicas.",
+      "visual_description": "Discussão sobre Zero Trust architecture e autenticação mútua.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "18:01",
+      "end_time": "20:00",
+      "text": "Gerenciamento de segredos (Secrets Management), armadilhas comuns no armazenamento de chaves de API, senhas de banco e tokens.",
+      "visual_description": "Boas práticas para armazenamento seguro de credenciais e rotacionamento de segredos.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# Redes e Segurança de Infraestrutura\n\n## Resumo\nEsta aula compila os conceitos fundamentais de segurança de redes e infraestrutura para sistemas distribuídos. São abordadas ameaças comuns (DDOS, Man-in-the-Middle, Port Scanning, Exploitation), estratégias de mitigação através de segmentação de rede (VPCs, Subnets privadas e públicas), balanceamento de carga, uso de WAFs e a implementação do modelo Zero Trust.\n\n## Tópicos Principais\n- DDOS e Man-in-the-Middle\n- Port Scanning e Exploitation\n- Engenharia Social e Personificação\n- Serviços Comprometidos e Permissões Inadequadas\n- Ataques Internos e Vulnerabilidades em VPCs\n- Segmentação e Isolamento de Redes\n- Load Balancers e API Gateways\n- Reverse Proxy e Firewalls de Aplicação (WAF)\n- Subnets Privadas e Públicas\n- Zero Trust e Gerenciamento de Secrets\n\n## Código e Timestamps\n*(Nenhum snippet de código executável foi fornecido diretamente nesta aula, com foco estritamente conceitual e arquitetural)*",
+  "processed_at": "2026-09-23T17:27:21.379344Z"
+}

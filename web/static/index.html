@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Oráculo - Equipe de Agentes & Sala de Estudos</title>
+    <!-- PWA & Mobile Meta Tags -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#090c14">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Oráculo">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/icon-192.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css?v=4.2">
+</head>
+<body class="min-h-screen flex flex-col text-gray-100 selection:bg-purple-500/30 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-white/[0.08] bg-[#090c14]/85 backdrop-blur-xl sticky top-0 z-50 shadow-2xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3.5">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-indigo-500 flex items-center justify-center text-xl shadow-lg shadow-indigo-500/30 border border-white/20">
+                    🔮
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xl font-extrabold tracking-tight text-titanium">
+                            ORÁCULO
+                        </span>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500/10 to-indigo-500/10 text-purple-300 border border-purple-500/25 font-bold font-mono tracking-wider">
+                            AI NETWORK
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex space-x-1.5 bg-[#0e111a]/80 p-1.5 rounded-2xl border border-white/[0.06] backdrop-blur-md shadow-inner">
+                <button onclick="switchTab('agents')" id="tab-btn-agents" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-purple-600/20">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span>Equipe de Agentes</span>
+                </button>
+                <button onclick="switchTab('study')" id="tab-btn-study" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/[0.04] transition-all">
+                    <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+                    <span>Sala de Estudos</span>
+                </button>
+                <button onclick="switchTab('oracle')" id="tab-btn-oracle" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/[0.04] transition-all">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <span>Sala do Oráculo</span>
+                </button>
+                <button onclick="switchTab('projects')" id="tab-btn-projects" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/[0.04] transition-all">
+                    <i data-lucide="folder-kanban" class="w-4 h-4"></i>
+                    <span>Projetos & Tarefas</span>
+                </button>
+                <button onclick="switchTab('documents')" id="tab-btn-documents" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white hover:bg-white/[0.04] transition-all">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    <span>Cofre de Documentos</span>
+                </button>
+            </nav>
+
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleTelemetryDrawer()" id="btn-nav-telemetry" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-[#111420] hover:bg-[#181d2e] border border-white/[0.08] hover:border-purple-500/50 text-xs text-purple-300 font-mono transition-all cursor-pointer shadow-sm group" title="Abrir Gaveta Lateral de Telemetria de Tokens">
+                    <i data-lucide="zap" class="w-3.5 h-3.5 text-purple-400 group-hover:scale-110 transition-transform"></i>
+                    <span>⚡ <span id="nav-token-count">0</span></span>
+                    <span id="nav-token-pct" class="text-[10px] text-gray-500 font-mono">(0%)</span>
+                </button>
+                <div id="live-indicator" class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-xs text-emerald-400 font-mono shadow-sm">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 beacon-ping"></span>
+                    <span>ONLINE</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Study Progress Banner -->
+    <div id="study-banner" class="hidden bg-indigo-950/80 border-b border-indigo-500/30 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 animate-spin">
+                    <i data-lucide="loader-2" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <div class="text-sm font-medium text-white flex items-center space-x-2">
+                        <span>Estudando aula:</span>
+                        <span id="study-banner-title" class="font-bold text-indigo-300">...</span>
+                    </div>
+                    <div id="study-banner-status" class="text-xs text-indigo-400">Baixando vídeo e extraindo áudio...</div>
+                </div>
+            </div>
+            <div class="w-64">
+                <div class="flex justify-between text-xs text-indigo-300 mb-1">
+                    <span>Progresso</span>
+                    <span id="study-banner-pct">0%</span>
+                </div>
+                <div class="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+                    <div id="study-banner-bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- ================= TAB 1: EQUIPE DE AGENTES ================= -->
+        <section id="tab-agents" class="space-y-6">
+            <!-- Clean Header & Action Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-gray-800/80 bg-gray-950/70 backdrop-blur-md">
+                <div class="flex items-center space-x-3">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h2 class="text-base font-bold text-white tracking-tight">Equipe de Especialistas</h2>
+                            <span id="agents-count-badge" class="px-2 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">4 especialistas</span>
+                            <span id="areas-count-badge" class="px-2 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">3 áreas</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-0.5">Gestão corporativa, especialidades e absorção de conhecimento.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <!-- Clean View Switcher: Lista (Padrão) vs Fichas vs Radar vs Constelação -->
+                    <div class="flex items-center p-1 rounded-xl bg-gray-900 border border-gray-800">
+                        <button id="btn-view-crud" onclick="switchAgentView('crud')" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow">
+                            <i data-lucide="list" class="w-3.5 h-3.5"></i>
+                            <span>Lista & Ações</span>
+                        </button>
+                        <button id="btn-view-cards" onclick="switchAgentView('grid')" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition-all">
+                            <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                            <span>Fichas</span>
+                        </button>
+                        <button id="btn-view-orbital" onclick="switchAgentView('orbital')" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition-all">
+                            <i data-lucide="compass" class="w-3.5 h-3.5"></i>
+                            <span>Radar & Áreas</span>
+                        </button>
+                        <button id="btn-view-constellation" onclick="switchAgentView('constellation')" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition-all">
+                            <i data-lucide="network" class="w-3.5 h-3.5"></i>
+                            <span>Constelação</span>
+                        </button>
+                    </div>
+
+                    <!-- Action: Novo Agente -->
+                    <button onclick="openNewAgentModal()" class="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all shadow-md shadow-indigo-600/25 cursor-pointer">
+                        <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                        <span>+ Novo Agente</span>
+                    </button>
+
+                    <!-- Action: Nova Área -->
+                    <button onclick="openNewAreaModal()" class="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white border border-gray-700/80 text-xs font-medium transition-all cursor-pointer">
+                        <i data-lucide="folder-plus" class="w-3.5 h-3.5 text-emerald-400"></i>
+                        <span>+ Nova Área</span>
+                    </button>
+                </div>
+            </div>
+
+            
+            <!-- ========================================================= -->
+            <!-- BARRA DE PROMPT ÚNICO: COMANDO CENTRAL DO ORÁCULO         -->
+            <!-- ========================================================= -->
+            <div class="relative p-6 rounded-3xl bg-gradient-to-r from-[#121624] via-[#171b2d] to-[#121624] border border-indigo-500/30 shadow-2xl overflow-hidden mb-6 group hover:border-indigo-500/50 transition-all">
+                <div class="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="relative space-y-4">
+                    <!-- Header do Prompt Bar -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="text-xl">✨</span>
+                            <h3 class="text-sm font-bold text-white tracking-tight font-mono">COMANDO CENTRAL DO ORÁCULO</h3>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-gradient-to-r from-indigo-500/20 to-purple-500/20 text-indigo-300 border border-indigo-500/30">
+                                Auto-Orquestrador
+                            </span>
+                        </div>
+                        <div class="text-[11px] text-gray-400 font-mono flex items-center space-x-2">
+                            <span>Harness:</span>
+                            <span class="px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20 font-bold">Antigravity IDE</span>
+                            <span>+</span>
+                            <span class="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-bold">Nuvem Oráculo</span>
+                        </div>
+                    </div>
+
+                    <!-- Input + Botão de Disparo -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i>
+                            </div>
+                            <input type="text" id="universal-prompt-input" 
+                                placeholder="Digite o que deseja construir (ex: 'Criar uma landing page moderna em React e Tailwind' ou 'Roteiro de vídeo sobre Hooks')..."
+                                class="w-full pl-10 pr-4 py-3 bg-[#0c0f17] border border-[#23293a] focus:border-indigo-500 rounded-2xl text-xs text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-sans transition-all"
+                                onkeydown="if(event.key === 'Enter') submitUniversalPrompt()">
+                        </div>
+                        <button onclick="submitUniversalPrompt()" id="btn-universal-submit" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2 flex-shrink-0">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                            <span>Orquestrar & Distribuir</span>
+                        </button>
+                    </div>
+
+                    <!-- Sugestões Rápidas (Inspiration Chips) -->
+                    <div class="flex flex-wrap items-center gap-2 pt-1">
+                        <span class="text-[10px] text-gray-500 font-mono uppercase">Sugestões rápidas:</span>
+                        <button type="button" onclick="setUniversalPromptText('Criar componente Frontend em React com Tailwind e animações modernas')" 
+                            class="px-2.5 py-1 rounded-xl bg-gray-900/80 hover:bg-gray-800 border border-gray-800 text-[11px] text-gray-300 hover:text-white transition-all font-mono">
+                            💻 Frontend React + Tailwind
+                        </button>
+                        <button type="button" onclick="setUniversalPromptText('Elaborar roteiro de vídeo de 8 minutos para YouTube sobre Hooks e automação no Claude Code')" 
+                            class="px-2.5 py-1 rounded-xl bg-gray-900/80 hover:bg-gray-800 border border-gray-800 text-[11px] text-gray-300 hover:text-white transition-all font-mono">
+                            🎬 Roteiro YouTube Claude Code
+                        </button>
+                        <button type="button" onclick="setUniversalPromptText('Criar plano de automação e scraping para coletar notícias de IA e tendências')" 
+                            class="px-2.5 py-1 rounded-xl bg-gray-900/80 hover:bg-gray-800 border border-gray-800 text-[11px] text-gray-300 hover:text-white transition-all font-mono">
+                            ⚡ Automação & Scraping
+                        </button>
+                    </div>
+
+                    <!-- Feedback de Status em Tempo Real -->
+                    <div id="universal-prompt-feedback" class="hidden p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300 flex items-center space-x-2">
+                        <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
+                        <span id="universal-prompt-feedback-text">Analisando comando e selecionando a equipe de especialistas...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 1: COCKPIT ORBITAL RADAR (Inspirado no Sunburst Dashboard) -->
+            <div id="orbital-cockpit-view" class="hidden space-y-6">
+                <!-- Summary Metrics Bar -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="p-3.5 rounded-2xl bg-gray-900/60 border border-gray-800 flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20">
+                            <i data-lucide="target" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <div class="text-[11px] text-gray-400">Áreas Mapeadas</div>
+                            <div id="metric-total-areas" class="text-base font-bold text-white">0</div>
+                        </div>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-gray-900/60 border border-gray-800 flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                            <i data-lucide="heart-pulse" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <div class="text-[11px] text-gray-400">Saúde Sistêmica</div>
+                            <div id="metric-avg-health" class="text-base font-bold text-emerald-400">94%</div>
+                        </div>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-gray-900/60 border border-gray-800 flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
+                            <i data-lucide="crown" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <div class="text-[11px] text-gray-400">Gestores Ativos</div>
+                            <div id="metric-active-managers" class="text-base font-bold text-amber-300">0</div>
+                        </div>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-gray-900/60 border border-gray-800 flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
+                            <i data-lucide="zap" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <div class="text-[11px] text-gray-400">Skills Operacionais</div>
+                            <div id="metric-total-skills" class="text-base font-bold text-purple-300">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Radar Canvas Container (Futuristic Circular Cockpit) -->
+                <div class="relative p-5 rounded-3xl bg-[#090b10] border border-gray-800 shadow-2xl overflow-hidden flex flex-col items-center">
+                    <!-- Top HUD info -->
+                    <div class="w-full flex items-center justify-between text-xs text-gray-400 pb-3 border-b border-gray-800/60 mb-2">
+                        <div class="flex items-center space-x-2 font-mono">
+                            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                            <span class="text-cyan-300 font-bold uppercase">RADAR ORBITAL DE ÁREAS DA VIDA</span>
+                        </div>
+                        <div class="text-[11px] text-gray-500">
+                            💡 Passe o mouse para inspecionar • <strong>Clique em um setor para abrir ("Drill-Down")</strong>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Principal -->
+                    <div class="relative w-full flex justify-center items-center my-2">
+                        <canvas id="orbital-radar-canvas" width="840" height="580" class="cursor-pointer max-w-full"></canvas>
+                    </div>
+
+                    <!-- Rodapé do Cockpit com Status -->
+                    <div class="w-full pt-3 border-t border-gray-800/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-gray-500">Núcleo Central:</span>
+                            <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono text-[11px]">94 SAÚDE GERAL</span>
+                            <span class="text-gray-500">•</span>
+                            <span class="text-gray-400">Segmentos concêntricos em LED por domínio</span>
+                        </div>
+                        <div class="flex items-center space-x-3 text-[11px] text-gray-400 font-mono">
+                            <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>Saúde & Mente</span></span>
+                            <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-cyan-400"></span><span>Tecnologia</span></span>
+                            <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-amber-400"></span><span>Vendas</span></span>
+                            <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-pink-400"></span><span>Marketing</span></span>
+                            <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-purple-400"></span><span>Finanças</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grade Rápida de Áreas (Quick Cards) -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Visão Geral dos Domínios & Gestores</h3>
+                            <span class="text-[11px] text-gray-500">• Clique para abrir o painel</span>
+                        </div>
+                        <button onclick="triggerManagersSync()" id="btn-sync-managers" title="Sincroniza mapeamento de Gestores e Especialistas" class="px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 hover:border-indigo-400/50 text-xs font-semibold flex items-center space-x-1.5 transition-all shadow-sm">
+                            <i data-lucide="refresh-cw" id="icon-sync-managers" class="w-3.5 h-3.5"></i>
+                            <span>Sincronizar Gestores & Especialistas</span>
+                        </button>
+                    </div>
+                    <div id="quick-areas-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Renderizado via app.js -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: PAINEL DETALHADO DA ÁREA (DRILL-DOWN "CLIQUE E ABRA O QUE TEM DENTRO") -->
+            <div id="area-detail-panel" class="hidden space-y-6">
+                <!-- Breadcrumb & Back Bar -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gray-900/80 border border-gray-800">
+                    <div class="flex items-center space-x-3">
+                        <button onclick="backToOrbitalView()" class="px-3 py-1.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-gray-300 hover:text-white flex items-center space-x-1.5 transition-all">
+                            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                            <span>Voltar ao Cockpit Orbital</span>
+                        </button>
+                        <span class="text-gray-600">/</span>
+                        <div class="flex items-center space-x-2">
+                            <span id="detail-area-icon" class="text-xl">💻</span>
+                            <h3 id="detail-area-name" class="text-base font-bold text-white">Tecnologia & Desenvolvimento</h3>
+                        </div>
+                    </div>
+
+                    <!-- CRUD Actions da Área -->
+                    <div class="flex items-center space-x-2">
+                        <button onclick="openEditCurrentAreaModal()" class="px-3 py-1.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 hover:text-white border border-gray-700 flex items-center space-x-1.5 transition-all">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                            <span>Editar Área</span>
+                        </button>
+                        <button onclick="deleteCurrentArea()" class="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-400 border border-rose-500/30 flex items-center space-x-1.5 transition-all">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            <span>Excluir Área</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Header Card da Área -->
+                <div id="detail-area-banner" class="p-6 rounded-3xl border border-gray-800 bg-gradient-to-r from-gray-950 via-gray-900 to-gray-950 relative overflow-hidden">
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div class="space-y-1.5 max-w-2xl">
+                            <div class="flex items-center space-x-2">
+                                <span id="detail-area-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">ÁREA ATIVA</span>
+                                <span id="detail-area-agents-count" class="text-xs text-gray-400">3 Agentes Cadastrados</span>
+                            </div>
+                            <h2 id="detail-area-title-large" class="text-2xl font-bold text-white tracking-tight">Tecnologia & Desenvolvimento</h2>
+                            <p id="detail-area-desc" class="text-sm text-gray-300 leading-relaxed">Engenharia de software, automações, arquitetura de sistemas e infraestrutura.</p>
+                        </div>
+
+                        <!-- Score de Saúde do Domínio -->
+                        <div class="flex items-center space-x-3 p-4 rounded-2xl bg-black/40 border border-gray-800 flex-shrink-0">
+                            <div class="w-12 h-12 rounded-full border-2 border-emerald-500 flex items-center justify-center font-bold text-lg text-emerald-400 font-mono shadow-[0_0_12px_rgba(16,185,129,0.3)]">
+                                <span id="detail-area-health-val">95</span>
+                            </div>
+                            <div>
+                                <div class="text-[10px] uppercase font-mono text-gray-400">VITALIDADE DA ÁREA</div>
+                                <div class="text-xs font-semibold text-white">Saúde Excelente</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs Internas da Área: Constelação Estelar (Obsidian) vs Fichas da Equipe -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-gray-800">
+                    <div class="flex items-center p-1 rounded-xl bg-gray-900 border border-gray-800">
+                        <button id="btn-area-tab-constellation" onclick="switchAreaDetailSubTab('constellation')" class="flex items-center space-x-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white shadow">
+                            <i data-lucide="network" class="w-3.5 h-3.5 text-purple-300"></i>
+                            <span>🌌 Constelação de Estudos (Estilo Obsidian)</span>
+                        </button>
+                        <button id="btn-area-tab-cards" onclick="switchAreaDetailSubTab('cards')" class="flex items-center space-x-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition-all">
+                            <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                            <span>📋 Fichas & Detalhes da Equipe</span>
+                        </button>
+                    </div>
+
+                    <div class="text-xs text-gray-400 font-mono flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="area-graph-nodes-count">Carregando constelação...</span>
+                    </div>
+                </div>
+
+                <!-- SUB-VIEW A: CONSTELAÇÃO INTERATIVA DA ÁREA (ESTILO OBSIDIAN GRAPH VIEW) -->
+                <div id="area-subview-constellation" class="space-y-4">
+                    <!-- Top Controls da Constelação -->
+                    <div class="flex flex-wrap items-center justify-between gap-2.5 p-3 rounded-2xl obsidian-pane border border-[#232733] bg-[#11141c]/90">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="obsidian-tag obsidian-tag-purple font-mono">#constelacao-do-dominio</span>
+                            <span class="text-xs text-gray-400">Arraste nós • Scroll para Zoom • Clique para inspecionar</span>
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <!-- Filtro de Tipo -->
+                            <select id="area-graph-filter-select" onchange="onAreaGraphFilterChange(this.value)" class="bg-[#161a24] border border-[#232733] rounded-xl px-2.5 py-1 text-xs text-gray-300 focus:outline-none focus:border-purple-500 font-mono">
+                                <option value="all">Mostrar Tudo</option>
+                                <option value="agent">Apenas Agentes</option>
+                                <option value="course">Apenas Cursos</option>
+                                <option value="lesson">Apenas Aulas</option>
+                                <option value="topic">Apenas Habilidades</option>
+                            </select>
+
+                            <button onclick="resetAreaGraphView()" class="text-xs text-gray-300 hover:text-white bg-[#1e1e22] hover:bg-[#27272e] border border-[#2f2f36] px-3 py-1 rounded-xl flex items-center space-x-1 transition-all">
+                                <i data-lucide="crosshair" class="w-3.5 h-3.5 text-purple-400"></i>
+                                <span>Recentralizar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Canvas da Constelação da Área -->
+                    <div class="relative w-full h-[540px] rounded-3xl overflow-hidden border border-[#232733] bg-[#090b10] shadow-2xl">
+                        <canvas id="area-constellation-canvas" width="860" height="540" class="w-full h-full cursor-grab"></canvas>
+
+                        <!-- Card Flutuante de Inspeção do Nó Selecionado -->
+                        <div id="area-node-inspector-box" class="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-md p-4 rounded-2xl bg-gray-950/90 border border-gray-800/90 backdrop-blur-md shadow-2xl hidden transition-all">
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-center space-x-2.5">
+                                    <span id="inspector-node-avatar" class="text-xl">🌟</span>
+                                    <div>
+                                        <div class="flex items-center space-x-1.5">
+                                            <span id="inspector-node-type" class="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-indigo-500/20 text-indigo-300">AULA</span>
+                                            <h4 id="inspector-node-title" class="text-xs font-bold text-white truncate max-w-[220px]">Título do Nó</h4>
+                                        </div>
+                                        <p id="inspector-node-desc" class="text-[11px] text-gray-400 mt-0.5">Descrição ou contexto</p>
+                                    </div>
+                                </div>
+                                <button onclick="document.getElementById('area-node-inspector-box').classList.add('hidden')" class="text-gray-500 hover:text-white">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <div id="inspector-node-extra" class="mt-2.5 pt-2 border-t border-gray-800/80 flex items-center justify-between text-[11px] text-gray-400 font-mono">
+                                <!-- Preenchido dinamicamente via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legenda da Constelação -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-gray-900/60 border border-gray-800 text-xs text-gray-400 font-mono">
+                        <div class="flex flex-wrap items-center gap-4">
+                            <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_8px_#06b6d4]"></span><span>Domínio Central</span></span>
+                            <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]"></span><span>Gestor Executivo</span></span>
+                            <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-indigo-400"></span><span>Especialista Técnico</span></span>
+                            <span class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-400 border border-indigo-300"></span><span>Curso / Assunto</span></span>
+                            <span class="flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#10b981]"></span><span>Aula Estudada</span></span>
+                            <span class="flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full bg-sky-400"></span><span>Habilidade Dominada</span></span>
+                        </div>
+                        <span class="text-[11px] text-gray-500">Renderização em Física Gravitacional em Tempo Real</span>
+                    </div>
+                </div>
+
+                <!-- SUB-VIEW B: FICHAS & DETALHES DA EQUIPE -->
+                <div id="area-subview-cards" class="hidden space-y-6">
+                    <!-- SEÇÃO 1: GESTOR EXECUTIVO DA ÁREA (Agente Estratégico de Negócios) -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="crown" class="w-4 h-4 text-amber-400"></i>
+                                <h3 class="text-sm font-bold uppercase tracking-wider text-white">Gestor Executivo & Orquestrador da Área</h3>
+                            </div>
+                            <span class="text-xs text-gray-500">Lidera a estratégia, toma decisões e delega tarefas técnicas</span>
+                        </div>
+
+                        <div id="detail-manager-container">
+                            <!-- Renderizado via app.js: Card VIP do Gestor -->
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO 2: ESPECIALISTAS TÉCNICOS DA ÁREA (Subagentes) -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="cpu" class="w-4 h-4 text-indigo-400"></i>
+                                <h3 class="text-sm font-bold uppercase tracking-wider text-white">Especialistas Técnicos Subordinados</h3>
+                            </div>
+                            <button onclick="openNewAgentForCurrentAreaModal()" class="px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-xs text-indigo-300 border border-indigo-500/40 flex items-center space-x-1.5 transition-all">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                <span>+ Adicionar Especialista</span>
+                            </button>
+                        </div>
+
+                        <div id="detail-subagents-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Renderizado via app.js -->
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO 3: COMPETÊNCIAS & SKILLS OPERACIONAIS DA ÁREA -->
+                    <div class="p-5 rounded-2xl bg-gray-900/60 border border-gray-800 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-gray-300">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
+                                <span>Habilidades Operacionais Dominadas pela Área</span>
+                            </div>
+                            <span id="detail-area-skills-count" class="text-xs text-purple-300 font-mono">0 skills ativas</span>
+                        </div>
+                        <div id="detail-area-skills-list" class="flex flex-wrap gap-2">
+                            <!-- Renderizado via app.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- VIEW 2: CONSTELAÇÃO ESTELAR & VAULT DE ARQUIVOS (OBSIDIAN GRAPH VIEW UNIFICADO) -->
+            <div id="constellation-vault-view" class="hidden space-y-4">
+                <!-- Top Toolbar do Grafo & Vault -->
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-3.5 rounded-2xl obsidian-pane border border-[#232733] bg-[#12151c]/90">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-300">
+                            <i data-lucide="network" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2 text-[11px] font-mono text-gray-400">
+                                <span class="text-purple-400">oraculo</span>
+                                <span>/</span>
+                                <span id="constellation-active-area-crumb">todo-o-sistema</span>
+                                <span>/</span>
+                                <span class="obsidian-tag obsidian-tag-purple">#constelacao-de-estudos</span>
+                            </div>
+                            <h2 id="constellation-view-heading" class="text-base font-bold text-white tracking-tight flex items-center space-x-2">
+                                <span>Constelação & Vault de Conhecimento dos Especialistas</span>
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            </h2>
+                        </div>
+                    </div>
+
+                    <!-- Controles & Filtros de Área -->
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <div class="flex items-center space-x-2 bg-[#171b26] border border-[#262b3a] rounded-xl px-2.5 py-1">
+                            <span class="text-[11px] text-gray-400 font-mono">Filtrar Domínio:</span>
+                            <select id="constellation-area-filter" onchange="onConstellationAreaFilterChange(this.value)" class="bg-[#121620] text-xs text-purple-200 border border-[#2d3345] rounded-lg px-2.5 py-1 focus:outline-none font-mono cursor-pointer shadow-inner" style="background-color: #121620; color: #e2e8f0;">
+                                <option value="all" style="background-color: #121620; color: #e2e8f0;">🌌 Todas as Áreas (Geral)</option>
+                                <option value="health" style="background-color: #121620; color: #34d399;">🌿 Saúde, Hábitos & Vitalidade</option>
+                                <option value="tech" style="background-color: #121620; color: #38bdf8;">💻 Tecnologia & Desenvolvimento</option>
+                                <option value="sales" style="background-color: #121620; color: #fbbf24;">💼 Vendas & Negociação</option>
+                                <option value="mind" style="background-color: #121620; color: #c084fc;">🧠 Mente, Foco & Aprendizado</option>
+                                <option value="marketing" style="background-color: #121620; color: #fb7185;">🚀 Marketing & Conteúdo</option>
+                                <option value="finance" style="background-color: #121620; color: #facc15;">💰 Finanças & Investimentos</option>
+                            </select>
+                        </div>
+
+                        <button onclick="resetGraphView()" class="text-xs text-gray-300 hover:text-white bg-[#1e1e22] hover:bg-[#27272e] border border-[#2f2f36] px-3 py-1.5 rounded-xl flex items-center space-x-1.5 transition-all shadow-sm">
+                            <i data-lucide="crosshair" class="w-3.5 h-3.5 text-purple-400"></i>
+                            <span>Recentralizar</span>
+                        </button>
+
+                        <button onclick="loadKnowledgeGraph()" class="text-xs text-gray-300 hover:text-white bg-[#1e1e22] hover:bg-[#27272e] border border-[#2f2f36] px-3 py-1.5 rounded-xl flex items-center space-x-1.5 transition-all shadow-sm">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-purple-400"></i>
+                            <span>Atualizar Grafo</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Grid: Vault Explorer (Left 4 cols) & Obsidian Interactive Graph (Right 8 cols) -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[640px]">
+                    <!-- Coluna Esquerda: Vault File Explorer -->
+                    <div class="lg:col-span-4 obsidian-pane p-4 rounded-2xl border border-[#232733] bg-[#11141c]/95 flex flex-col h-full overflow-hidden">
+                        <div class="flex items-center justify-between pb-3 border-b border-[#222530] flex-shrink-0">
+                            <div class="flex items-center space-x-2 text-xs font-semibold text-gray-300">
+                                <i data-lucide="folder-tree" class="w-4 h-4 text-purple-400"></i>
+                                <span class="font-mono text-[11px] uppercase tracking-wider text-gray-400">Vault de Arquivos & Nós</span>
+                            </div>
+                            <span id="vault-nodes-count-badge" class="obsidian-tag obsidian-tag-purple">0 nós</span>
+                        </div>
+
+                        <!-- Busca na árvore -->
+                        <div class="pt-3 pb-2 flex-shrink-0">
+                            <div class="relative">
+                                <i data-lucide="search" class="w-3.5 h-3.5 text-gray-500 absolute left-3 top-2.5"></i>
+                                <input type="text" id="vault-search-input" oninput="onVaultSearchInput(this.value)" placeholder="Buscar especialista, curso ou habilidade..."
+                                    class="w-full bg-[#161a24] border border-[#232733] rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 font-mono">
+                            </div>
+                        </div>
+
+                        <!-- Conteúdo em Árvore Retrátil (Scrollable) -->
+                        <div id="vault-tree-container" class="flex-1 overflow-y-auto space-y-4 pr-1 font-mono text-xs">
+                            <!-- Seção 1: Especialistas -->
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between text-[11px] text-gray-400 font-bold uppercase tracking-wider">
+                                    <span class="flex items-center space-x-1.5">
+                                        <span>🤖</span>
+                                        <span>Equipe de Especialistas</span>
+                                    </span>
+                                    <span id="tree-agents-count" class="text-gray-500 text-[10px]">10</span>
+                                </div>
+                                <div id="tree-agents-list" class="space-y-1 pl-2 border-l border-gray-800">
+                                    <!-- Preenchido dinamicamente via app.js -->
+                                </div>
+                            </div>
+
+                            <!-- Seção 2: Cursos & Trilhas -->
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between text-[11px] text-gray-400 font-bold uppercase tracking-wider">
+                                    <span class="flex items-center space-x-1.5">
+                                        <span>📁</span>
+                                        <span>Cursos & Trilhas Indexadas</span>
+                                    </span>
+                                    <span id="tree-courses-count" class="text-gray-500 text-[10px]">0</span>
+                                </div>
+                                <div id="tree-courses-list" class="space-y-1 pl-2 border-l border-gray-800">
+                                    <!-- Preenchido dinamicamente via app.js -->
+                                </div>
+                            </div>
+
+                            <!-- Seção 3: Habilidades Dominadas -->
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between text-[11px] text-gray-400 font-bold uppercase tracking-wider">
+                                    <span class="flex items-center space-x-1.5">
+                                        <span>💡</span>
+                                        <span>Competências & Skills</span>
+                                    </span>
+                                    <span id="tree-topics-count" class="text-gray-500 text-[10px]">0</span>
+                                </div>
+                                <div id="tree-topics-list" class="flex flex-wrap gap-1.5 pt-1">
+                                    <!-- Preenchido dinamicamente via app.js -->
+                                </div>
+                            </div>
+
+                            <!-- Seção 4: Detalhes do Nó Inspecionado -->
+                            <div id="tree-node-details-card" class="hidden p-3 rounded-xl bg-purple-950/20 border border-purple-500/30 space-y-2 mt-3">
+                                <div class="flex items-center justify-between border-b border-purple-500/20 pb-1.5">
+                                    <span id="node-detail-title" class="font-bold text-xs text-purple-300 truncate">Detalhes do Nó</span>
+                                    <span id="node-detail-type" class="obsidian-tag obsidian-tag-purple text-[9px]">tipo</span>
+                                </div>
+                                <p id="node-detail-desc" class="text-[11px] text-gray-300 leading-relaxed font-sans">Selecione um nó no grafo para inspecionar conexões.</p>
+                                <div id="node-detail-links" class="text-[10px] text-gray-400 space-y-1 pt-1"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coluna Direita: Obsidian Interactive Graph Canvas -->
+                    <div class="lg:col-span-8 obsidian-pane rounded-2xl border border-[#232733] bg-[#0c0e14] relative overflow-hidden flex flex-col h-full">
+                        <!-- Floating Top Toolbar on Graph Canvas -->
+                        <div class="absolute top-3 left-3 right-3 z-10 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+                            <div class="flex items-center bg-[#151923]/90 backdrop-blur-md p-1 rounded-xl border border-[#272b38] pointer-events-auto shadow-md">
+                                <button onclick="setGraphFilter('all')" id="gfilter-all" class="px-2.5 py-1 rounded-lg text-[11px] font-mono text-white bg-purple-600 font-semibold transition-all">Todos</button>
+                                <button onclick="setGraphFilter('agent')" id="gfilter-agent" class="px-2 py-1 rounded-lg text-[11px] font-mono text-gray-400 hover:text-white transition-all">Especialistas</button>
+                                <button onclick="setGraphFilter('course')" id="gfilter-course" class="px-2 py-1 rounded-lg text-[11px] font-mono text-gray-400 hover:text-white transition-all">Cursos</button>
+                                <button onclick="setGraphFilter('lesson')" id="gfilter-lesson" class="px-2 py-1 rounded-lg text-[11px] font-mono text-gray-400 hover:text-white transition-all">Aulas</button>
+                                <button onclick="setGraphFilter('topic')" id="gfilter-topic" class="px-2 py-1 rounded-lg text-[11px] font-mono text-gray-400 hover:text-white transition-all">Habilidades</button>
+                            </div>
+
+                            <div class="flex items-center space-x-1.5 bg-[#151923]/90 backdrop-blur-md p-1 rounded-xl border border-[#272b38] pointer-events-auto shadow-md">
+                                <button onclick="zoomGraph(1.2)" class="w-7 h-7 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 flex items-center justify-center text-xs font-bold transition-all">+</button>
+                                <button onclick="zoomGraph(0.8)" class="w-7 h-7 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 flex items-center justify-center text-xs font-bold transition-all">-</button>
+                                <button onclick="resetGraphView()" class="px-2 py-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 text-[10px] font-mono transition-all">Centralizar</button>
+                            </div>
+                        </div>
+
+                        <!-- Canvas do Grafo -->
+                        <div class="flex-1 w-full h-full relative">
+                            <canvas id="obsidian-graph-canvas" class="w-full h-full block cursor-grab active:cursor-grabbing"></canvas>
+
+                            <!-- Floating Legend -->
+                            <div class="absolute bottom-3 left-3 bg-[#11141c]/90 backdrop-blur-md p-2 rounded-xl border border-[#222634] text-[10px] font-mono text-gray-400 space-y-1 pointer-events-none shadow-lg">
+                                <div class="flex items-center space-x-1.5">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block shadow-sm"></span>
+                                    <span>Gestor Executivo</span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-400 inline-block ml-1"></span>
+                                    <span>Especialista Técnico</span>
+                                </div>
+                                <div class="flex items-center space-x-1.5">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block"></span>
+                                    <span>Curso / Assunto</span>
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block ml-1"></span>
+                                    <span>Aula Concluída</span>
+                                    <span class="w-2 h-2 rounded-full bg-sky-400 inline-block ml-1"></span>
+                                    <span>Skill Dominada</span>
+                                </div>
+                            </div>
+
+                            <!-- Floating Tooltip -->
+                            <div id="graph-tooltip" class="absolute hidden pointer-events-none z-30 bg-[#161a24]/95 border border-purple-500/40 rounded-xl p-2.5 shadow-2xl text-xs space-y-1 max-w-xs transition-opacity duration-150"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: QUADRO DE FUNCIONÁRIOS (CRUD CORPORATIVO EM MODO LISTA) -->
+            <div id="crud-employees-view" class="space-y-4">
+                <!-- Header de Filtros & Contratação -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl bg-gray-950/60 border border-gray-800">
+                    <div class="flex flex-wrap items-center gap-3 flex-1">
+                        <!-- Busca -->
+                        <div class="relative min-w-[240px] flex-1 max-w-md">
+                            <i data-lucide="search" class="w-4 h-4 text-gray-500 absolute left-3.5 top-3"></i>
+                            <input type="text" id="crud-search-input" oninput="onCrudSearchInput(this.value)" placeholder="Buscar por nome, cargo ou habilidade..."
+                                class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-10 pr-3.5 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <!-- Filtro por Área (Preenchido dinamicamente) -->
+                        <select id="crud-filter-area" onchange="onCrudFilterChange()" class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-gray-300 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                            <option value="all">Todas as Áreas</option>
+                        </select>
+
+                        <!-- Filtro por Hierarquia -->
+                        <select id="crud-filter-hierarchy" onchange="onCrudFilterChange()" class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-gray-300 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                            <option value="all">Todas as Hierarquias</option>
+                            <option value="gestor">👑 Gestores Executivos</option>
+                            <option value="tecnico">⚡ Especialistas Técnicos</option>
+                        </select>
+                    </div>
+
+                    <!-- Botão Novo Especialista -->
+                    <button onclick="openNewAgentModal()" class="flex items-center space-x-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all shadow-md shadow-indigo-600/25 flex-shrink-0 cursor-pointer">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i>
+                        <span>+ Novo Especialista</span>
+                    </button>
+                </div>
+
+                <!-- Tabela Corporativa de Funcionários -->
+                <div class="bg-gray-950/70 rounded-2xl border border-gray-800 overflow-hidden shadow-xl">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-gray-900/90 text-gray-400 font-semibold border-b border-gray-800 uppercase tracking-wider text-[10px]">
+                                <tr>
+                                    <th class="py-3 px-4">Funcionário</th>
+                                    <th class="py-3 px-4">Cargo / Especialidade</th>
+                                    <th class="py-3 px-4">Área da Vida</th>
+                                    <th class="py-3 px-4">Hierarquia</th>
+                                    <th class="py-3 px-4">Horas / Senioridade</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="crud-employees-table-body" class="divide-y divide-gray-800/60 text-gray-300">
+                                <!-- Preenchido dinamicamente via app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: TODOS OS ESPECIALISTAS (Grid Tradicional Atualizado com Badges de Área) -->
+            <div id="all-specialists-view" class="hidden space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-white">Lista Completa de Agentes</h3>
+                        <p class="text-xs text-gray-400">Todos os gestores executivos e especialistas técnicos cadastrados no sistema.</p>
+                    </div>
+                </div>
+                <div id="agents-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Renderizado via app.js -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: SALA DE ESTUDOS (OBSIDIAN GRAPH VIEW) ================= -->
+                <!-- ================= TAB 2: SALA DE ESTUDOS (MONITORAMENTO DE ESTEIRA 100%) ================= -->
+        <section id="tab-study" class="hidden space-y-6">
+            
+            <!-- Header da Central de Estudos -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-5 rounded-3xl border border-gray-800 bg-gradient-to-r from-gray-950 via-gray-900 to-gray-950 shadow-xl">
+                <div class="flex items-center space-x-3.5">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-2xl shadow-inner">
+                        🎓
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase font-mono">ESTEIRA DE ABSORÇÃO</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        </div>
+                        <h2 class="text-xl font-bold text-white tracking-tight mt-0.5">Central de Monitoramento & Ingestão de Aulas</h2>
+                        <p class="text-xs text-gray-400 mt-0.5">Acompanhe os slots de download, transcrição em áudio/OCR e o progresso da fila em tempo real.</p>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação da Esteira -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <div id="study-eta-badge" class="flex items-center space-x-2 px-3 py-2 rounded-xl bg-indigo-950/50 border border-indigo-500/30 text-indigo-300 font-mono text-xs">
+                        <i data-lucide="clock" class="w-4 h-4 text-indigo-400 animate-pulse"></i>
+                        <span>Tempo Restante: <strong id="study-eta-value" class="text-white font-bold">Calculando...</strong></span>
+                    </div>
+
+                    <button onclick="openNewStudyModal()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs flex items-center space-x-2 shadow-lg shadow-indigo-600/25 transition-all">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        <span>+ Programar Nova Jornada</span>
+                    </button>
+
+                    <button id="btn-header-resume" onclick="resumeInterruptedStudy()" class="hidden text-xs text-amber-300 hover:text-white bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3.5 py-2.5 rounded-xl flex items-center space-x-1.5 transition-all shadow-sm">
+                        <i data-lucide="play-circle" class="w-4 h-4 text-amber-400"></i>
+                        <span id="header-resume-label">Retomar Estudos</span>
+                    </button>
+
+                    <button onclick="clearFinishedQueue()" class="text-xs text-gray-400 hover:text-white px-3 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-800 transition-all cursor-pointer">
+                        Limpar Concluídos
+                    </button>
+
+                    <button id="btn-header-pause-queue" onclick="togglePauseStudyQueue()" class="text-xs text-amber-400 hover:text-white px-3.5 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 flex items-center space-x-1.5 transition-all cursor-pointer shadow-sm">
+                        <i id="icon-header-pause" data-lucide="pause-circle" class="w-4 h-4 text-amber-400"></i>
+                        <span id="text-header-pause">Pausar Fila</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grade dos 8 Workers Paralelos (Slots de Processamento Ativo) -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="cpu" class="w-4 h-4 text-indigo-400"></i>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-white">Slots de Processamento Paralelo (8 Workers Simultâneos)</h3>
+                    </div>
+                    <span id="drawer-workers-status" class="text-xs font-mono text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">8 workers ativos</span>
+                </div>
+
+                <div id="drawer-workers-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    <!-- Cards dos workers renderizados dinamicamente via app.js -->
+                </div>
+            </div>
+
+            <!-- Monitor de Fila: Aulas em Espera & Histórico Concluído -->
+            <div id="study-drawer-section" class="space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gray-950/70 border border-gray-800">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="list-ordered" class="w-4 h-4 text-purple-400"></i>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-white">Gaveta da Fila de Estudos</h3>
+                        </div>
+                        
+                        <!-- Abas Interativas de Filtro da Gaveta -->
+                        <div class="flex items-center space-x-1.5 bg-[#121520] p-1 rounded-xl border border-white/[0.06] text-xs font-mono">
+                            <button onclick="setQueueTab('queued')" id="qtab-queued" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all bg-purple-600 text-white shadow-sm flex items-center space-x-1.5 cursor-pointer">
+                                <span>⏳ Na Fila</span>
+                                <span id="drawer-queue-count" class="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px]">0</span>
+                            </button>
+                            <button onclick="setQueueTab('completed')" id="qtab-completed" class="px-2.5 py-1 rounded-lg text-[11px] text-gray-400 hover:text-emerald-300 transition-all flex items-center space-x-1.5 cursor-pointer">
+                                <span>✅ Concluídas</span>
+                                <span id="drawer-completed-count" class="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px]">0</span>
+                            </button>
+                            <button onclick="setQueueTab('errors')" id="qtab-errors" class="px-2.5 py-1 rounded-lg text-[11px] text-gray-400 hover:text-rose-300 transition-all flex items-center space-x-1.5 cursor-pointer">
+                                <span>⚠️ Erros</span>
+                                <span id="drawer-errors-count" class="px-1.5 py-0.2 rounded-full bg-rose-500/20 text-rose-400 text-[10px]">0</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button onclick="toggleStudyDrawerCollapse()" id="btn-toggle-drawer-collapse" class="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-800 flex items-center space-x-1.5 transition-all cursor-pointer">
+                            <i id="icon-drawer-collapse" data-lucide="chevron-up" class="w-3.5 h-3.5 transition-transform duration-200"></i>
+                            <span id="text-drawer-collapse">Recolher Gaveta</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabela de Aulas na Fila -->
+                <div id="study-drawer-table-wrapper" class="bg-gray-950/60 rounded-2xl border border-gray-800 overflow-hidden shadow-xl transition-all duration-300">
+                    <div class="max-h-96 overflow-y-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-gray-900/80 text-gray-400 sticky top-0 border-b border-gray-800 text-[10px] uppercase font-semibold">
+                                <tr>
+                                    <th class="py-2.5 px-4">Aula / Arquivo</th>
+                                    <th class="py-2.5 px-4">Curso / Canal</th>
+                                    <th class="py-2.5 px-4">Especialista Atribuído</th>
+                                    <th class="py-2.5 px-4">Modo</th>
+                                    <th class="py-2.5 px-4">Status</th>
+                                    <th class="py-2.5 px-4 text-right">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="study-queue-table-body" class="divide-y divide-gray-800/60 text-gray-300 font-mono text-[11px]">
+                                <!-- Preenchido dinamicamente via app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= MODAL: NOVA JORNADA DE ESTUDOS ================= -->
+        <div id="new-study-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-[#12151d] border border-[#272b38] rounded-3xl max-w-2xl w-full p-6 space-y-5 shadow-2xl max-h-[90vh] flex flex-col font-sans">
+                
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between border-b border-[#232733] pb-3 flex-shrink-0">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-xl">
+                            📚
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-base text-white">Programar Nova Jornada de Estudos</h3>
+                            <p class="text-xs text-gray-400">Selecione o especialista, os canais do Telegram e o perfil de absorção</p>
+                        </div>
+                    </div>
+                    <button onclick="closeNewStudyModal()" class="text-gray-400 hover:text-white p-2 rounded-xl hover:bg-gray-800 transition-all">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto space-y-5 pr-1 text-xs">
+                    
+                    <!-- Passo 1: Selecionar Especialista(s) -->
+                    <div class="space-y-2">
+                        <label class="font-mono text-[11px] uppercase tracking-wider text-gray-300 font-semibold flex items-center justify-between">
+                            <span>1. Selecione o Especialista Responsável</span>
+                            <span class="text-purple-400 text-[10px]">#alocacao-de-conhecimento</span>
+                        </label>
+                        <div id="modal-agent-selection-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            <!-- Cards dos agentes renderizados dinamicamente via app.js -->
+                        </div>
+                    </div>
+
+                    <!-- Passo 2: Origem dos Conteúdos (Telegram ou Google Drive) -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="font-mono text-[11px] uppercase tracking-wider text-gray-300 font-semibold">
+                                2. Origem do Conhecimento
+                            </label>
+                            <!-- Tab Switcher entre Google Drive e Telegram -->
+                            <div class="flex items-center space-x-1 bg-[#161a24] p-1 rounded-xl border border-[#232733]">
+                                <button type="button" id="modal-tab-btn-drive" onclick="switchModalStudySource('drive')" class="px-3 py-1 rounded-lg text-xs font-semibold bg-purple-600 text-white flex items-center space-x-1.5 transition-all shadow">
+                                    <span>📁</span>
+                                    <span>Google Drive</span>
+                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-emerald-500/20 text-emerald-300 font-mono">Recomendado</span>
+                                </button>
+                                <button type="button" id="modal-tab-btn-telegram" onclick="switchModalStudySource('telegram')" class="px-3 py-1 rounded-lg text-xs font-semibold text-gray-400 hover:text-white flex items-center space-x-1.5 transition-all">
+                                    <span>✈️</span>
+                                    <span>Telegram</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Painel Google Drive -->
+                        <div id="modal-pane-drive" class="space-y-3">
+                            <!-- Status do Drive / Setup Box -->
+                            <div id="drive-status-container">
+                                <!-- Preenchido dinamicamente via app.js -->
+                            </div>
+                            <!-- Árvore de Pastas/Cursos do Drive -->
+                            <div id="drive-courses-list" class="space-y-2 max-h-56 overflow-y-auto pr-1 hidden">
+                                <!-- Preenchido dinamicamente via app.js -->
+                            </div>
+                        </div>
+
+                        <!-- Painel Telegram -->
+                        <div id="modal-pane-telegram" class="space-y-2 hidden">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] text-gray-400">Canais de vídeo do Telegram:</span>
+                                <button type="button" onclick="toggleModalSelectAllChannels()" id="modal-btn-select-all" class="text-[10px] font-mono text-purple-400 hover:text-purple-300 px-2 py-0.5 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                                    Selecionar Todos
+                                </button>
+                            </div>
+                            <div class="relative">
+                                <i data-lucide="search" class="w-3.5 h-3.5 text-gray-500 absolute left-3 top-2.5"></i>
+                                <input type="text" id="modal-channel-search" oninput="onModalChannelSearch(this.value)" placeholder="Buscar canal pelo título..."
+                                    class="w-full bg-[#171b26] border border-[#262b3a] rounded-xl pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500 font-mono">
+                            </div>
+                            <div id="modal-channels-list" class="space-y-2 max-h-52 overflow-y-auto pr-1">
+                                <!-- Preenchido dinamicamente via app.js -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Passo 3: Modo de Absorção -->
+                    <div class="space-y-2">
+                        <label class="font-mono text-[11px] uppercase tracking-wider text-gray-300 font-semibold">
+                            3. Perfil de Processamento
+                        </label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <label class="flex items-start space-x-3 p-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 cursor-pointer">
+                                <input type="radio" name="modal-tier" value="audio_only" checked class="mt-0.5 text-emerald-500">
+                                <div class="text-xs">
+                                    <div class="font-semibold text-white flex items-center space-x-1.5">
+                                        <span>🟢 Modo Áudio Puro</span>
+                                        <span class="obsidian-tag obsidian-tag-green">#recomendado</span>
+                                    </div>
+                                    <div class="text-[10px] text-gray-400 mt-0.5">Velocidade máxima e 90% de economia de tokens. Perfeito para esteiras volumosas.</div>
+                                </div>
+                            </label>
+
+                            <label class="flex items-start space-x-3 p-3 rounded-2xl border border-[#272b38] bg-[#161a24] cursor-pointer hover:border-[#383e50]">
+                                <input type="radio" name="modal-tier" value="multimodal_ocr" class="mt-0.5 text-purple-500">
+                                <div class="text-xs">
+                                    <div class="font-semibold text-white flex items-center space-x-1.5">
+                                        <span>🔵 Modo Profundo (OCR)</span>
+                                        <span class="obsidian-tag obsidian-tag-purple">#visao</span>
+                                    </div>
+                                    <div class="text-[10px] text-gray-400 mt-0.5">Captura código em tela e diagramas em alta resolução.</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Passo 4: Opções Avançadas -->
+                    <div class="flex items-center space-x-2 pt-1">
+                        <input type="checkbox" id="modal-only-pending" checked class="rounded text-purple-600 bg-gray-900 border-gray-700">
+                        <label for="modal-only-pending" class="text-xs text-gray-300 cursor-pointer">
+                            <strong>Apenas aulas pendentes</strong> (ignorar aulas que o especialista já concluiu)
+                        </label>
+                    </div>
+
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="border-t border-[#232733] pt-4 flex items-center justify-between flex-shrink-0">
+                    <span id="modal-summary-selected" class="text-xs font-mono text-gray-400">0 canais selecionados</span>
+                    <div class="flex items-center space-x-2.5">
+                        <button onclick="closeNewStudyModal()" class="px-4 py-2 rounded-xl bg-[#1c202c] hover:bg-[#252a3a] text-gray-300 text-xs font-semibold transition-all">
+                            Cancelar
+                        </button>
+                        <button onclick="startStudyFromModal()" id="btn-modal-start-study" class="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-purple-600/25 flex items-center space-x-2">
+                            <i data-lucide="zap" class="w-4 h-4"></i>
+                            <span>Iniciar Jornada de Estudos</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Modal: Inspecionar Aulas de um Canal Especifico -->
+        <div id="channel-inspect-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-gray-900 border border-gray-800 rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl max-h-[85vh] flex flex-col">
+                <div class="flex items-center justify-between border-b border-gray-800 pb-3 flex-shrink-0">
+                    <div>
+                        <h3 id="inspect-modal-title" class="font-bold text-base text-white">Aulas do Canal</h3>
+                        <p id="inspect-modal-subtitle" class="text-xs text-gray-400">Visualização rápida das aulas deste curso</p>
+                    </div>
+                    <button onclick="closeChannelInspectModal()" class="text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-gray-800">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div id="inspect-modal-videos-list" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                    <!-- Aulas renderizadas dinamicamente -->
+                </div>
+                <div class="border-t border-gray-800 pt-3 flex justify-end flex-shrink-0">
+                    <button onclick="closeChannelInspectModal()" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-white">Fechar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 3: SALA DO ORÁCULO ================= -->
+        <section id="tab-oracle" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white tracking-tight">Sala do Oráculo</h2>
+                    <p class="text-sm text-gray-400">Debata em Mesa Redonda multi-agente ou consulte um especialista 1-on-1 com respostas diretas e concisas.</p>
+                </div>
+                <!-- Seletor de Modo de Conversa -->
+                <div class="flex items-center space-x-2 bg-gray-900/80 p-1.5 rounded-xl border border-gray-800">
+                    <span class="text-xs text-gray-400 pl-2">Modo:</span>
+                    <select id="chat-mode-select" onchange="onChatModeChange()" class="bg-gray-950 border border-gray-700 text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+                        <option value="debate">🔮 Mesa Redonda (Oráculo convoca especialistas)</option>
+                        <!-- Preenchido com agentes individuais via app.js -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Workspace 2 Colunas (Sem a aba de fontes) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[720px]">
+                
+                <!-- Coluna Principal: Chat / Mesa Redonda (8 cols) -->
+                <div class="lg:col-span-8 glass-panel rounded-2xl flex flex-col h-full overflow-hidden">
+                    <div class="p-3.5 border-b border-gray-800 flex items-center justify-between bg-gray-900/40">
+                        <div class="flex items-center space-x-3">
+                            <div id="chat-header-avatar" class="w-8 h-8 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-base">
+                                🔮
+                            </div>
+                            <div>
+                                <h3 id="chat-header-title" class="font-semibold text-sm text-white">Mesa Redonda Multi-Agente</h3>
+                                <p id="chat-header-subtitle" class="text-[11px] text-gray-400">Especialistas debatem e interagem entre si</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Histórico de Mensagens -->
+                    <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 rounded-full bg-indigo-600/30 flex items-center justify-center text-sm flex-shrink-0">🔮</div>
+                            <div class="bg-gray-800/80 rounded-2xl p-3.5 max-w-[85%] border border-gray-700/50">
+                                <p class="text-sm text-gray-200">
+                                    Bem-vindo à Sala do Oráculo. No modo <strong>Mesa Redonda</strong>, eu convoco os agentes que estudaram os temas da sua pergunta para debaterem e apresentarem suas visões. Você também pode escolher falar individualmente com qualquer especialista pelo seletor acima!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="p-4 border-t border-gray-800 bg-gray-900/60">
+                        <form id="chat-form" onsubmit="sendChatMessage(event)" class="flex items-center space-x-2">
+                            <input type="text" id="chat-input" placeholder="Pergunte aos agentes (ex: Quais as melhores práticas de hooks e automação de código?)..." 
+                                class="flex-1 bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                            <button type="submit" id="chat-submit-btn" class="px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-all shadow-md shadow-indigo-600/20">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Coluna Secundária: Código & Specs (4 cols) -->
+                <div class="lg:col-span-4 glass-panel p-4 rounded-2xl flex flex-col h-full">
+                    <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-3">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="code-2" class="w-4 h-4 text-emerald-400"></i>
+                            <h3 class="font-semibold text-sm text-white">Specs & Código em Tela</h3>
+                        </div>
+                    </div>
+                    <div id="code-snippets-panel" class="flex-1 overflow-y-auto space-y-3 pr-1">
+                        <div class="text-center py-16 text-gray-500 text-xs">
+                            Faça uma pergunta no chat para visualizar os códigos das aulas citadas com cópia rápida para sua IDE.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    
+        <!-- ============================================================= -->
+        <!-- ABA 4: PROJETOS & ORQUESTRAÇÃO DE TAREFAS MULTI-AGENTE       -->
+        <!-- ============================================================= -->
+        <section id="tab-projects" class="tab-content hidden space-y-6">
+            <!-- Header da Aba de Projetos -->
+            <div class="spotlight-card flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl shadow-xl">
+                <div>
+                    <div class="flex items-center space-x-2.5">
+                        <span class="text-2xl">🚀</span>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Orquestrador de Projetos & Agentes Operadores</h2>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Harness Ativo</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1 max-w-2xl">
+                        Delegue objetivos de alto nível para os <strong>Gestores de Área</strong>. Eles decompõem o plano em tarefas técnicas e delegam aos <strong>Especialistas Técnicos</strong> que estudaram os cursos para entregar artefatos finais (roteiros, códigos, relatórios).
+                    </p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="loadProjects()" class="px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-xs font-semibold flex items-center space-x-1.5 transition-all">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                        <span>Atualizar</span>
+                    </button>
+                    <button onclick="openNewProjectModal()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-600/25 flex items-center space-x-2">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>Novo Projeto</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lista de Projetos -->
+            <div id="projects-grid" class="grid grid-cols-1 gap-5">
+                <div class="py-16 text-center text-gray-500 text-xs">Carregando projetos...</div>
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- ABA 5: COFRE DE DOCUMENTOS & ARTEFATOS DE ENTREGA            -->
+        <!-- ============================================================= -->
+        <section id="tab-documents" class="tab-content hidden space-y-6">
+            <!-- Header da Aba de Documentos -->
+            <div class="spotlight-card flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl shadow-xl">
+                <div>
+                    <div class="flex items-center space-x-2.5">
+                        <span class="text-2xl">📄</span>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Cofre de Documentos & Entregas</h2>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30">Artefatos Persistidos</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1 max-w-2xl">
+                        Repositório central de todos os trabalhos produzidos pelos agentes operadores: roteiros cena-a-cena, scripts de automação, relatórios executivos e pautas prontas para uso.
+                    </p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="loadDocuments()" class="px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-xs font-semibold flex items-center space-x-1.5 transition-all">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                        <span>Atualizar Cofre</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grid de Documentos -->
+            <div id="documents-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="col-span-full py-16 text-center text-gray-500 text-xs">Carregando documentos...</div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= MODAIS ================= -->
+
+    <!-- Modal: Contratar Novo Agente -->
+    <div id="new-agent-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+                <h3 class="font-bold text-lg text-white">Contratar Novo Agente Especialista</h3>
+                <button type="button" onclick="closeNewAgentModal()" class="text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="new-agent-form" onsubmit="submitNewAgent(event); return false;" class="space-y-4 text-sm">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Nome do Agente</label>
+                    <input type="text" id="agent-name-input" required placeholder="Ex: Lucas, Jim, CyberGuard" 
+                        class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-white focus:border-indigo-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Cargo / Especialidade</label>
+                    <input type="text" id="agent-role-input" required placeholder="Ex: Especialista em Backend & APIs, Aprendizado & Foco" 
+                        class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-white focus:border-indigo-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Avatar / Ícone</label>
+                    <div class="flex items-center space-x-2">
+                        <select id="agent-avatar-select" class="bg-gray-950 border border-gray-800 rounded-xl p-3 text-xl focus:border-indigo-500 focus:outline-none">
+                            <option value="🤖">🤖 Robô</option>
+                            <option value="🧠">🧠 Cérebro / Cognição</option>
+                            <option value="👨‍💻">👨‍💻 Programador</option>
+                            <option value="🛡️">🛡️ Segurança / Cyber</option>
+                            <option value="⚡">⚡ Performance</option>
+                            <option value="📈">📈 Investimentos</option>
+                            <option value="🚀">🚀 Inovação</option>
+                        </select>
+                        <input type="text" id="agent-avatar-custom" placeholder="Ou digite outro emoji..." maxlength="2"
+                            class="flex-1 bg-gray-950 border border-gray-800 rounded-xl p-3 text-white focus:border-indigo-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Habilidades Iniciais (separadas por vírgula)</label>
+                    <input type="text" id="agent-topics-input" placeholder="Ex: Segurança, APIs, Docker, Automação" 
+                        class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-white focus:border-indigo-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Área da Vida</label>
+                        <select id="agent-area-select" class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-xs text-white focus:border-indigo-500 focus:outline-none">
+                            <option value="">-- Sem Área Definida --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Hierarquia</label>
+                        <select id="agent-type-select" class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-xs text-white focus:border-indigo-500 focus:outline-none">
+                            <option value="tecnico" selected>⚡ Especialista Técnico</option>
+                            <option value="gestor">👑 Gestor Executivo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-3 border-t border-gray-800">
+                    <button type="button" onclick="closeNewAgentModal()" class="px-4 py-2 rounded-xl text-gray-400 hover:text-white font-medium text-sm">Cancelar</button>
+                    <button type="button" onclick="submitNewAgent(event)" id="btn-confirm-hire" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-600/25">
+                        Confirmar Contratação
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal / Drawer: Ficha Detalhada do Agente (Cursos, Horas e Tópicos Customizados) -->
+    <div id="agent-detail-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl max-w-2xl w-full p-6 space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-start justify-between border-b border-gray-800 pb-4">
+                <div class="flex items-center space-x-4">
+                    <div id="detail-agent-avatar" class="w-16 h-16 rounded-2xl bg-gray-800 border border-gray-700 flex items-center justify-center text-3xl">
+                        👨‍💻
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h3 id="detail-agent-name" class="text-xl font-bold text-white">...</h3>
+                            <span id="detail-agent-rank-badge" class="text-xs px-2.5 py-0.5 rounded-md font-semibold badge-estagiario">
+                                🐣 Estagiário
+                            </span>
+                        </div>
+                        <p id="detail-agent-role" class="text-xs text-indigo-400 font-medium mt-0.5">...</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button type="button" onclick="exportCurrentAgentSkill()" id="btn-detail-export-skill" 
+                        class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold flex items-center space-x-1.5 transition-all shadow-md shadow-teal-500/20"
+                        title="Exporta o conhecimento deste agente como Skill global do Antigravity">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        <span>Exportar Skill Antigravity</span>
+                    </button>
+                    <button type="button" onclick="closeAgentDetailModal()" class="text-gray-400 hover:text-white p-1 hover:bg-gray-800 rounded-lg">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Horas Reais & Calibração de Mérito -->
+            <div class="p-4 bg-gray-950/80 rounded-xl border border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Tempo Total de Estudo Reconhecido</span>
+                    <div class="flex items-baseline space-x-2 mt-1">
+                        <span id="detail-agent-hours" class="text-2xl font-bold text-white">0.0h</span>
+                        <span class="text-xs text-gray-400">de conteúdo real absorvido</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <input type="number" id="detail-hours-input" step="0.5" placeholder="Horas..." class="w-24 bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    <button onclick="saveAgentHours()" class="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-medium text-white transition-all">
+                        Calibrar Horas
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cursos & Aulas Estudadas -->
+            <div class="space-y-3">
+                <h4 class="text-sm font-bold text-white flex items-center space-x-2">
+                    <i data-lucide="graduation-cap" class="w-4 h-4 text-indigo-400"></i>
+                    <span>Cursos & Aulas Concluídas</span>
+                </h4>
+                <div id="detail-agent-courses-list" class="space-y-3">
+                    <!-- Renderizado dinamicamente -->
+                </div>
+            </div>
+
+            <!-- Tópicos & Habilidades Dominadas (Customizável pelo usuário) -->
+            <div class="space-y-3 pt-2 border-t border-gray-800">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-sm font-bold text-white flex items-center space-x-2">
+                        <i data-lucide="award" class="w-4 h-4 text-purple-400"></i>
+                        <span>Habilidades & Padrões Dominados</span>
+                    </h4>
+                    <span class="text-xs text-gray-500">Adapte o conteúdo das aulas para suas regras</span>
+                </div>
+                
+                <!-- Chips editáveis -->
+                <div id="detail-agent-topics-chips" class="flex flex-wrap gap-2 p-3 bg-gray-950/60 rounded-xl border border-gray-800 min-h-[50px]">
+                    <!-- Renderizado via app.js -->
+                </div>
+
+                <!-- Input para adicionar novo tópico -->
+                <div class="flex items-center space-x-2">
+                    <input type="text" id="detail-new-topic-input" placeholder="Ex: Hooks do Antigravity, Padrão de Skills, Regras Não-Negociáveis..."
+                        class="flex-1 bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none">
+                    <button onclick="addAgentTopic()" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-semibold text-white transition-all cursor-pointer">
+                        + Adicionar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Footer com Botão de Excluir Agente -->
+            <div class="pt-4 border-t border-gray-800 flex items-center justify-between">
+                <button type="button" onclick="deleteCurrentAgentFromDetail()" class="px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 border border-rose-500/30 text-xs font-semibold flex items-center space-x-1.5 transition-all cursor-pointer" title="Excluir este especialista do sistema">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    <span>Excluir Agente</span>
+                </button>
+                <button type="button" onclick="closeAgentDetailModal()" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold transition-all cursor-pointer">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Disparar Estudo de Aula Individual -->
+    <div id="study-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+                <h3 class="font-bold text-lg text-white">Atribuir Aula para Estudo</h3>
+                <button onclick="closeStudyModal()" class="text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-sm">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Vídeo Selecionado</label>
+                    <div id="modal-video-title" class="p-3 bg-gray-950 rounded-xl border border-gray-800 text-white font-medium break-all text-xs">...</div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Qual Agente vai Estudar?</label>
+                    <select id="modal-agent-select" class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-white focus:border-indigo-500 focus:outline-none text-xs">
+                        <!-- Opções preenchidas via app.js -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Modo de Estudo (Economia de Tokens)</label>
+                    <div class="space-y-2">
+                        <label class="flex items-start space-x-3 p-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 cursor-pointer">
+                            <input type="radio" name="modal-tier" value="audio_only" checked class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                            <div>
+                                <div class="font-semibold text-white text-xs flex items-center space-x-1.5">
+                                    <span>🟢 Modo Econômico (Apenas Áudio)</span>
+                                    <span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">Padrão • Máxima Economia</span>
+                                </div>
+                                <div class="text-[11px] text-gray-400">Consome ~90% menos tokens. Extrai áudio direto, transcreve e estrutura tópicos.</div>
+                            </div>
+                        </label>
+                        <label class="flex items-start space-x-3 p-3 rounded-xl border border-gray-800 bg-gray-950/60 cursor-pointer hover:border-gray-700">
+                            <input type="radio" name="modal-tier" value="multimodal_ocr" class="mt-1 text-indigo-600 focus:ring-indigo-500">
+                            <div>
+                                <div class="font-semibold text-white text-xs">🔵 Modo Profundo (Áudio + OCR de Código)</div>
+                                <div class="text-[11px] text-gray-400">Captura código da tela e slides em 720p. Use apenas quando precisar de código visual.</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-3 border-t border-gray-800">
+                <button onclick="closeStudyModal()" class="px-4 py-2 rounded-xl text-gray-400 hover:text-white font-medium text-sm">Cancelar</button>
+                <button onclick="confirmStartStudy()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-600/25">
+                    Colocar na Fila
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Estudar Grupo Inteiro -->
+    <div id="enqueue-group-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xl">⚡</span>
+                    <h3 class="font-bold text-lg text-white">Estudar Grupo Inteiro</h3>
+                </div>
+                <button onclick="closeEnqueueGroupModal()" class="text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-sm">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Curso / Canal</label>
+                    <div id="modal-group-name" class="p-3 bg-gray-950 rounded-xl border border-gray-800 text-white font-medium text-xs">...</div>
+                    <p id="modal-group-pending-info" class="text-[11px] text-amber-400 mt-1">Carregando aulas pendentes...</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Qual Agente vai Estudar este Curso?</label>
+                    <select id="modal-group-agent-select" class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-white focus:border-indigo-500 focus:outline-none text-xs">
+                        <!-- Opções preenchidas via app.js -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Modo de Ingestão (Recomendado)</label>
+                    <div class="space-y-2">
+                        <label class="flex items-start space-x-3 p-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 cursor-pointer">
+                            <input type="radio" name="modal-group-tier" value="audio_only" checked class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                            <div>
+                                <div class="font-semibold text-white text-xs flex items-center space-x-1.5">
+                                    <span>🟢 Modo Econômico (Apenas Áudio)</span>
+                                    <span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">Padrão • Máxima Economia</span>
+                                </div>
+                                <div class="text-[11px] text-gray-400">Permite processar dezenas de horas sem risco de estourar a cota de tokens.</div>
+                            </div>
+                        </label>
+                        <label class="flex items-start space-x-3 p-3 rounded-xl border border-gray-800 bg-gray-950/60 cursor-pointer hover:border-gray-700">
+                            <input type="radio" name="modal-group-tier" value="multimodal_ocr" class="mt-1 text-indigo-600 focus:ring-indigo-500">
+                            <div>
+                                <div class="font-semibold text-white text-xs">🔵 Modo Profundo (Áudio + OCR de Código)</div>
+                                <div class="text-[11px] text-gray-400">Processa também frames de tela. Custo de tokens mais alto.</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-indigo-950/30 rounded-xl border border-indigo-500/20 text-[11px] text-indigo-200">
+                    ℹ️ O processo é realizado sequencialmente em segundo plano. O agente absorverá cada aula e acumulará as horas reais e senioridade.
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-3 border-t border-gray-800">
+                <button onclick="closeEnqueueGroupModal()" class="px-4 py-2 rounded-xl text-gray-400 hover:text-white font-medium text-sm">Cancelar</button>
+                <button onclick="confirmEnqueueGroup()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-600/25">
+                    Enfileirar Todas as Pendentes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Painel de Consumo & Custos de Tokens -->
+    <div id="token-dashboard-modal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-3xl max-w-3xl w-full p-6 sm:p-7 space-y-6 shadow-2xl max-h-[90vh] flex flex-col">
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-gray-800 pb-4 flex-shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-white flex items-center space-x-2">
+                            <span>Painel de Consumo Real & Custos</span>
+                            <span id="modal-plan-badge" class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Free Tier</span>
+                        </h3>
+                        <p class="text-xs text-gray-400">Controle rigoroso de limites, tokens de entrada/saída e custos da API</p>
+                    </div>
+                </div>
+                <button onclick="closeTokenDashboardModal()" class="text-gray-400 hover:text-white p-2 rounded-xl hover:bg-gray-800 transition-all">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="space-y-6 overflow-y-auto pr-1 flex-1">
+                <!-- Seletor de Plano de Cota -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Seu Plano no Google AI Studio</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- Free Tier -->
+                        <div id="plan-card-free" onclick="updatePlanTier('free_tier')" class="cursor-pointer p-3.5 rounded-2xl border border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-500 transition-all relative">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-emerald-400 font-bold text-xs">🟢 Gratuito (Free Tier)</span>
+                                </div>
+                                <span class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full">R$ 0,00</span>
+                            </div>
+                            <p class="text-[11px] text-gray-300 leading-relaxed mb-2">15 RPM • 1.000.000 TPM (1M/min) • 1.500 req/dia. Sem custo algum.</p>
+                            <div class="text-[10px] text-gray-500">Ideal para testar e para estudos com pausas entre aulas.</div>
+                        </div>
+
+                        <!-- Paid Tier -->
+                        <div id="plan-card-paid" onclick="updatePlanTier('paid_tier')" class="cursor-pointer p-3.5 rounded-2xl border border-gray-800 bg-gray-950/60 hover:border-indigo-500/60 transition-all relative">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-indigo-300 font-bold text-xs">⚡ Pay-as-you-go (Gemini Pro)</span>
+                                </div>
+                                <span class="text-[10px] font-semibold text-indigo-400 bg-indigo-500/20 px-2 py-0.5 rounded-full">Sob Demanda</span>
+                            </div>
+                            <p class="text-[11px] text-gray-300 leading-relaxed mb-2">1.000-2.000 RPM • 4.000.000 TPM (4M/min) • Sem limite diário.</p>
+                            <div class="text-[10px] text-gray-500">~$1.00 / 1M tokens áudio (~R$ 5,60). Roda grupos gigantes sem parar.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumo em Métricas Chave -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="p-3 bg-gray-950 rounded-2xl border border-gray-800">
+                        <div class="text-[10px] font-semibold text-gray-400 uppercase">Hoje (Tokens)</div>
+                        <div id="modal-daily-tokens" class="text-base font-bold text-white mt-1">0</div>
+                        <div id="modal-daily-tokens-split" class="text-[10px] text-gray-500 mt-0.5">0 prompt • 0 resp</div>
+                    </div>
+                    <div class="p-3 bg-gray-950 rounded-2xl border border-gray-800">
+                        <div class="text-[10px] font-semibold text-gray-400 uppercase">Custo Hoje</div>
+                        <div id="modal-daily-cost" class="text-base font-bold text-emerald-400 mt-1">$0.0000</div>
+                        <div id="modal-daily-cost-brl" class="text-[10px] text-gray-400 mt-0.5">R$ 0,00</div>
+                    </div>
+                    <div class="p-3 bg-gray-950 rounded-2xl border border-gray-800">
+                        <div class="text-[10px] font-semibold text-gray-400 uppercase">Semana (Tokens)</div>
+                        <div id="modal-weekly-tokens" class="text-base font-bold text-white mt-1">0</div>
+                        <div class="text-[10px] text-gray-500 mt-0.5">Últimos 7 dias</div>
+                    </div>
+                    <div class="p-3 bg-gray-950 rounded-2xl border border-gray-800">
+                        <div class="text-[10px] font-semibold text-gray-400 uppercase">Custo Semana</div>
+                        <div id="modal-weekly-cost" class="text-base font-bold text-indigo-400 mt-1">$0.0000</div>
+                        <div id="modal-weekly-cost-brl" class="text-[10px] text-gray-400 mt-0.5">R$ 0,00</div>
+                    </div>
+                </div>
+
+                <!-- Configuração de Teto Diário / Alerta de Orçamento -->
+                <div class="p-4 bg-gray-950 rounded-2xl border border-gray-800 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-semibold text-gray-300">Teto Diário de Consumo de Tokens (Alerta de Segurança)</label>
+                        <span class="text-[11px] text-gray-400">Atualmente: <strong id="modal-current-budget-label" class="text-indigo-400">1.0M</strong></span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <input type="number" id="modal-budget-input" min="10000" step="50000" value="1000000"
+                            class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none">
+                        <button onclick="saveModalBudget()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition-all">
+                            Salvar Teto
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-gray-500">Se o consumo diário atingir 100% deste teto, a interface exibirá aviso visual para proteção da sua cota.</p>
+                </div>
+
+                <!-- Histórico Detalhado das Últimas Operações -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">Últimas Operações Registradas</h4>
+                        <span class="text-[10px] text-gray-500">Últimas 25 chamadas</span>
+                    </div>
+                    <div class="bg-gray-950 rounded-2xl border border-gray-800 overflow-hidden">
+                        <div class="max-h-52 overflow-y-auto">
+                            <table class="w-full text-left text-[11px]">
+                                <thead class="bg-gray-900/80 text-gray-400 border-b border-gray-800 sticky top-0">
+                                    <tr>
+                                        <th class="py-2 px-3 font-medium">Horário</th>
+                                        <th class="py-2 px-3 font-medium">Operação</th>
+                                        <th class="py-2 px-3 font-medium">Prompt</th>
+                                        <th class="py-2 px-3 font-medium">Resposta</th>
+                                        <th class="py-2 px-3 font-medium">Total</th>
+                                        <th class="py-2 px-3 font-medium text-right">Custo Est.</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modal-token-history-rows" class="divide-y divide-gray-800/60 text-gray-300">
+                                    <!-- Renderizado via app.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between border-t border-gray-800 pt-4 flex-shrink-0">
+                <div class="text-[11px] text-gray-500">
+                    Calculado usando preços oficiais: $1.00/1M tokens áudio • $0.30/1M texto Flash
+                </div>
+                <button onclick="closeTokenDashboardModal()" class="px-5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-white text-xs font-semibold transition-all">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: CRUD de Área da Vida (Criar / Editar) -->
+    <div id="area-crud-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20">
+                        <i data-lucide="target" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 id="area-crud-modal-title" class="font-bold text-lg text-white">Nova Área da Vida</h3>
+                        <p class="text-xs text-gray-400">Configure um domínio estratégico para seus agentes</p>
+                    </div>
+                </div>
+                <button onclick="closeAreaCrudModal()" class="text-gray-400 hover:text-white p-2 rounded-xl hover:bg-gray-800 transition-all">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <input type="hidden" id="area-form-mode" value="create">
+                <input type="hidden" id="area-form-id" value="">
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Nome da Área</label>
+                    <input type="text" id="area-form-name" placeholder="Ex: Finanças & Investimentos, Tecnologia..."
+                        class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Ícone (Emoji)</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="area-form-icon" value="🎯" maxlength="4"
+                                class="w-14 text-center text-xl bg-gray-950 border border-gray-800 rounded-xl py-2 text-white focus:outline-none focus:border-cyan-500">
+                            <div class="flex flex-wrap gap-1">
+                                <button type="button" onclick="document.getElementById('area-form-icon').value='💻'" class="px-1.5 py-1 bg-gray-800 rounded text-sm hover:bg-gray-700">💻</button>
+                                <button type="button" onclick="document.getElementById('area-form-icon').value='🧠'" class="px-1.5 py-1 bg-gray-800 rounded text-sm hover:bg-gray-700">🧠</button>
+                                <button type="button" onclick="document.getElementById('area-form-icon').value='💰'" class="px-1.5 py-1 bg-gray-800 rounded text-sm hover:bg-gray-700">💰</button>
+                                <button type="button" onclick="document.getElementById('area-form-icon').value='🚀'" class="px-1.5 py-1 bg-gray-800 rounded text-sm hover:bg-gray-700">🚀</button>
+                                <button type="button" onclick="document.getElementById('area-form-icon').value='🏥'" class="px-1.5 py-1 bg-gray-800 rounded text-sm hover:bg-gray-700">🏥</button>
+                                <button type="button" onclick="document.getElementById('area-form-icon').value='🛡️'" class="px-1.5 py-1 bg-gray-800 rounded text-sm hover:bg-gray-700">🛡️</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Cor no Radar</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="color" id="area-form-color" value="#06b6d4"
+                                class="w-10 h-10 rounded-xl bg-transparent border-0 cursor-pointer">
+                            <span id="area-form-color-label" class="text-xs font-mono text-gray-400">#06b6d4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Descrição Estratégica</label>
+                    <textarea id="area-form-desc" rows="2" placeholder="Qual o propósito deste domínio de vida e quais resultados ele gera?"
+                        class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Gestor Executivo</label>
+                        <select id="area-form-manager" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500">
+                            <option value="">-- Sem Gestor Atribuído --</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Saúde Inicial (%)</label>
+                        <input type="number" id="area-form-health" min="0" max="100" value="90"
+                            class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-3 border-t border-gray-800">
+                <button onclick="closeAreaCrudModal()" class="px-4 py-2 rounded-xl text-gray-400 hover:text-white font-medium text-xs">Cancelar</button>
+                <button onclick="submitAreaForm()" class="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition-all shadow-lg shadow-cyan-600/25">
+                    Salvar Área
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Especificação do Agente (agent.md & skill.md) -->
+    <div id="agent-spec-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-3xl max-w-4xl w-full p-6 sm:p-7 space-y-5 shadow-2xl max-h-[90vh] flex flex-col">
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-gray-800 pb-4 flex-shrink-0">
+                <div class="flex items-center space-x-3.5">
+                    <div id="spec-modal-avatar" class="w-12 h-12 rounded-2xl bg-gray-800 border border-gray-700 flex items-center justify-center text-2xl shadow-inner">
+                        👨‍💻
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h3 id="spec-modal-name" class="font-bold text-lg text-white">Nome do Agente</h3>
+                            <span id="spec-modal-role-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">GESTOR</span>
+                        </div>
+                        <p id="spec-modal-subtitle" class="text-xs text-indigo-400 font-mono">agent.md & skills.md • Especificação Padrão</p>
+                    </div>
+                </div>
+
+                <button onclick="closeAgentSpecModal()" class="text-gray-400 hover:text-white p-2 rounded-xl hover:bg-gray-800 transition-all">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Tab Buttons do Modal -->
+            <div class="flex items-center justify-between flex-shrink-0">
+                <div class="flex space-x-2 bg-gray-950 p-1 rounded-xl border border-gray-800">
+                    <button id="spec-tab-btn-agent" onclick="switchSpecTab('agent')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition-all">
+                        📋 agent.md (Identidade & Protocolo)
+                    </button>
+                    <button id="spec-tab-btn-skills" onclick="switchSpecTab('skills')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition-all">
+                        ⚡ skill.md (Competências Modulares)
+                    </button>
+                </div>
+
+                <button onclick="copyCurrentSpecContent()" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 hover:text-white border border-gray-700 transition-all">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    <span id="copy-spec-btn-label">Copiar Conteúdo</span>
+                </button>
+            </div>
+
+            <!-- Preformatted Markdown Content Viewer -->
+            <div class="flex-1 overflow-y-auto bg-[#0d1117] border border-gray-800 rounded-2xl p-4 font-mono text-xs text-gray-200">
+                <pre id="spec-content-pre" class="whitespace-pre-wrap leading-relaxed select-text"></pre>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between border-t border-gray-800 pt-3 flex-shrink-0 text-xs text-gray-500">
+                <span>Padrão compatível com orquestração autônoma e handoff entre gestores</span>
+                <button onclick="closeAgentSpecModal()" class="px-5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-semibold transition-all">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= MODAL: EDITAR FUNCIONÁRIO (COM ACESSO DIRETO A SKILL.MD) ================= -->
+    <div id="employee-edit-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#12151d] border border-[#272b38] rounded-3xl max-w-3xl w-full p-6 space-y-5 shadow-2xl max-h-[90vh] flex flex-col font-sans">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between border-b border-[#232733] pb-4 flex-shrink-0">
+                <div class="flex items-center space-x-3.5">
+                    <div id="emp-edit-avatar-badge" class="w-12 h-12 rounded-2xl bg-gray-800 border border-gray-700 flex items-center justify-center text-2xl shadow-inner">
+                        👨‍💻
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h3 id="emp-edit-modal-name" class="font-bold text-lg text-white">Editar Funcionário</h3>
+                            <span id="emp-edit-type-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">TÉCNICO</span>
+                        </div>
+                        <p id="emp-edit-modal-subtitle" class="text-xs text-gray-400 font-mono">Gestão de cadastro corporativo & especificação técnica</p>
+                    </div>
+                </div>
+
+                <button type="button" onclick="closeEmployeeEditModal()" class="text-gray-400 hover:text-white p-2 rounded-xl hover:bg-gray-800 transition-all">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Tabs do Modal: Ficha Cadastral vs skill.md vs agent.md -->
+            <div class="flex items-center justify-between flex-shrink-0">
+                <div class="flex space-x-1.5 bg-gray-950 p-1 rounded-xl border border-gray-800 text-xs">
+                    <button id="emp-tab-btn-cadastral" onclick="switchEmployeeEditTab('cadastral')" class="px-3.5 py-1.5 rounded-lg font-semibold bg-indigo-600 text-white transition-all">
+                        📋 Ficha Cadastral
+                    </button>
+                    <button id="emp-tab-btn-skill" onclick="switchEmployeeEditTab('skill')" class="px-3.5 py-1.5 rounded-lg font-semibold text-gray-400 hover:text-white transition-all">
+                        ⚡ skill.md (Competências)
+                    </button>
+                    <button id="emp-tab-btn-agent" onclick="switchEmployeeEditTab('agent')" class="px-3.5 py-1.5 rounded-lg font-semibold text-gray-400 hover:text-white transition-all">
+                        📄 agent.md (Diretrizes)
+                    </button>
+                </div>
+                <span id="emp-edit-id-label" class="text-[11px] font-mono text-gray-500">ID: ...</span>
+            </div>
+
+            <!-- Conteúdo da Aba 1: Ficha Cadastral -->
+            <div id="emp-subtab-cadastral" class="space-y-4 overflow-y-auto pr-1 flex-1 text-xs">
+                <input type="hidden" id="emp-edit-agent-id" value="">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-semibold text-gray-400 uppercase tracking-wider mb-1">Nome Completo</label>
+                        <input type="text" id="emp-edit-name-input" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-gray-400 uppercase tracking-wider mb-1">Cargo / Especialidade</label>
+                        <input type="text" id="emp-edit-role-input" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-xs">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block font-semibold text-gray-400 uppercase tracking-wider mb-1">Avatar (Emoji)</label>
+                        <input type="text" id="emp-edit-avatar-input" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-gray-400 uppercase tracking-wider mb-1">Área da Vida</label>
+                        <select id="emp-edit-area-select" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-xs">
+                            <option value="">-- Sem Área Atribuída --</option>
+                            <option value="health">🌿 Saúde & Vitalidade</option>
+                            <option value="tech">💻 Tecnologia</option>
+                            <option value="sales">💼 Vendas & Negociação</option>
+                            <option value="mind">🧠 Mente & Foco</option>
+                            <option value="marketing">🚀 Marketing</option>
+                            <option value="finance">💰 Finanças</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-gray-400 uppercase tracking-wider mb-1">Hierarquia</label>
+                        <select id="emp-edit-type-select" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-xs">
+                            <option value="gestor">👑 Gestor Executivo</option>
+                            <option value="tecnico">⚡ Especialista Técnico</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-semibold text-gray-400 uppercase tracking-wider mb-1">Status Operacional</label>
+                        <select id="emp-edit-status-select" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-xs">
+                            <option value="ativo">🟢 Ativo</option>
+                            <option value="estudando">🟡 Estudando</option>
+                            <option value="inativo">⚪ Inativo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-gray-400 uppercase tracking-wider mb-1">Horas Totais Estudadas</label>
+                        <input type="number" step="0.5" id="emp-edit-hours-input" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-xs font-mono">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-gray-400 uppercase tracking-wider mb-1">Habilidades & Tópicos Dominados (separados por vírgula)</label>
+                    <textarea id="emp-edit-topics-textarea" rows="3" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-xs font-mono"></textarea>
+                </div>
+            </div>
+
+            <!-- Conteúdo da Aba 2: Editor Direto de skill.md -->
+            <div id="emp-subtab-skill" class="hidden flex-1 flex flex-col space-y-2 overflow-hidden">
+                <div class="flex items-center justify-between text-xs text-gray-400">
+                    <span class="font-mono text-[11px]">Arquivo: <strong class="text-purple-300">data/skills/{id}/SKILL.md</strong></span>
+                    <span class="text-[11px] text-gray-500">Edite as diretrizes e regras que o agente segue no Antigravity</span>
+                </div>
+                <textarea id="emp-edit-skill-md-editor" class="flex-1 w-full bg-[#0d1117] border border-[#232733] rounded-2xl p-4 font-mono text-xs text-gray-200 leading-relaxed focus:outline-none focus:border-purple-500 resize-none select-text"></textarea>
+            </div>
+
+            <!-- Conteúdo da Aba 3: Editor Direto de agent.md -->
+            <div id="emp-subtab-agent" class="hidden flex-1 flex flex-col space-y-2 overflow-hidden">
+                <div class="flex items-center justify-between text-xs text-gray-400">
+                    <span class="font-mono text-[11px]">Identidade & Protocolo: <strong class="text-indigo-300">agent.md</strong></span>
+                    <span class="text-[11px] text-gray-500">Protocolo de escalação, delegação e debate inter-gestores</span>
+                </div>
+                <textarea id="emp-edit-agent-md-editor" class="flex-1 w-full bg-[#0d1117] border border-[#232733] rounded-2xl p-4 font-mono text-xs text-gray-200 leading-relaxed focus:outline-none focus:border-indigo-500 resize-none select-text"></textarea>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="border-t border-[#232733] pt-4 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center space-x-2">
+                    <button type="button" onclick="deleteCurrentEmployeeFromModal()" class="px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 border border-rose-500/30 text-xs font-semibold flex items-center space-x-1.5 transition-all cursor-pointer" title="Excluir este especialista do sistema">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        <span>Excluir Agente</span>
+                    </button>
+                    <span id="emp-edit-feedback-msg" class="text-xs text-emerald-400 font-medium"></span>
+                </div>
+                <div class="flex items-center space-x-2.5">
+                    <button type="button" onclick="closeEmployeeEditModal()" class="px-4 py-2 rounded-xl bg-[#1c202c] hover:bg-[#252a3a] text-gray-300 text-xs font-semibold transition-all">
+                        Cancelar
+                    </button>
+                    <button type="button" onclick="saveEmployeeFullForm()" id="btn-save-employee-modal" class="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-600/25 flex items-center space-x-2">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        <span>Salvar Alterações</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Modal: Criar Novo Projeto -->
+    <div id="modal-new-project" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#121620] border border-[#232733] rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-[#232733] pb-4">
+                <div class="flex items-center space-x-2.5">
+                    <span class="text-xl">🚀</span>
+                    <h3 class="text-base font-bold text-white">Criar Novo Projeto</h3>
+                </div>
+                <button onclick="closeNewProjectModal()" class="text-gray-400 hover:text-white text-lg">✕</button>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-mono uppercase text-gray-400 mb-1">Título do Projeto</label>
+                    <input type="text" id="new-proj-title" placeholder="Ex: Roteiro de Vídeo sobre Assuntos em Alta" 
+                        class="w-full bg-[#181d2a] border border-[#262c3e] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 font-sans">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono uppercase text-gray-400 mb-1">Área da Vida / Negócio Responsável</label>
+                    <select id="new-proj-area" class="w-full bg-[#181d2a] border border-[#262c3e] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 font-sans" onchange="onProjectAreaChange(this.value)">
+                        <!-- Preenchido via app.js -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono uppercase text-gray-400 mb-1">Gestor Responsável pela Decomposição</label>
+                    <select id="new-proj-manager" class="w-full bg-[#181d2a] border border-[#262c3e] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 font-sans">
+                        <!-- Preenchido dinamicamente -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono uppercase text-gray-400 mb-1">Objetivo & Diretrizes da Entrega</label>
+                    <textarea id="new-proj-description" rows="4" placeholder="Descreva detalhadamente o que você deseja que a equipe produza. Ex: Criar um roteiro completo de 8 a 10 minutos abordando os 3 maiores avanços recentes em IA, com gancho inicial, exemplos práticos de código e chamada para ação..." 
+                        class="w-full bg-[#181d2a] border border-[#262c3e] rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 font-sans"></textarea>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end space-x-2 pt-3 border-t border-[#232733]">
+                <button type="button" onclick="closeNewProjectModal()" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold">Cancelar</button>
+                <button type="button" onclick="submitNewProject()" id="btn-submit-new-project" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow flex items-center space-x-1.5">
+                    <span>Criar & Avançar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Visualizador de Documento / Artefato -->
+    <div id="modal-view-document" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#10141d] border border-[#232733] rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            <div class="flex items-center justify-between border-b border-[#232733] px-6 py-4 bg-[#151924]">
+                <div class="flex items-center space-x-3">
+                    <span id="doc-modal-icon" class="text-2xl">📄</span>
+                    <div>
+                        <h3 id="doc-modal-title" class="text-sm font-bold text-white font-mono">Documento</h3>
+                        <div id="doc-modal-meta" class="text-[11px] text-gray-400 font-mono">Autor • Data</div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="downloadCurrentDocument()" class="px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-semibold flex items-center space-x-1.5 transition-all">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>Baixar (.md)</span>
+                    </button>
+                    <button onclick="closeDocumentModal()" class="text-gray-400 hover:text-white text-lg px-2">✕</button>
+                </div>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 text-gray-200 text-xs leading-relaxed space-y-4 font-mono select-text bg-[#0d1017]">
+                <pre id="doc-modal-content" class="whitespace-pre-wrap font-mono text-gray-200 text-xs"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= GAVETA LATERAL DE TELEMETRIA (SLIDE-OVER DRAWER) ================= -->
+    <div id="telemetry-drawer-overlay" onclick="closeTelemetryDrawer()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] hidden transition-opacity duration-300 opacity-0 cursor-pointer"></div>
+
+    <aside id="telemetry-drawer" class="fixed top-0 right-0 bottom-0 w-full max-w-md bg-[#0f131c] border-l border-gray-800 shadow-2xl z-[100] transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+        <!-- Header da Gaveta -->
+        <div class="p-5 border-b border-gray-800/80 flex items-center justify-between bg-[#131722]/80">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                    <i data-lucide="gauge" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-white tracking-tight">Telemetria de Tokens</h3>
+                    <p class="text-[11px] text-gray-400">Consumo em tempo real do Gemini & Oráculo</p>
+                </div>
+            </div>
+            <button onclick="closeTelemetryDrawer()" class="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/80 transition-all cursor-pointer">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <!-- Conteúdo com Scroll da Gaveta -->
+        <div class="flex-1 overflow-y-auto p-5 space-y-4">
+            <!-- Card 1: Cota Diária -->
+            <div class="p-4 rounded-2xl bg-gray-900/60 border border-gray-800 space-y-2.5">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-400 font-medium">Cota Diária de Tokens</span>
+                    <span id="drawer-token-pct" class="font-bold text-indigo-300 font-mono">0.0%</span>
+                </div>
+                <div class="w-full bg-gray-800/80 rounded-full h-2.5 overflow-hidden">
+                    <div id="drawer-token-bar" class="h-2.5 rounded-full bg-indigo-500 transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <div class="text-[11px] text-gray-400 flex justify-between font-mono">
+                    <span id="drawer-token-used">0 tokens</span>
+                    <span class="text-gray-500">Limite: <span id="drawer-token-budget">1.0M</span></span>
+                </div>
+            </div>
+
+            <!-- Card 2: Consumo Hoje -->
+            <div class="p-4 rounded-2xl bg-gray-900/60 border border-gray-800 space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-400 font-medium">Consumo Hoje</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20">Hoje</span>
+                </div>
+                <div class="text-2xl font-bold text-white font-mono tracking-tight flex items-baseline space-x-1.5">
+                    <span id="drawer-token-daily">0</span>
+                    <span class="text-xs font-normal text-gray-400 font-sans">tokens</span>
+                </div>
+                <p id="drawer-token-daily-details" class="text-xs text-gray-400">0 prompt • 0 resposta</p>
+                <div class="pt-2 border-t border-gray-800/60 flex items-center justify-between text-xs font-mono">
+                    <span class="text-gray-500">Custo estimado hoje:</span>
+                    <span id="drawer-token-daily-cost" class="text-emerald-400 font-bold">$0.0000 (R$ 0,00)</span>
+                </div>
+            </div>
+
+            <!-- Card 3: Semanal & Histórico -->
+            <div class="p-4 rounded-2xl bg-gray-900/60 border border-gray-800 space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-400 font-medium">Consumo Semanal (7 dias)</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 text-purple-400 border border-purple-500/20">Semanal</span>
+                </div>
+                <div class="text-xl font-bold text-white font-mono tracking-tight flex items-baseline space-x-1.5">
+                    <span id="drawer-token-weekly">0</span>
+                    <span class="text-xs font-normal text-gray-400 font-sans">tokens</span>
+                </div>
+                <p id="drawer-token-total" class="text-xs text-gray-500 font-mono">Total acumulado: 0</p>
+                <div class="pt-2 border-t border-gray-800/60 flex items-center justify-between text-xs font-mono">
+                    <span class="text-gray-500">Custo semanal:</span>
+                    <span id="drawer-token-weekly-cost" class="text-emerald-400 font-bold">$0.0000</span>
+                </div>
+            </div>
+
+            <!-- Botão para abrir modal detalhada -->
+            <button onclick="closeTelemetryDrawer(); openTokenDashboardModal()" class="w-full py-2.5 px-4 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-indigo-300 hover:text-white border border-gray-700 flex items-center justify-center space-x-2 transition-all cursor-pointer">
+                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                <span>Ver Histórico & Configurações de Custos</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Scripts -->
+    <script src="/static/app.js?v=4.2"></script>
+    <script>
+        lucide.createIcons();
+        // Registra Service Worker para PWA Mobile
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then(reg => console.log('🔮 Oráculo PWA Service Worker ativo:', reg.scope))
+                    .catch(err => console.warn('PWA SW registro opcional falhou:', err));
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "id": "sales",
+  "name": "Vendas & Negociação Persuasiva",
+  "icon": "📈",
+  "color": "#f59e0b",
+  "description": "Sistema Straight Line, prospecção ativa, fechamento de contratos e objeções de alto valor.",
+  "manager_agent_id": "gestor_sales_director",
+  "subagent_ids": [
+    "agent_jordan_belford_5567"
+  ],
+  "health_score": 100,
+  "routines_count": 0,
+  "projects_count": 0,
+  "meetings_count": 0
+}

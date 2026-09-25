@@ -1,0 +1,50 @@
+name: Oráculo CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: 🧪 TDD & Lint Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+
+      - name: Run TDD Test Suite
+        run: |
+          pytest tests/ -v
+
+  deploy:
+    name: 🚀 Deploy to Google Compute Engine
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH (se configurado)
+        if: env.GCE_HOST != ''
+        env:
+          GCE_HOST: ${{ secrets.GCE_HOST }}
+          GCE_USER: ${{ secrets.GCE_USER }}
+          GCE_KEY: ${{ secrets.GCE_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$GCE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "$GCE_HOST" >> ~/.ssh/known_hosts
+          ssh "$GCE_USER@$GCE_HOST" "cd oraculo && git pull && bash scripts/deploy_vm.sh"

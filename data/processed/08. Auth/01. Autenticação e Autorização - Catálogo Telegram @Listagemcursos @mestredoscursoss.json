@@ -1,0 +1,104 @@
+{
+  "video_id": "01. Autenticação e Autorização - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "01. Autenticação e Autorização - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "08. Auth",
+  "telegram_message_id": 0,
+  "duration_seconds": 1025.536,
+  "tier_used": "audio_only",
+  "title": "Autenticação e Autorização em System Design",
+  "summary": "Nesta aula, abordamos os conceitos essenciais de Autenticação e Autorização no contexto de System Design. É explicada a diferença fundamental entre autenticação (confirmar 'quem você é') e autorização (determinar 'o que você pode fazer'). A aula explora detalhadamente as estratégias de autenticação por Sessão (Session ID em Cookies/Redis) e JWT (JSON Web Tokens), analisando os prós e contras em arquiteturas distribuídas. Em seguida, são apresentados os principais modelos de autorização (RBAC, ABAC, ACL e permissões granulares), as camadas arquiteturais onde essas validações ocorrem (Reverse Proxy, API Gateway, Application Server) e os padrões/provedores de identidade modernos (OAuth 2.0, OpenID Connect, Keycloak, AWS Cognito e Auth0).",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "Diferença entre Autenticação e Autorização",
+    "Métodos de Autenticação e Fluxo de Login",
+    "Autenticação baseada em Sessão (Session ID + Redis) vs. JWT",
+    "Desafios de Escala e Revogação em Sistemas Distribuídos",
+    "MFA / 2FA e Passkeys",
+    "Modelos de Autorização: RBAC, ABAC, ACL e Permissões Granulares",
+    "Camadas Arquiteturais de Auth (Gateway, Web Server, App Server)",
+    "Padrões e Provedores de Identidade (OAuth 2.0, OIDC, Keycloak, Cognito, Auth0)"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "01:25",
+      "text": "Introdução às definições de Autenticação e Autorização. A autenticação confirma quem o usuário é (validação de identidade), enquanto a autorização define quais ações aquele usuário autenticado tem permissão para executar dentro do sistema.",
+      "visual_description": "Apresentação dos tópicos com tópicos em texto na tela sobre Autenticação ('Quem você é') e Autorização ('O que você pode fazer').",
+      "code_snippets": []
+    },
+    {
+      "start_time": "01:25",
+      "end_time": "03:28",
+      "text": "Explicação dos métodos e fatores de autenticação: credenciais/segredos (senhas), posse de algo (tokens, hardware), ou biometria (FaceID, impressão digital). Apresentação do fluxo padrão de autenticação entre Client e Server.",
+      "visual_description": "Diagrama simples exibindo o fluxo de requisição do Client ao Server enviando e-mail e senha, e recebendo token/sessão após validação.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "03:28",
+      "end_time": "05:12",
+      "text": "Detalhamento do funcionamento de Sessões. O servidor armazena os dados da sessão em um armazenamento centralizado (ex: Redis) e devolve um Session ID para o cliente em um Cookie. Explicação de como funciona a revogação de sessão.",
+      "visual_description": "Esquema mostrando o Server salvando a sessão no Redis e enviando o Session ID via Cookie para o navegador.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "05:12",
+      "end_time": "06:23",
+      "text": "Análise dos desafios de escala do modelo de sessão em infraestruturas distribuídas. Necessidade de compartilhamento de estado de sessão entre múltiplos servidores backend.",
+      "visual_description": "Desenho de múltiplos servidores de aplicação compartilhando uma camada de dados externa (Redis) para checagem de sessões.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "06:23",
+      "end_time": "07:44",
+      "text": "Explicação do JWT (JSON Web Token). O JWT carrega as informações (claims) assinadas criptograficamente pelo servidor. Vantagem: o servidor não precisa guardar estado (stateless). Desvantagem: dificuldade para revogar o token antes da expiração.",
+      "visual_description": "Ilustração da estrutura e fluxo do JWT entre cliente e servidor sem necessidade de busca em banco de dados a cada requisição.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "07:44",
+      "end_time": "08:08",
+      "text": "Menção a boas práticas modernas de autenticação como Two-Factor Authentication (2FA / MFA) e o avanço recente das Passkeys para substituição de senhas.",
+      "visual_description": "Texto destacando 2FA e Passkeys como mecanismos adicionais de segurança.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "08:08",
+      "end_time": "10:16",
+      "text": "Introdução aos modelos de autorização, focando no RBAC (Role-Based Access Control). Atribuição de papeis (Admin, Editor, Viewer) aos usuários para controle de acesso às rotas e recursos.",
+      "visual_description": "Diagrama de RBAC relacionando papéis (Admin, Editor, Viewer) a ações como 'delete video'.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "10:16",
+      "end_time": "10:53",
+      "text": "Apresentação dos modelos ABAC (Attribute-Based Access Control) baseado em atributos (departamento, localização, horário) e ACL (Access Control List) associado diretamente aos recursos.",
+      "visual_description": "Resumo visual de ABAC e ACL com exemplos de condicionais baseadas em atributos do usuário/ambiente.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "10:53",
+      "end_time": "12:02",
+      "text": "Conceito de permissões granulares e dinâmicas criadas especificamente para usuários, permitindo ou restringindo combinações de ações muito específicas dentro da aplicação.",
+      "visual_description": "Exemplo de tabela ou lista de permissões granulares por usuário.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "12:02",
+      "end_time": "14:55",
+      "text": "Organização em camadas arquiteturais para autenticação e autorização. Autenticação geralmente tratada na borda (API Gateway, Load Balancer, Reverse Proxy como NGINX) e autorização tratada mais perto da aplicação ou no domínio.",
+      "visual_description": "Diagrama de camadas: Borda/Proxy (Autenticação) -> Application Server / Domain (Autorização e Regras de Negócio).",
+      "code_snippets": []
+    },
+    {
+      "start_time": "14:55",
+      "end_time": "17:05",
+      "text": "Padrões modernos e Provedores de Identidade (IdP): OAuth 2.0 (delegação de autorização), OpenID Connect (OIDC, camada de identidade sobre OAuth), e soluções de Identity Providers gerenciados/self-hosted como Keycloak, AWS Cognito e Auth0.",
+      "visual_description": "Lista de protocolos e ferramentas: OAuth 2.0, OIDC, Keycloak, AWS Cognito e Auth0.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# Autenticação e Autorização em System Design\n\n## Resumo Geral\nNesta aula, exploramos as diferenças conceituais, práticas e arquiteturais entre **Autenticação** e **Autorização**, essenciais para o desenho de sistemas seguros e escaláveis.\n\n- **Autenticação (AuthN):** Confirma a identidade do usuário (\"Quem é você?\").\n- **Autorização (AuthZ):** Define as permissões e ações permitidas (\"O que você pode fazer?\").\n\n---\n\n## Principais Tópicos Abordados\n\n### 1. Autenticação (AuthN)\n- **Mecanismos:** Senhas, Tokens, Biometria (FaceID/Impressão Digital), Posse de dispositivos/hardware.\n- **Sessões (Session ID + Cookies):**\n  - Estado mantido no servidor (ex: Redis).\n  - Fácil revogação imediata da sessão.\n  - Exige sincronização ou armazenamento centralizado em infraestruturas distribuídas.\n- **JWT (JSON Web Token):**\n  - Stateless (o servidor não precisa consultar o banco a cada requisição).\n  - Carrega dados (*claims*) e assinatura criptográfica.\n  - Desafio: Dificuldade de revogação antes do tempo de expiração expirar.\n- **Tendências:** MFA / 2FA e Passkeys.\n\n### 2. Modelos de Autorização (AuthZ)\n- **RBAC (Role-Based Access Control):** Acesso baseado em papéis (ex: Admin, Editor, Viewer).\n- **ABAC (Attribute-Based Access Control):** Acesso baseado em atributos de contexto (ex: localização, horário, departamento).\n- **ACL (Access Control List):** Lista de permissões associada diretamente a cada recurso individual.\n- **Permissões Granulares:** Controle detalhado e flexível por usuário.\n\n### 3. Arquitetura e Camadas de Implementação\n- **Autenticação na Borda:** Realizada em Reverse Proxies (NGINX), API Gateways ou Load Balancers antes de atingir o serviço de aplicação.\n- **Autorização na Aplicação:** Validada dentro da camada de negócios/domínio da aplicação.\n\n### 4. Padrões e Identity Providers (IdP)\n- **OAuth 2.0:** Padrão para delegação de autorização (ex: Login com Google).\n- **OpenID Connect (OIDC):** Camada de identidade construída sobre o OAuth 2.0.\n- **Identity Providers (IdPs):** Soluções gerenciadas ou self-hosted (AWS Cognito, Auth0, Keycloak).\n\n---\n\n## Linha do Tempo e Conteúdo Detalhado\n\n- **00:00 - 01:25:** Definição básica e distinção entre Autenticação e Autorização.\n- **01:25 - 03:28:** Métodos de autenticação e o fluxo tradicional de requisição/resposta de login.\n- **03:28 - 05:12:** Como funcionam as sessões com Session ID em Cookies e armazenamento no Redis.\n- **05:12 - 06:23:** Desafios de escala de sessões em ambientes distribuídos com múltiplos nós de aplicação.\n- **06:23 - 07:44:** JWT: vantagens do modelo stateless e desvantagens para revogação.\n- **07:44 - 08:08:** Uso de 2FA e adoção de Passkeys.\n- **08:08 - 10:16:** Modelo RBAC (Role-Based Access Control).\n- **10:16 - 10:53:** Modelos ABAC e ACL.\n- **10:53 - 12:02:** Permissões granulares por usuário.\n- **12:02 - 14:55:** Divisão de responsabilidades por camadas arquiteturais (Gateway vs. App Server).\n- **14:55 - 17:05:** Protocolos OAuth 2.0, OIDC e provedores de identidade (Keycloak, AWS Cognito, Auth0).",
+  "processed_at": "2026-09-23T16:52:58.331872Z"
+}

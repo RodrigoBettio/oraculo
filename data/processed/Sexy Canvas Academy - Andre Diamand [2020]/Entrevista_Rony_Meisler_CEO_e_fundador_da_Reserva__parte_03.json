@@ -1,0 +1,45 @@
+{
+  "video_id": "Entrevista_Rony_Meisler_CEO_e_fundador_da_Reserva__parte_03",
+  "file_name": "Entrevista_Rony_Meisler_CEO_e_fundador_da_Reserva__parte_03.mp4",
+  "group_name": "Sexy Canvas Academy - Andre Diamand [2020]",
+  "telegram_message_id": 26,
+  "duration_seconds": 1567.277279,
+  "tier_used": "multimodal_ocr",
+  "title": "Sexy Canvas Academy - Andre Diamand [2020]",
+  "summary": "Nesta aula do curso Sexy Canvas Academy, Andre Diamand discute a importância de alinhar o propósito empresarial com os valores da companhia, como o capitalismo mudou no contexto brasileiro e a relevância de criar um ambiente propício para o movimento nascer. São abordados exemplos práticos, a importância da reserva, a relação com o cliente e como o propósito e a cultura impactam o crescimento e o valor da empresa.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "Propósito e Valores Empresariais",
+    "Capitalismo e Contexto Brasileiro",
+    "Reserva e Valor da Empresa",
+    "Cultura e Engajamento",
+    "Relação com o Cliente e Inovação"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "05:00",
+      "text": "Discussão sobre o ambiente de negócios no Brasil, a transição do capitalismo consciente e a importância do propósito alinhado aos valores e à cultura corporativa.",
+      "visual_description": "Dois homens sentados à mesa conversando sobre negócios em um escritório.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "05:00",
+      "end_time": "10:00",
+      "text": "Análise sobre como empresas que investem em marketing sem essência sofrem e a importância de criar propostas de valor genuínas.",
+      "visual_description": "Close nos palestrantes discutindo estratégias de marketing e posicionamento.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "10:00",
+      "end_time": "15:00",
+      "text": "Debate sobre o impacto da reserva, a importância da estabilidade e como a cultura se reflete no engajamento dos funcionários e na satisfação dos clientes.",
+      "visual_description": "Discussão interativa na mesa com gesticulações explicativas.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# Sexy Canvas Academy - Andre Diamand [2020]\n\n## Resumo\nAula focada na construção de valor, alinhamento de propósito e cultura empresarial.\n\n## Tópicos Principais\n- Propósito e Cultura\n- Capitalismo no Brasil\n- Reserva e Crescimento\n\n## Segmentos\n- **00:00 - 05:00**: Contexto de negócios e capitalismo consciente.\n- **05:00 - 10:00**: Marketing com essência e propostas de valor.\n- **10:00 - 15:00**: Cultura e engajamento.",
+  "processed_at": "2026-09-24T22:44:33.981686Z"
+}

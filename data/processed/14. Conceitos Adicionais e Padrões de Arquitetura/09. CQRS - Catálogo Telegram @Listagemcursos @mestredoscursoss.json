@@ -1,0 +1,52 @@
+{
+  "video_id": "09. CQRS - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "09. CQRS - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "14. Conceitos Adicionais e Padrões de Arquitetura",
+  "telegram_message_id": 0,
+  "duration_seconds": 439.68,
+  "tier_used": "audio_only",
+  "title": "14. Conceitos Adicionais e Padrões de Arquitetura",
+  "summary": "Esta aula aborda o padrão CQRS (Command Query Responsibility Segregator) e o Event Sourcing, detalhando a separação entre comandos e consultas, o fluxo de eventos através de Event Stores e Event Handlers, a auditoria, escalabilidade e implicações de custo desses padrões em sistemas modernos.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "CQRS (Command Query Responsibility Segregator)",
+    "Event Sourcing",
+    "Event Store e Event Handlers",
+    "Auditoria e Escalabilidade",
+    "Trade-offs e Custos de Complexidade"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "01:18",
+      "text": "Introdução ao CQRS (Command Query Responsibility Segregator), que significa separar as responsabilidades de comandos e queries.",
+      "visual_description": "Explicação teórica inicial sobre CQRS.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "02:32",
+      "end_time": "03:14",
+      "text": "Exemplo de comando GET em status do produto e manipulação de eventos.",
+      "visual_description": "Apresentação de endpoints e status de produtos.",
+      "code_snippets": [
+        {
+          "timestamp": "02:32",
+          "language": "typescript",
+          "code": "GET /estatus/produto/x",
+          "description": "Consulta de status de produto"
+        }
+      ]
+    }
+  ],
+  "extracted_codes": [
+    {
+      "timestamp": "02:32",
+      "language": "typescript",
+      "code": "GET /estatus/produto/x",
+      "description": "Consulta de status de produto"
+    }
+  ],
+  "full_markdown": "# 14. Conceitos Adicionais e Padrões de Arquitetura\n\n## Resumo\nA aula explora o padrão CQRS e Event Sourcing, detalhando a separação de responsabilidades de comandos e leituras, o papel da Event Store, escalabilidade e auditoria.\n\n## Tópicos Principais\n- CQRS\n- Event Sourcing\n- Event Store\n- Escalabilidade\n",
+  "processed_at": "2026-09-23T17:49:36.990013Z"
+}

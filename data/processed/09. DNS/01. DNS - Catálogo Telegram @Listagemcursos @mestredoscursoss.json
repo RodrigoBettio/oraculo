@@ -1,0 +1,79 @@
+{
+  "video_id": "01. DNS - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "01. DNS - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "09. DNS",
+  "telegram_message_id": 0,
+  "duration_seconds": 697.072993,
+  "tier_used": "audio_only",
+  "title": "09. DNS",
+  "summary": "Esta aula aborda o funcionamento do Domain Name System (DNS), explicando sua importância como peça crucial para a navegação na internet, a estrutura hierárquica e a resolução de nomes (recursiva vs. iterativa), além do impacto do cache de DNS e da infraestrutura de ISP na performance.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "O que é DNS e sua importância",
+    "Listas telefônicas e endereçamento IP",
+    "Infraestrutura hierárquica do DNS (Root Server, TLD Server, Autoritative Server)",
+    "Resolução recursiva vs. iterativa",
+    "Impacto e funcionamento do cache de DNS",
+    "Papel dos Provedores de Serviço de Internet (ISPs)"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "02:26",
+      "text": "Introdução ao DNS (Domain Name System). O DNS é um sistema complexo e interconectado, essencial para o funcionamento da internet. A analogia com uma lista telefônica é utilizada para explicar a dificuldade de decorar números de IP e a necessidade de traduzir nomes amigáveis em endereços IP. O DNS funciona como uma lista telefônica atualizada dinamicamente.",
+      "visual_description": "Apresentação inicial sobre DNS e analogia com lista telefônica.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "02:26",
+      "end_time": "04:33",
+      "text": "Explicação da infraestrutura hierárquica do DNS. A árvore se divide em servidores raiz (Root Server), servidores de nível de topo (TLD Server) e servidores autoritativos (Authoritative Server). Explicação do fluxo recursivo e de como o cliente busca a informação através da hierarquia.",
+      "visual_description": "Esquema da infraestrutura hierárquica do DNS mostrando Root, TLD e Authoritative.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "04:33",
+      "end_time": "08:12",
+      "text": "Detalhamento da abordagem iterativa na resolução de DNS. O cliente pergunta ao Root Server, que redireciona para o TLD Server, que por sua vez aponta para o Authoritative Server. Demonstração passo a passo do fluxo iterativo e os 8 passos envolvidos no processo de consulta.",
+      "visual_description": "Diagrama detalhado dos 8 passos da consulta iterativa no DNS.",
+      "code_snippets": [
+        {
+          "timestamp": "04:51",
+          "language": "text",
+          "code": "youtube.com",
+          "description": "Exemplo de URL consultada"
+        },
+        {
+          "timestamp": "04:54",
+          "language": "text",
+          "code": "142.250.64.110",
+          "description": "Exemplo de endereço IP do Google"
+        }
+      ]
+    },
+    {
+      "start_time": "08:12",
+      "end_time": "11:36",
+      "text": "Discussão sobre redundância, múltiplos Root/TLD servers globais e o papel dos ISPs (Internet Service Providers) no fornecimento de servidores DNS locais para cache e melhoria de performance.",
+      "visual_description": "Explicação sobre distribuição geográfica de servidores e ISPs.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [
+    {
+      "timestamp": "04:51",
+      "language": "text",
+      "code": "youtube.com",
+      "description": "Exemplo de URL consultada"
+    },
+    {
+      "timestamp": "04:54",
+      "language": "text",
+      "code": "142.250.64.110",
+      "description": "Exemplo de endereço IP do Google"
+    }
+  ],
+  "full_markdown": "# 09. DNS\n\n## Resumo\nA aula explora o sistema de nomes de domínio (DNS), detalhando sua arquitetura hierárquica (Root, TLD e Authoritative servers), os mecanismos de consulta recursiva e iterativa, a importância do cache para mitigar sobrecargas na infraestrutura e o papel dos provedores de internet (ISPs).\n\n## Tópicos Principais\n- Conceito e necessidade do DNS\n- Estrutura hierárquica (Root, TLD, Authoritative)\n- Consultas recursivas vs. iterativas\n- Importância do Cache de DNS\n- Servidores de ISP\n\n## Código e Timestamps\n- **04:51** - Exemplo de domínio consultado: `youtube.com`\n- **04:54** - Exemplo de IP: `142.250.64.110`",
+  "processed_at": "2026-09-23T17:31:19.444122Z"
+}

@@ -1,0 +1,16 @@
+{
+  "id": "tech",
+  "name": "Tecnologia & Desenvolvimento",
+  "icon": "💻",
+  "color": "#10b981",
+  "description": "Arquitetura de software, automações com IA, Claude Code, APIs e infraestrutura moderna.",
+  "manager_agent_id": "gestor_tech_cto",
+  "subagent_ids": [
+    "agent_alex_vance",
+    "agent_claude_code"
+  ],
+  "health_score": 100,
+  "routines_count": 0,
+  "projects_count": 0,
+  "meetings_count": 0
+}

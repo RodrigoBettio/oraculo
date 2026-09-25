@@ -1,0 +1,60 @@
+{
+  "video_id": "08. Event Sourcing - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "08. Event Sourcing - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "14. Conceitos Adicionais e Padrões de Arquitetura",
+  "telegram_message_id": 0,
+  "duration_seconds": 953.877,
+  "tier_used": "audio_only",
+  "title": "Event Sourcing: Conceitos e Padrões de Arquitetura",
+  "summary": "Uma visão detalhada sobre o padrão Event Sourcing em três aulas. A primeira aborda o Event Sourcing em sua forma pura; a segunda analisa sua aplicação no CQRS; e a terceira diferencia Event Sourcing de Saga. O vídeo discute a necessidade de auditabilidade, imutabilidade, consistência temporal e como o Event Sourcing lida com transações e modelagem de eventos em sistemas distribuídos.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "Event Sourcing Puro",
+    "Auditabilidade e Imutabilidade",
+    "CQRS e Event Sourcing",
+    "Event Sourcing vs Saga",
+    "Projeções e Event Stores",
+    "Tratamento de Mudanças e Migrações"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "05:20",
+      "text": "Introdução ao Event Sourcing em três aulas: Event Sourcing puro, utilização em CQRS e diferenciação de Saga. Discussão sobre a motivação por trás do Event Sourcing em sistemas, partindo de um estado atual e a necessidade de auditabilidade e histórico das coisas.",
+      "visual_description": "Apresentação inicial sobre Event Sourcing e os tópicos das três aulas.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "05:20",
+      "end_time": "12:00",
+      "text": "Explicação sobre como o estado de transações bancárias e saldos pode ser auditado e reconstruído através de um log de eventos. Como o saldo é derivado de todas as transações e o uso do Event Sourcing para manter uma lista imutável de eventos.",
+      "visual_description": "Exemplos práticos de contas bancárias e logs de transações.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "12:00",
+      "end_time": "18:00",
+      "text": "Detalhes sobre a imutabilidade, significados e características de eventos, a importância de registrar timestamps, e o motivo pelo qual eventos nunca devem ser deletados (apenas compensados por novas transações inversas).",
+      "visual_description": "Discussão conceitual sobre imutabilidade e deleção de eventos.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "18:00",
+      "end_time": "25:00",
+      "text": "A importância de registrar quem enviou o evento, metadados adicionais, e como reconstruir estados históricos (snapshots) em bancos de dados baseados em eventos.",
+      "visual_description": "Explicação sobre snapshots e metadados de eventos.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "25:00",
+      "end_time": "35:00",
+      "text": "Abordagem sobre a mutabilidade e evolução dos esquemas em Event Sourcing, desafios de auditoria e a complexidade adicional em sistemas orientados a eventos.",
+      "visual_description": "Análise de arquitetura de sistemas com Event Sourcing.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [],
+  "full_markdown": "# Event Sourcing: Conceitos e Padrões de Arquitetura\n\n## Resumo\nApresentação completa sobre o padrão Event Sourcing dividida em três partes principais: Event Sourcing puro, aplicação em CQRS e diferenciação entre Event Sourcing e Saga. O vídeo aborda a necessidade de auditabilidade, imutabilidade, consistência temporal e os desafios na modelagem e evolução de eventos em sistemas transacionais.\n\n## Tópicos Principais\n- Event Sourcing Puro\n- Auditabilidade e Imutabilidade\n- CQRS e Event Sourcing\n- Event Sourcing vs Saga\n- Projeções e Event Stores\n- Tratamento de Mudanças e Migrações\n\n## Código e Timestamps\n(Nenhum código explícito foi ditado ou exibido durante a gravação, focando puramente nos conceitos teóricos de arquitetura).",
+  "processed_at": "2026-09-23T17:48:04.182628Z"
+}

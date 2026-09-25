@@ -1,0 +1,24 @@
+{
+  "id": "agent_ana_5058",
+  "name": "Ana",
+  "role": "Marketing Pessoal",
+  "avatar": "🚀",
+  "status": "inativo",
+  "current_task": null,
+  "area_id": "area_marketing_6867",
+  "agent_type": "tecnico",
+  "sources": [],
+  "total_hours_studied": 0.0,
+  "total_videos_studied": 0,
+  "topics_mastered": [
+    "Linkedin"
+  ],
+  "system_prompt": null,
+  "capabilities": [
+    "answer_questions",
+    "generate_specs",
+    "write_code"
+  ],
+  "created_at": "2026-09-24T19:25:35.064577Z",
+  "updated_at": "2026-09-24T19:25:35.064586Z"
+}

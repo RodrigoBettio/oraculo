@@ -1,0 +1,74 @@
+{
+  "video_id": "03. littles law - Catálogo Telegram @Listagemcursos @mestredoscursoss",
+  "file_name": "03. littles law - Catálogo Telegram @Listagemcursos @mestredoscursoss.mp4",
+  "group_name": "16. Requisitos e Estimativas",
+  "telegram_message_id": 0,
+  "duration_seconds": 255.766667,
+  "tier_used": "audio_only",
+  "title": "Little's Law na Estimativa de Sistemas",
+  "summary": "Nesta aula do curso sobre estimativas e requisitos, explora-se a aplicação da Lei de Little (Little's Law) no contexto de Engenharia de Software. O instrutor demonstra como utilizar a fórmula matemática para calcular o número médio de requisições, usuários ou itens em uma fila com base na vazão (throughput) e no tempo médio de espera, além de analisar o impacto da latência na escalabilidade de sistemas e servidores.",
+  "theme_name": null,
+  "companion_files": [],
+  "topics": [
+    "Introdução à Little's Law",
+    "Variáveis da Fórmula (L, Lambda, W)",
+    "Exemplo Prático com Café",
+    "Aplicação em Computação e Entrevistas de System Design",
+    "Impacto da Latência na Escalabilidadade de Servidores",
+    "Estratégias de Otimização (CDN, Cache, Edge Caching)"
+  ],
+  "segments": [
+    {
+      "start_time": "00:00",
+      "end_time": "01:00",
+      "text": "Introdução ao conceito de Little's Law, uma regra de cálculo estatístico que determina a quantidade de pessoas, usuários ou itens em uma fila dada uma determinada vazão.",
+      "visual_description": "Explicação inicial do conceito matemático e introdução à fórmula.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "01:00",
+      "end_time": "02:22",
+      "text": "Aplicação prática utilizando o exemplo de uma cafeteria. Cálculo do número de pessoas na fila considerando o tempo médio de atendimento e a taxa de chegada.",
+      "visual_description": "Desenvolvimento passo a passo da fórmula com L = Lambda * W.",
+      "code_snippets": [
+        {
+          "timestamp": "02:22",
+          "language": "text",
+          "code": "L = lambda * W",
+          "description": "Fórmula da Little's Law"
+        }
+      ]
+    },
+    {
+      "start_time": "02:22",
+      "end_time": "03:33",
+      "text": "Aplicação de Little's Law em System Design para estimar a concorrência de requisições, dimensionamento de pools de conexões e cálculo de capacidade de processamento simultâneo.",
+      "visual_description": "Tradução dos conceitos teóricos de filas para arquitetura de servidores e APIs.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "03:33",
+      "end_time": "04:14",
+      "text": "Discussão sobre escalabilidade, impacto do aumento da latência no número de requisições simultâneas e técnicas para mitigar gargalos através da redução de latência.",
+      "visual_description": "Explicação matemática do aumento de requisições concorrentes em função da latência.",
+      "code_snippets": []
+    },
+    {
+      "start_time": "04:14",
+      "end_time": "04:20",
+      "text": "Uso de tecnologias de otimização de infraestrutura como CDN, Cache e Edge Caching para reduzir o impacto no servidor central.",
+      "visual_description": "Apresentação de soluções de arquitetura para otimização de performance e redução de carga.",
+      "code_snippets": []
+    }
+  ],
+  "extracted_codes": [
+    {
+      "timestamp": "02:22",
+      "language": "text",
+      "code": "L = lambda * W",
+      "description": "Fórmula da Little's Law"
+    }
+  ],
+  "full_markdown": "# Little's Law na Estimativa de Sistemas\n\n## Resumo\nA aula explora a **Lei de Little (Little's Law)** aplicada à engenharia de software e system design. O instrutor demonstra a aplicação prática da fórmula para calcular o dimensionamento de servidores, prever requisições simultâneas e entender o impacto direto da latência sobre a escalabilidade.\n\n## Tópicos Principais\n- Introdução à Little's Law\n- Fatores de Cálculo: $L = \\lambda \\times W$\n- Exemplo Prático: Fila de Cafeteria\n- Aplicação em System Design e Entrevistas\n- Escalabilidade e Latência\n- Técnicas de Mitigação: CDN, Cache e Edge Cache\n\n## Código e Timestamps\n- **02:22** - Fórmula Base: `L = lambda * W`",
+  "processed_at": "2026-09-23T17:55:57.537574Z"
+}
