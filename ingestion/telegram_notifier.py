@@ -802,7 +802,10 @@ async def start_telegram_listener():
             # CASO 2: Mensagens Privadas (Direto com o Bot ou em Mensagens Salvas)
             is_me = (not is_group) and (event.is_private or (has_user_auth and event.chat_id == (await user_client.get_me()).id))
             if is_me:
-                is_button = any(txt.lower() in btn.text.lower() for row in COCKPIT_KEYBOARD for btn in row)
+                def _get_btn_text(b):
+                    return getattr(getattr(b, "button", None), "text", "") or ""
+
+                is_button = any(txt.lower() in _get_btn_text(btn).lower() for row in COCKPIT_KEYBOARD for btn in row if _get_btn_text(btn))
                 if txt.startswith("/") or is_button:
                     print(f"📱 [Telegram Privado] Comando recebido: {txt}", flush=True)
                     response = await process_telegram_command(txt)
