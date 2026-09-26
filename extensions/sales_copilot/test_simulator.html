@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulador de Teste — Oráculo Sales Copilot (Laya + Jordan)</title>
+  <link rel="stylesheet" href="hud.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #090d16;
+      color: #e6edf3;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 26px;
+      margin: 0 0 8px 0;
+      color: #58a6ff;
+    }
+    p.subtitle {
+      margin: 0 0 28px 0;
+      color: #8b949e;
+      font-size: 15px;
+    }
+    .panel {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    h2 {
+      font-size: 16px;
+      margin: 0 0 14px 0;
+      color: #f0f6fc;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .sim-btn {
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
+      padding: 12px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 13px;
+      line-height: 1.35;
+      transition: all 0.2s ease;
+    }
+    .sim-btn:hover {
+      background: #30363d;
+      border-color: #58a6ff;
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .sim-btn.danger:hover {
+      border-color: #f85149;
+    }
+    .sim-btn.success:hover {
+      border-color: #3fb950;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .tag.obj { background: rgba(248, 81, 73, 0.2); color: #ff7b72; }
+    .tag.buy { background: rgba(63, 185, 80, 0.2); color: #56d364; }
+    .tag.talk { background: rgba(88, 166, 255, 0.2); color: #79c0ff; }
+
+    .custom-input-box {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 14px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+    input[type="text"]:focus {
+      border-color: #58a6ff;
+    }
+    .send-btn {
+      padding: 10px 20px;
+      background: #238636;
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .send-btn:hover {
+      background: #2ea043;
+    }
+
+    .log-box {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 14px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #8b949e;
+      height: 140px;
+      overflow-y: auto;
+    }
+    .log-entry { margin-bottom: 6px; }
+    .log-entry b.client { color: #bc8cff; }
+    .log-entry b.me { color: #58a6ff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Simulador de Testes — Oráculo Sales Copilot</h1>
+    <p class="subtitle">
+      Teste o HUD flutuante no canto superior direito. Clique nos botões para simular frases reais de clientes ou digite qualquer objeção personalizada.
+    </p>
+
+    <!-- TESTE 1: CASO DO RODRIGO (EQUIPE CONSEGUIR USAR) -->
+    <div class="panel">
+      <h2>🎯 Objeções Clássicas de Clientes (Laya Detection + Jordan Context)</h2>
+      <div class="btn-grid">
+        <button class="sim-btn danger" onclick="simulateSpeech('client', 'Será que a minha equipe vai conseguir usar?')">
+          <span class="tag obj">Caso do Rodrigo (Equipe)</span><br>
+          "Será que a minha equipe vai conseguir usar?"
+        </button>
+        <button class="sim-btn danger" onclick="simulateSpeech('client', 'Achei 1 real muito caro para o que faz!')">
+          <span class="tag obj">Teste R$ 1 (Simbólico)</span><br>
+          "Achei 1 real muito caro para o que faz!"
+        </button>
+        <button class="sim-btn danger" onclick="simulateSpeech('client', 'Achei o valor de 2000 um pouco salgado para o momento.')">
+          <span class="tag obj">Preço Normal (ROI Matemático)</span><br>
+          "Achei o valor de 2000 um pouco salgado para o momento."
+        </button>
+        <button class="sim-btn danger" onclick="simulateSpeech('client', 'Preciso conversar com a minha esposa e com meu sócio.')">
+          <span class="tag obj">Decisor Ausente</span><br>
+          "Preciso conversar com a minha esposa e com meu sócio."
+        </button>
+        <button class="sim-btn danger" onclick="simulateSpeech('client', 'Estamos muito enrolados agora, vamos ver mês que vem.')">
+          <span class="tag obj">Falta de Tempo</span><br>
+          "Estamos muito enrolados agora, vamos ver mês que vem."
+        </button>
+      </div>
+    </div>
+
+    <!-- TESTE 2: SINAIS DE COMPRA -->
+    <div class="panel">
+      <h2>🔥 Sinais de Compra (Buying Signals & Fechamento)</h2>
+      <div class="btn-grid">
+        <button class="sim-btn success" onclick="simulateSpeech('client', 'Quanto tempo demora pra gente colocar isso no ar?')">
+          <span class="tag buy">Interesse em Prazo</span><br>
+          "Quanto tempo demora pra gente colocar isso no ar?"
+        </button>
+        <button class="sim-btn success" onclick="simulateSpeech('client', 'Você emite nota fiscal? Como funciona o pagamento?')">
+          <span class="tag buy">Forma de Pagamento</span><br>
+          "Você emite nota fiscal? Como funciona o pagamento?"
+        </button>
+        <button class="sim-btn success" onclick="simulateSpeech('client', 'Caramba, que rápido! Isso é muito foda.')">
+          <span class="tag buy">Entusiasmo Máximo</span><br>
+          "Caramba, que rápido! Isso é muito foda."
+        </button>
+        <button class="sim-btn talk" onclick="simulateSpeech('me', 'Exatamente, nós estruturamos todo o processo sem fricção.'); simulateSpeech('me', 'E a automação roda 24h direto no WhatsApp.')">
+          <span class="tag talk">Você Falando (+Fala)</span><br>
+          Simular Rodrigo falando por mais tempo
+        </button>
+      </div>
+    </div>
+
+    <!-- INPUT CUSTOMIZADO -->
+    <div class="panel">
+      <h2>✍️ Testar Frase Personalizada</h2>
+      <div class="custom-input-box">
+        <input type="text" id="custom-text" placeholder="Digite uma frase qualquer (ex: 'meus funcionários acham tecnologia difícil')...">
+        <button class="send-btn" onclick="sendCustomPhrase()">Simular Fala do Cliente</button>
+      </div>
+    </div>
+
+    <!-- LOG DE TRANSCRIÇÃO -->
+    <div class="panel">
+      <h2>📜 Log de Transcrição da Sessão</h2>
+      <div class="log-box" id="sim-log">
+        <div class="log-entry">⚡ Simulador inicializado. HUD pronto no canto superior direito!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS DO MOTOR -->
+  <script src="playbook_jordan.js"></script>
+  <script src="engine_laya.js"></script>
+  <script src="hud.js"></script>
+
+  <script>
+    // Inicializa motor e HUD na página
+    const engine = new LayaSalesEngine(JORDAN_PLAYBOOK);
+    const hud = new SalesHUD(engine);
+    hud.update(engine.getState());
+
+    function simulateSpeech(speaker, text) {
+      const state = engine.processSpeechSnippet(speaker, text);
+      hud.update(state);
+
+      const log = document.getElementById("sim-log");
+      const entry = document.createElement("div");
+      entry.className = "log-entry";
+      const speakerLabel = speaker === "client" ? "<b class='client'>[Cliente]</b>" : "<b class='me'>[Rodrigo]</b>";
+      entry.innerHTML = `${new Date().toLocaleTimeString()} ${speakerLabel}: "${text}" ➔ <i>Prob: ${state.probability}%</i>`;
+      log.prepend(entry);
+    }
+
+    function sendCustomPhrase() {
+      const input = document.getElementById("custom-text");
+      const val = input.value.trim();
+      if (!val) return;
+      simulateSpeech("client", val);
+      input.value = "";
+    }
+  </script>
+</body>
+</html>

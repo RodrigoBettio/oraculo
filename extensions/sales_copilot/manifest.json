@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Oráculo Sales Copilot — Jordan HUD",
+  "version": "1.0.0",
+  "description": "Copiloto de Vendas em Tempo Real para Google Meet com Motor Laya de Decisão Rápida e Playbook do Jordan Belford.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://meet.google.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Oráculo Sales Copilot"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": [
+        "playbook_jordan.js",
+        "engine_laya.js",
+        "hud.js",
+        "content.js"
+      ],
+      "css": ["hud.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "test_simulator.html",
+        "hud.css",
+        "hud.js",
+        "playbook_jordan.js",
+        "engine_laya.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
