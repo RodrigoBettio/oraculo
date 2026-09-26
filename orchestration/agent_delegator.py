@@ -75,7 +75,14 @@ class AgentDelegator:
             "andre": "agent_andre_diamand_1281",
             "helena": "gestor_tech_cto",
             "monge": "agent_o_monge_8324",
-            "o_monge": "agent_o_monge_8324"
+            "o_monge": "agent_o_monge_8324",
+            "jim": "agent_jim_kwik",
+            "kwik": "agent_jim_kwik",
+            "jim_kwik": "agent_jim_kwik",
+            "ana": "agent_ana_5058",
+            "bruno": "agent_claude_code",
+            "camila": "gestor_mind_wellness",
+            "ricardo": "gestor_sales_director"
         }
         resolved_id = aliases.get(clean_id, clean_id)
 

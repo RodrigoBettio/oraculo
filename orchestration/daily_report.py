@@ -29,16 +29,28 @@ async def generate_area_report(manager_id: str, area_name: str, emoji: str) -> s
     pass
 
 
-async def generate_daily_executive_report() -> str:
-    """Consolida o relatório executivo de todas as áreas."""
+async def generate_daily_executive_report(filter_area: Optional[str] = None) -> str:
+    """Consolida o relatório executivo de todas as áreas ou filtra por área específica."""
     now = datetime.now(BRT)
     
     managers = [
-        ("gestor_tech_cto", "tech", "TECNOLOGIA & DESENVOLVIMENTO", "💻", "Helena Torres"),
-        ("gestor_sales_director", "sales", "VENDAS & NEGÓCIOS", "💼", "Ricardo Monteiro"),
-        ("gestor_mind_wellness", "mind", "MENTE & PERFORMANCE", "🧠", "Dra. Camila Reis"),
+        ("gestor_tech_cto", "tech", "TECNOLOGIA & DESENVOLVIMENTO", "💻", "Helena Torres (VP de TI)"),
+        ("gestor_sales_director", "sales", "VENDAS & NEGOCIAÇÃO", "💼", "Ricardo Monteiro (Dir. Comercial)"),
+        ("gestor_sales_director", "area_marketing_6867", "MARKETING & BRANDING", "🚀", "Ricardo Monteiro (Growth & Mkt)"),
+        ("gestor_mind_wellness", "mind", "MENTE, FOCO & SUPER CÉREBRO", "🧠", "Dra. Camila Reis (Head Wellness)"),
     ]
     
+    # Filtro opcional por área
+    if filter_area:
+        fa = filter_area.lower().strip()
+        filtered = []
+        for m in managers:
+            mid, aid, aname, em, mname = m
+            if fa in aid.lower() or fa in aname.lower():
+                filtered.append(m)
+        if filtered:
+            managers = filtered
+
     header = (
         f"🔮 **RELATÓRIO EXECUTIVO DIÁRIO**\n"
         f"📅 {now.strftime('%d/%m/%Y')} — {get_weekday_pt(now)}\n"
@@ -59,26 +71,32 @@ async def generate_daily_executive_report() -> str:
 
 
 async def generate_area_report_section(manager_id, area_id, area_name, emoji, manager_name) -> str:
-    """Gera uma seção do relatório para uma área."""
-    # Load agents from data/agents/ matching the area_id
+    """Gera uma seção do relatório para uma área com métricas ricas de especialistas."""
     agents_dir = settings.AGENTS_DIR
     area_agents = []
+    total_area_hours = 0.0
+    total_area_videos = 0
+
     for f in agents_dir.glob("*.json"):
         try:
             agent = json.loads(f.read_text(encoding='utf-8'))
-            if agent.get('area_id') == area_id and agent.get('agent_type') == 'tecnico':
+            # Normaliza correspondência de área (ex: area_marketing_6867 ou marketing)
+            agent_aid = agent.get('area_id', '')
+            is_match = (agent_aid == area_id) or (area_id == "area_marketing_6867" and "marketing" in agent_aid.lower())
+            
+            if is_match and agent.get('agent_type') == 'tecnico':
                 area_agents.append(agent)
+                total_area_hours += float(agent.get("total_hours_studied", 0.0) or 0.0)
+                total_area_videos += int(agent.get("total_videos_studied", 0) or 0)
         except Exception:
             continue
     
-    # Count study metrics
+    # Contagem de estudos processados hoje
     processed_dir = settings.PROCESSED_DIR
     today = datetime.now(BRT).date()
     studied_today = 0
-    total_processed = 0
     if processed_dir.exists():
         for pf in processed_dir.iterdir():
-            total_processed += 1
             try:
                 mtime = datetime.fromtimestamp(pf.stat().st_mtime, tz=BRT).date()
                 if mtime == today:
@@ -86,7 +104,7 @@ async def generate_area_report_section(manager_id, area_id, area_name, emoji, ma
             except Exception:
                 continue
     
-    # Count tasks
+    # Contagem de tarefas
     tasks_dir = settings.DATA_DIR / "tasks"
     tasks_today = 0
     tasks_pending = 0
@@ -102,7 +120,7 @@ async def generate_area_report_section(manager_id, area_id, area_name, emoji, ma
             except Exception:
                 continue
     
-    # Get study queue status
+    # Status da fila
     try:
         from ingestion.study_queue import StudyQueueManager
         sqm = StudyQueueManager()
@@ -113,16 +131,27 @@ async def generate_area_report_section(manager_id, area_id, area_name, emoji, ma
         queued = 0
         processing = 0
     
-    # Format agent status
-    agent_list = ", ".join([f"{a['name']} ✅" for a in area_agents]) if area_agents else "Nenhum agente ativo"
+    # Lista formatada de especialistas com suas horas reais
+    agent_badges = []
+    for a in area_agents:
+        videos = a.get("total_videos_studied", 0)
+        hours = a.get("total_hours_studied", 0.0)
+        role = a.get("role", "")
+        if videos > 0:
+            badge = f"**{a['name']}** ({videos} aulas • {hours:.1f}h) ✅"
+        else:
+            badge = f"**{a['name']}** ({role}) ✅"
+        agent_badges.append(badge)
+    
+    agent_list = ", ".join(agent_badges) if agent_badges else "Nenhum especialista vinculado"
     
     section = f"""
 {emoji} **{area_name}**
-   Gestor(a): {manager_name}
+   Gestor(a): **{manager_name}**
    
-   📊 Métricas: {studied_today} estudados hoje | {queued} na fila | {processing} em andamento
-   👥 Equipe: {agent_list}
-   📋 Tarefas: {tasks_today} criadas hoje | {tasks_pending} pendentes
+   📊 Métricas da Área: **{total_area_videos} aulas absorvidas** ({total_area_hours:.1f}h de estudo)
+   👥 Especialistas: {agent_list}
+   📋 Backlog: {tasks_today} criadas hoje | {tasks_pending} pendentes
 """
     return section
 
@@ -173,6 +202,6 @@ async def check_and_send_daily_report():
         return False
 
 
-async def get_daily_report_on_demand() -> str:
-    """Gera o relatório sob demanda (para o comando /relatorio)."""
-    return await generate_daily_executive_report()
+async def get_daily_report_on_demand(area: Optional[str] = None) -> str:
+    """Gera o relatório sob demanda (para o comando /relatorio [area])."""
+    return await generate_daily_executive_report(filter_area=area)

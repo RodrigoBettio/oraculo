@@ -19,9 +19,9 @@ logger = logging.getLogger("telegram_notifier")
 
 # Teclado Tátil Fixo (Custom Reply Keyboard) para acesso em 1 toque no celular
 COCKPIT_KEYBOARD = [
+    [Button.text("📊 Relatório Executivo"), Button.text("📂 Navegar Drive")],
     [Button.text("📊 Status & Fila"), Button.text("👥 Equipe & Agentes")],
-    [Button.text("🚨 Relatório de GAPs"), Button.text("📁 Estudar Curso")],
-    [Button.text("📂 Navegar Drive"), Button.text("📊 Relatório do Dia")],
+    [Button.text("🚨 Análise de GAPs"), Button.text("📁 Estudar Curso")],
     [Button.text("💬 Consultar Especialista"), Button.text("🔄 Sincronizar Tudo")]
 ]
 
@@ -29,8 +29,12 @@ COCKPIT_KEYBOARD = [
 def get_cockpit_inline_keyboard():
     return [
         [
+            Button.inline("📊 Relatório Executivo (Geral)", data=b"action:daily_report"),
+            Button.inline("📂 Navegar Drive", data=b"drv:root")
+        ],
+        [
             Button.inline("🔄 Atualizar Status", data=b"action:refresh_status"),
-            Button.inline("🚨 Relatório de GAPs", data=b"action:view_gaps")
+            Button.inline("🚨 Análise de GAPs (TI)", data=b"action:view_gaps")
         ],
         [
             Button.inline("👥 Organograma", data=b"action:view_agents"),
@@ -963,9 +967,15 @@ Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de 
         return f"⚠️ {res.get('message')}"
 
     # === Relatório Diário Executivo ===
-    elif cmd_lower.startswith("/relatorio") or cmd_lower.startswith("/relatório") or "relatório do dia" in cmd_lower:
+    elif cmd_lower.startswith("/relatorio") or cmd_lower.startswith("/relatório") or "relatório executivo" in cmd_lower or "relatório do dia" in cmd_lower:
         from orchestration.daily_report import get_daily_report_on_demand
-        return await get_daily_report_on_demand()
+        parts = command_text.split(maxsplit=1)
+        area_filter = None
+        if len(parts) > 1:
+            raw_arg = parts[1].strip().lower()
+            if not any(x in raw_arg for x in ["executivo", "do dia", "diario", "diário"]):
+                area_filter = raw_arg
+        return await get_daily_report_on_demand(area=area_filter)
 
     # 8. Sincronização Forçada
     elif cmd_lower.startswith("/sync") or "sincronizar tudo" in cmd_lower:
@@ -1125,6 +1135,22 @@ async def start_telegram_listener():
                     btns = get_cockpit_inline_keyboard() if is_bot else COCKPIT_KEYBOARD
                     sent = await event.reply(response, buttons=btns)
                     _record_sent_id(sent)
+                else:
+                    # Interpretação de Linguagem Natural no Privado
+                    print(f"🧠 [Telegram Privado] Interpretando linguagem natural: {txt[:50]}", flush=True)
+                    try:
+                        from orchestration.intent_interpreter import execute_or_clarify_intent
+                        parsed_res = await execute_or_clarify_intent(txt)
+                        resp_txt = parsed_res.get("response_text", "")
+                        if resp_txt:
+                            btns = None
+                            if parsed_res.get("status") == "executed_drive":
+                                from ingestion.telegram_notifier import get_drive_explorer_keyboard
+                                btns = get_drive_explorer_keyboard(parsed_res.get("folder_data", {}))
+                            sent = await event.reply(resp_txt, buttons=btns)
+                            _record_sent_id(sent)
+                    except Exception as nl_err:
+                        logger.error(f"Erro ao processar linguagem natural no privado: {nl_err}")
                 return
 
             # CASO 3: Mensagens dentro do Grupo Cockpit
@@ -1198,6 +1224,9 @@ async def start_telegram_listener():
                     "@ricardo": "ricardo",
                     "@qa": "quinn",
                     "@cloud": "claudio",
+                    "@jim": "jim",
+                    "@kwik": "jim",
+                    "@ana": "ana",
                     "@oraculo": "oraculo"
                 }
 
@@ -1229,6 +1258,23 @@ async def start_telegram_listener():
                         sent = await event.reply(ans)
                         _record_sent_id(sent)
                         return
+
+                # Subcaso 3.5: Interpretação de Intenção e Linguagem Natural em Grupo
+                print(f"🧠 [Telegram Grupo] Interpretando linguagem natural: {txt[:50]}", flush=True)
+                try:
+                    from orchestration.intent_interpreter import execute_or_clarify_intent
+                    parsed_res = await execute_or_clarify_intent(txt)
+                    resp_txt = parsed_res.get("response_text", "")
+                    if resp_txt:
+                        btns = None
+                        if parsed_res.get("status") == "executed_drive":
+                            from ingestion.telegram_notifier import get_drive_explorer_keyboard
+                            btns = get_drive_explorer_keyboard(parsed_res.get("folder_data", {}))
+                        sent = await event.reply(resp_txt, buttons=btns)
+                        _record_sent_id(sent)
+                        return
+                except Exception as nl_grp_err:
+                    logger.error(f"Erro ao processar linguagem natural no grupo: {nl_grp_err}")
 
         # Registra no Bot Client (se token configurado)
         if bot_client:

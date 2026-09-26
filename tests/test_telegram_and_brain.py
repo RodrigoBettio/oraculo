@@ -84,12 +84,48 @@ async def test_daily_report_generation():
     report = await generate_daily_executive_report()
     assert "RELATÓRIO EXECUTIVO DIÁRIO" in report
     assert "TECNOLOGIA & DESENVOLVIMENTO" in report
-    assert "VENDAS & NEGÓCIOS" in report
-    assert "MENTE & PERFORMANCE" in report
+    assert "VENDAS & NEGOCIAÇÃO" in report
+    assert "MARKETING & BRANDING" in report
+    assert "MENTE, FOCO & SUPER CÉREBRO" in report
     assert "Helena Torres" in report
     assert "Ricardo Monteiro" in report
     assert "Dra. Camila Reis" in report
-    print("✅ Teste 4: Relatório Diário Executivo gerado perfeitamente com todas as 3 áreas!")
+    assert "André Diamand" in report
+    print("✅ Teste 4: Relatório Diário Executivo gerado com todas as 4 áreas (incluindo Marketing & Branding)!")
+
+
+async def test_marketing_filtered_report():
+    """Testa o relatório específico de Marketing."""
+    from orchestration.daily_report import get_daily_report_on_demand
+
+    mkt_report = await get_daily_report_on_demand(area="marketing")
+    assert "MARKETING & BRANDING" in mkt_report
+    assert "André Diamand" in mkt_report
+    assert "TECNOLOGIA & DESENVOLVIMENTO" not in mkt_report
+    print("✅ Teste 5: Filtro sob demanda de Marketing gerado com sucesso!")
+
+
+async def test_natural_language_intent_interpretation():
+    """Testa a interpretação em linguagem natural e esclarecimento proativo."""
+    from orchestration.intent_interpreter import interpret_user_intent, execute_or_clarify_intent
+
+    # Cenário de teste do usuário
+    user_phrase = "Coloque o Jim Kwik para estudar as aulas do Super Cérebro no telegram em modo audio"
+    parsed = await interpret_user_intent(user_phrase)
+
+    assert parsed.get("intent") == "STUDY", f"Deveria ser STUDY, foi {parsed.get('intent')}"
+    assert "jim" in (parsed.get("target_agent_id") or "").lower() or "jim" in (parsed.get("target_agent_name") or "").lower()
+    assert "super" in (parsed.get("course_name") or "").lower()
+    assert parsed.get("tier") == "audio_only"
+    assert parsed.get("source_type") == "telegram"
+    assert len(parsed.get("missing_info", [])) > 0, "Deveria identificar que falta link/canal"
+
+    execution = await execute_or_clarify_intent(user_phrase)
+    resp = execution.get("response_text", "")
+    assert "Jim Kwik" in resp
+    assert "Super Cérebro" in resp
+    assert "áudio" in resp.lower() or "audio" in resp.lower()
+    print("✅ Teste 6: Interpretação de Linguagem Natural e Esclarecimento Proativo validados com perfeição!")
 
 
 def test_brain_bot_note_saving():
@@ -113,11 +149,14 @@ def test_brain_bot_note_saving():
 
     # Limpeza do teste
     saved_file.unlink()
-    print(f"✅ Teste 5: Nota criada e validada com frontmatter YAML em {saved_file.parent.name}!")
+    print(f"✅ Teste 7: Nota criada e validada com frontmatter YAML em 00_Inbox!")
 
 
 if __name__ == "__main__":
     test_drive_keyboards_and_manager_lock()
     asyncio.run(test_daily_report_generation())
+    asyncio.run(test_marketing_filtered_report())
+    asyncio.run(test_natural_language_intent_interpretation())
     test_brain_bot_note_saving()
     print("\n🎉 TODOS OS TESTES PASSARAM COM SUCESSO!")
+
