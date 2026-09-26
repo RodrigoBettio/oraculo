@@ -4657,8 +4657,6 @@ function switchModalStudySource(mode) {
 // GOOGLE DRIVE COMPARTILHADO: NAVEGADOR INTERATIVO, BUSCA GLOBAL & ENFILEIRAMENTO
 // =========================================================================
 
-let currentStudySourceMode = 'drive'; // 'drive' ou 'telegram'
-let driveConnectionStatus = null;
 let currentDriveFolderId = '1cBDvRvFL4B5TmD7oXYfcTYvlHl40GXGG';
 let currentDriveFolderData = null;
 let driveNavBreadcrumbs = [];

@@ -1,5 +1,5 @@
 // Oráculo Service Worker — PWA Cache & Mobile Shell
-const CACHE_NAME = 'oraculo-v4.2';
+const CACHE_NAME = 'oraculo-v5.7';
 const STATIC_ASSETS = [
   '/',
   '/static/manifest.json',
