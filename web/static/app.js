@@ -1250,7 +1250,7 @@ function switchAreaDetailSubTab(subTab) {
 
 async function loadAreaConstellation(areaId) {
     try {
-        const res = await fetch(`/api/areas/${areaId}/graph`);
+        const res = await fetch(`/api/areas/${areaId}/graph?_t=` + Date.now(), { cache: 'no-store' });
         if (!res.ok) return;
         const data = await res.json();
         areaGraphRawData = data;
@@ -4061,9 +4061,10 @@ function resizeGraphCanvas() {
 async function loadKnowledgeGraph() {
     initObsidianGraph();
     try {
-        const res = await fetch('/api/knowledge/graph');
+        const res = await fetch('/api/knowledge/graph?_t=' + Date.now(), { cache: 'no-store' });
         if (!res.ok) return;
         graphRawData = await res.json();
+        graphSimAlpha = 1.0;
 
         const badge = document.getElementById('vault-nodes-count-badge');
         if (badge) badge.innerText = `${graphRawData.nodes.length} nós`;
