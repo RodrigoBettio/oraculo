@@ -234,9 +234,13 @@ def load_all_agents() -> List[Dict[str, Any]]:
         try:
             with open(f, "r", encoding="utf-8") as file:
                 data = json.load(file)
-                profile = AgentProfile(**data)
-                agent_dict = profile.model_dump()
-                agent_dict["seniority"] = profile.get_seniority_info()
+                try:
+                    profile = AgentProfile(**data)
+                    agent_dict = profile.model_dump()
+                    agent_dict["seniority"] = profile.get_seniority_info()
+                except Exception:
+                    agent_dict = data
+                    agent_dict["seniority"] = {"rank": "Especialista", "badge": "⭐"}
                 agents.append(agent_dict)
         except Exception:
             continue
@@ -1489,10 +1493,48 @@ def assign_agent_to_area(area_id: str, req: AssignAreaAgentRequest):
 
     return {"success": True, "message": f"Agente '{agent.name}' vinculado como {req.agent_type} da área!"}
 
+FALLBACK_AGENT_SKILLS = {
+    "agent_alex_vance": ["Arquitetura de Software", "Code Review & Refatoração"],
+    "agent_claude_code": ["Hooks no Claude Code", "Automação Determinística"],
+    "agent_claudio_cloud_4421": ["DevOps & SRE na GCP", "Docker Hardening"],
+    "agent_quinn_qa_7781": ["Test-Driven Development (TDD)", "Playwright E2E"],
+    "agent_thales_automations": ["Engenharia N8N", "Automação com WhatsApp API"],
+    "agent_jordan_belford_5567": ["Straight Line System", "Fechamento de Alto Impacto"],
+    "agent_sofia_sdr": ["Cold Outreach Multicanal", "Qualificação BANT & MEDDPICC"],
+    "agent_caio_copywriter": ["Roteirização de Demos", "Copywriting Persuasivo"],
+    "agent_felipe_followup": ["Cadências Multitoque", "Resgate de Propostas Inativas"],
+    "agent_sobral_marketing": ["Gestão de Tráfego Pago", "Metodologia Subido"],
+    "agent_andre_diamand_1281": ["Sexy Canvas", "Engenharia de Desejo"],
+    "agent_ana_5058": ["Marketing Pessoal", "Networking no LinkedIn"],
+    "agent_jim_kwik": ["Leitura Rápida", "Super Memória & Foco"],
+    "agent_o_monge_8324": ["Mindfulness & Presença", "Equilíbrio Emocional"],
+    "agent_link_4211": ["Posicionamento no LinkedIn", "Social Selling"],
+    "gestor_tech_cto": ["Gestão de Equipes Tech", "Roadmap & Arquitetura"],
+    "gestor_sales_director": ["Estratégia Comercial", "Pipeline & Forecast"],
+    "gestor_mind_wellness": ["Programas de Bem-Estar", "Performance Sustentável"],
+}
+
+def extract_top_2_skills(agent: Dict[str, Any]) -> List[str]:
+    aid = agent.get("id", "")
+    skills = []
+    for top in agent.get("topics_mastered", []):
+        top_clean = top.strip()
+        if top_clean and top_clean not in skills:
+            skills.append(top_clean)
+        if len(skills) >= 2:
+            break
+    if len(skills) < 2 and aid in FALLBACK_AGENT_SKILLS:
+        for fb in FALLBACK_AGENT_SKILLS[aid]:
+            if fb not in skills:
+                skills.append(fb)
+            if len(skills) >= 2:
+                break
+    return skills[:2]
+
 @app.get("/api/areas/{area_id}/graph")
 def get_area_knowledge_graph(area_id: str):
     """Retorna o grafo estelar de conhecimento (constelação) específico da Área da Vida.
-    Estrutura: Área (Super Hub) -> Gestores & Especialistas -> Cursos -> Aulas & Habilidades."""
+    Estrutura otimizada para alta performance: Área (Super Hub) -> Gestor -> Especialistas -> 2 Habilidades Principais de cada um."""
     area_data = get_area_profile(area_id)
     if not area_data:
         raise HTTPException(status_code=404, detail="Área não encontrada")
@@ -1524,10 +1566,12 @@ def get_area_knowledge_graph(area_id: str):
     })
     node_ids.add(hub_id)
 
-    # 2. Agentes da Área (Planetas Principais)
+    mgr_id = area_data.get("manager_agent_id")
+
+    # 2. Agentes da Área (Gestor e Especialistas)
     for ag in area_agents:
         aid = ag["id"]
-        is_mgr = (aid == area_data.get("manager_agent_id"))
+        is_mgr = (aid == mgr_id or ag.get("agent_type") == "gestor")
         ag_color = "#f59e0b" if is_mgr else area_color
 
         nodes.append({
@@ -1537,92 +1581,55 @@ def get_area_knowledge_graph(area_id: str):
             "role": ag.get("role", "Especialista"),
             "avatar": ag.get("avatar", "👨‍💻"),
             "color": ag_color,
-            "size": 22 if is_mgr else 18,
+            "size": 24 if is_mgr else 18,
             "is_manager": is_mgr,
+            "agent_type": "gestor" if is_mgr else "tecnico",
             "hours": ag.get("total_hours_studied", 0),
             "videos_count": ag.get("total_videos_studied", 0),
-            "status": ag.get("status", "ativo")
+            "status": ag.get("status", "ativo"),
+            "area_id": area_id
         })
         node_ids.add(aid)
 
-        # Conexão da Área para o Agente
-        links.append({
-            "source": hub_id,
-            "target": aid,
-            "color": area_color,
-            "distance": 95,
-            "width": 2.5 if is_mgr else 1.5
-        })
-
-        # 3. Cursos e Aulas Estudadas pelo Agente
-        course_nodes = {}
-        for src in ag.get("sources", []):
-            g_name = src.get("group_name") or f"Curso {src.get('group_id')}"
-            cid = f"course_{abs(hash(g_name)) % 1000000}"
-            if cid not in course_nodes:
-                course_nodes[cid] = {
-                    "id": cid,
-                    "label": g_name,
-                    "type": "course",
-                    "color": "#818cf8",
-                    "size": 14,
-                    "agent_id": aid,
-                    "lessons_count": len(src.get("lessons", []))
-                }
-                nodes.append(course_nodes[cid])
-                node_ids.add(cid)
-
+        # Conexão: Hub -> Gestor, ou Hub/Gestor -> Especialista
+        if is_mgr:
             links.append({
-                "source": aid,
-                "target": cid,
-                "color": "rgba(129, 140, 248, 0.6)",
-                "distance": 68
+                "source": hub_id,
+                "target": aid,
+                "color": "#f59e0b",
+                "distance": 90,
+                "width": 2.5
+            })
+        else:
+            parent_id = mgr_id if (mgr_id and mgr_id in node_ids) else hub_id
+            links.append({
+                "source": parent_id,
+                "target": aid,
+                "color": area_color,
+                "distance": 80,
+                "width": 1.5
             })
 
-            # Aulas Estudadas
-            for les in src.get("lessons", []):
-                lid = f"les_{aid}_{les.get('lesson_id')}"
-                if lid not in node_ids:
-                    nodes.append({
-                        "id": lid,
-                        "label": les.get("title") or f"Aula {les.get('lesson_id')}",
-                        "type": "lesson",
-                        "status": "completed",
-                        "color": "#22c55e",
-                        "size": 7,
-                        "course_id": cid,
-                        "agent_id": aid,
-                        "duration_seconds": les.get("duration_seconds", 0)
-                    })
-                    node_ids.add(lid)
-                    links.append({
-                        "source": cid,
-                        "target": lid,
-                        "color": "rgba(34, 197, 94, 0.45)",
-                        "distance": 36
-                    })
-
-        # 4. Habilidades / Tópicos dominados
-        for top in ag.get("topics_mastered", []):
-            top_clean = top.strip()
-            if not top_clean:
-                continue
-            tid = f"top_{aid}_{abs(hash(top_clean.lower())) % 1000000}"
+        # 3. Apenas 2 Habilidades Principais de cada agente (Elimina travamento)
+        top_skills = extract_top_2_skills(ag)
+        for idx, skill_label in enumerate(top_skills):
+            tid = f"top_{aid}_{idx}"
             if tid not in node_ids:
                 nodes.append({
                     "id": tid,
-                    "label": top_clean,
+                    "label": skill_label,
                     "type": "topic",
-                    "color": "#38bdf8",
+                    "color": "#38bdf8" if not is_mgr else "#fbbf24",
                     "size": 8,
-                    "agent_id": aid
+                    "agent_id": aid,
+                    "area_id": area_id
                 })
                 node_ids.add(tid)
                 links.append({
                     "source": aid,
                     "target": tid,
                     "color": "rgba(56, 189, 248, 0.4)",
-                    "distance": 50
+                    "distance": 45
                 })
 
     return {
@@ -1747,8 +1754,9 @@ def update_agent_spec(agent_id: str, req: UpdateAgentSpecRequest):
 
 @app.get("/api/knowledge/graph")
 async def get_knowledge_graph():
-    """Retorna os nós e conexões da base de conhecimento (estilo Obsidian Graph View)
-    conectando Especialistas -> Cursos -> Aulas (concluídas e pendentes) -> Habilidades."""
+    """Retorna os nós e conexões da constelação (estilo Obsidian Graph View).
+    Estrutura otimizada para alta performance (zero lag / 60 FPS):
+    Apenas Gestores (Hubs de departamento) -> Especialistas -> 2 Habilidades Principais de cada um."""
     agents = load_all_agents()
     qm = StudyQueueManager()
     queue_status = qm.get_status()
@@ -1757,183 +1765,131 @@ async def get_knowledge_graph():
     links = []
     node_ids = set()
 
-    agent_colors = {
-        "agent_claude_code": "#10b981",
-        "agent_jim_kwik": "#a855f7",
-        "agent_jordan_belfort": "#f59e0b"
+    dept_managers = {
+        "tech": "gestor_tech_cto",
+        "sales": "gestor_sales_director",
+        "area_marketing_6867": "gestor_sales_director",
+        "marketing": "gestor_sales_director",
+        "mind": "gestor_mind_wellness"
     }
 
-    course_nodes = {}
-    topic_nodes = {}
+    dept_colors = {
+        "tech": "#38bdf8",
+        "sales": "#fbbf24",
+        "area_marketing_6867": "#fb7185",
+        "marketing": "#fb7185",
+        "mind": "#a855f7"
+    }
 
-    # 1. Nós dos Especialistas (Hubs Centrais)
-    for a in agents:
-        aid = a["id"]
-        area_id = a.get("area_id")
-        is_gestor = a.get("agent_type") == "gestor"
-        color = "#f59e0b" if is_gestor else agent_colors.get(aid, "#818cf8")
+    # Separar gestores e especialistas
+    gestores = [a for a in agents if a.get("agent_type") == "gestor"]
+    especialistas = [a for a in agents if a.get("agent_type") != "gestor"]
+
+    # 1. Nós dos Gestores (Hubs Centrais dos Departamentos)
+    for g in gestores:
+        gid = g["id"]
+        area_id = g.get("area_id", "tech")
         nodes.append({
-            "id": aid,
-            "label": a["name"],
+            "id": gid,
+            "label": g["name"],
             "type": "agent",
-            "role": a.get("role", "Especialista"),
-            "avatar": a.get("avatar", "👨‍💻"),
-            "color": color,
-            "size": 24 if is_gestor else 18,
-            "hours": a.get("total_hours_studied", 0),
-            "status": a.get("status", "ativo"),
+            "role": g.get("role", "Gestor"),
+            "avatar": g.get("avatar", "👑"),
+            "color": "#f59e0b",
+            "size": 26,
+            "hours": g.get("total_hours_studied", 0),
+            "status": g.get("status", "ativo"),
             "area_id": area_id,
-            "agent_type": a.get("agent_type", "tecnico")
+            "agent_type": "gestor",
+            "is_manager": True
         })
-        node_ids.add(aid)
+        node_ids.add(gid)
 
-        # Cursos estudados deste agente
-        for src in a.get("sources", []):
-            g_name = src.get("group_name", "Curso")
-            cid = f"course_{abs(hash(g_name)) % 1000000}"
-            if cid not in course_nodes:
-                course_nodes[cid] = {
-                    "id": cid,
-                    "label": g_name,
-                    "type": "course",
-                    "color": "#818cf8",
-                    "size": 15,
-                    "agent_id": aid,
-                    "area_id": area_id,
-                    "lessons_count": len(src.get("lessons", []))
-                }
-                nodes.append(course_nodes[cid])
-                node_ids.add(cid)
+    # 2. Nós dos Especialistas (Conectados aos seus Gestores)
+    for e in especialistas:
+        eid = e["id"]
+        area_id = e.get("area_id", "tech")
+        e_color = dept_colors.get(area_id, "#818cf8")
+        nodes.append({
+            "id": eid,
+            "label": e["name"],
+            "type": "agent",
+            "role": e.get("role", "Especialista"),
+            "avatar": e.get("avatar", "👨‍💻"),
+            "color": e_color,
+            "size": 18,
+            "hours": e.get("total_hours_studied", 0),
+            "status": e.get("status", "ativo"),
+            "area_id": area_id,
+            "agent_type": "tecnico",
+            "is_manager": False
+        })
+        node_ids.add(eid)
 
+        # Conectar Especialista ao seu Gestor responsável
+        mgr_id = dept_managers.get(area_id, "gestor_tech_cto")
+        if mgr_id in node_ids:
             links.append({
-                "source": aid,
-                "target": cid,
-                "color": color,
-                "distance": 85
+                "source": mgr_id,
+                "target": eid,
+                "color": "rgba(245, 158, 11, 0.4)",
+                "distance": 95
             })
 
-            # Aulas já estudadas deste curso
-            for les in src.get("lessons", []):
-                lid = f"lesson_{les.get('lesson_id')}"
-                if lid not in node_ids:
-                    nodes.append({
-                        "id": lid,
-                        "label": les.get("title") or les.get("lesson_id"),
-                        "type": "lesson",
-                        "status": "completed",
-                        "color": "#22c55e",
-                        "size": 7,
-                        "course_id": cid,
-                        "agent_id": aid,
-                        "area_id": area_id,
-                        "duration_seconds": les.get("duration_seconds", 0)
-                    })
-                    node_ids.add(lid)
-                    links.append({
-                        "source": cid,
-                        "target": lid,
-                        "color": "rgba(34, 197, 94, 0.45)",
-                        "distance": 45
-                    })
+    # Interconectar os Gestores entre si para formar a espinha dorsal executiva
+    gestor_ids = [g["id"] for g in gestores if g["id"] in node_ids]
+    for i in range(len(gestor_ids)):
+        for j in range(i + 1, len(gestor_ids)):
+            links.append({
+                "source": gestor_ids[i],
+                "target": gestor_ids[j],
+                "color": "rgba(245, 158, 11, 0.25)",
+                "distance": 160
+            })
 
-        # Habilidades/Tópicos dominados
-        for top in a.get("topics_mastered", []):
-            top_clean = top.strip()
-            if not top_clean:
-                continue
-            tid = f"topic_{abs(hash(top_clean.lower())) % 1000000}"
-            if tid not in topic_nodes:
-                topic_nodes[tid] = {
-                    "id": tid,
-                    "label": top_clean,
-                    "type": "topic",
-                    "color": "#38bdf8",
-                    "size": 9,
-                    "area_id": area_id,
-                    "source_agent_id": aid
-                }
-                nodes.append(topic_nodes[tid])
-                node_ids.add(tid)
+    # 3. Apenas as 2 Habilidades Principais de cada agente (Gestor e Especialista)
+    # Evita sobrecarregar a física do canvas com milhares de tópicos!
+    for a in agents:
+        aid = a["id"]
+        area_id = a.get("area_id", "tech")
+        is_gestor = (a.get("agent_type") == "gestor")
+        top_skills = extract_top_2_skills(a)
+
+        for idx, skill_name in enumerate(top_skills):
+            tid = f"skill_{aid}_{idx}"
+            skill_color = "#fbbf24" if is_gestor else dept_colors.get(area_id, "#38bdf8")
+            nodes.append({
+                "id": tid,
+                "label": skill_name,
+                "type": "topic",
+                "color": skill_color,
+                "size": 8,
+                "area_id": area_id,
+                "agent_id": aid,
+                "source_agent_id": aid,
+                "source_agent_name": a.get("name")
+            })
+            node_ids.add(tid)
             links.append({
                 "source": aid,
                 "target": tid,
-                "color": "rgba(56, 189, 248, 0.35)",
-                "distance": 90
+                "color": "rgba(56, 189, 248, 0.35)" if not is_gestor else "rgba(251, 191, 36, 0.35)",
+                "distance": 45
             })
-
-    agent_area_map = {a["id"]: a.get("area_id") for a in agents}
-
-    # 2. Cursos atribuídos na fila ativa (para que o assunto maior já exista no grafo)
-    active_items_list = queue_status.get("active_items", [])
-    active_ids = {it.get("id"): it for it in active_items_list}
-
-    for it in qm.queue:
-        g_name = it.group_name or f"Canal {it.group_id}"
-        cid = f"course_{abs(hash(g_name)) % 1000000}"
-        if cid not in node_ids:
-            course_nodes[cid] = {
-                "id": cid,
-                "label": g_name,
-                "type": "course",
-                "color": "#818cf8",
-                "size": 16,
-                "agent_id": it.agent_id,
-                "area_id": agent_area_map.get(it.agent_id),
-                "lessons_count": sum(1 for q in qm.queue if q.group_id == it.group_id)
-            }
-            nodes.append(course_nodes[cid])
-            node_ids.add(cid)
-            if it.agent_id in node_ids:
-                links.append({
-                    "source": it.agent_id,
-                    "target": cid,
-                    "color": agent_colors.get(it.agent_id, "#818cf8"),
-                    "distance": 90
-                })
-
-    # 3. Apenas as aulas em processamento ativo acendem no grafo (máx 8 workers)
-    # Aulas pendentes aguardam na esteira e acendem assim que concluídas!
-    for act in active_items_list:
-        vid = f"active_{act.get('id')}"
-        if vid in node_ids:
-            continue
-        g_name = act.get("group_name") or f"Canal {act.get('group_id')}"
-        cid = f"course_{abs(hash(g_name)) % 1000000}"
-        act_agent_id = act.get("agent_id")
-        if cid in node_ids:
-            nodes.append({
-                "id": vid,
-                "label": act.get("file_name", "Aula"),
-                "type": "lesson",
-                "status": "processing",
-                "color": "#f59e0b",
-                "size": 8,
-                "course_id": cid,
-                "agent_id": act_agent_id,
-                "area_id": agent_area_map.get(act_agent_id),
-                "progress_pct": act.get("progress_pct", 5.0)
-            })
-            node_ids.add(vid)
-            links.append({
-                "source": cid,
-                "target": vid,
-                "color": "rgba(245, 158, 11, 0.7)",
-                "distance": 35
-            })
-
-    total_completed = len([n for n in nodes if n["type"] == "lesson" and n.get("status") == "completed"])
-    total_processing = len([n for n in nodes if n["type"] == "lesson" and n.get("status") == "processing"])
 
     return {
         "nodes": nodes,
         "links": links,
         "stats": {
             "agents_count": len(agents),
-            "courses_count": len(course_nodes),
+            "managers_count": len(gestores),
+            "specialists_count": len(especialistas),
+            "skills_count": len([n for n in nodes if n["type"] == "topic"]),
+            "courses_count": 0,
             "nodes_count": len(nodes),
             "links_count": len(links),
-            "completed_lessons": total_completed,
-            "active_lessons": total_processing,
+            "completed_lessons": 0,
+            "active_lessons": 0,
             "pending_lessons": queue_status.get("pending_count", len(qm.queue))
         }
     }

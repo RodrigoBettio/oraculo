@@ -1,6 +1,6 @@
 from enum import Enum
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
+from typing import List, Optional, Dict, Any, Union
+from pydantic import BaseModel, Field, model_validator
 from datetime import datetime, timezone
 
 class AgentStatus(str, Enum):
@@ -19,11 +19,19 @@ class StudiedLesson(BaseModel):
     topics: List[str] = Field(default_factory=list)
 
 class SourceStudy(BaseModel):
-    group_name: str
+    group_name: str = "Metodologia"
     videos_count: int = 0
     hours_studied: float = 0.0
     last_studied_at: Optional[datetime] = None
     lessons: List[StudiedLesson] = Field(default_factory=list)
+
+    @model_validator(mode='before')
+    @classmethod
+    def set_group_name(cls, data: Any):
+        if isinstance(data, dict):
+            if "group_name" not in data and "name" in data:
+                data["group_name"] = data["name"]
+        return data
 
 class AgentRank(str, Enum):
     ESTAGIARIO = "Estagiário"       # < 2h
@@ -47,7 +55,7 @@ class AgentProfile(BaseModel):
     total_hours_studied: float = 0.0
     total_videos_studied: int = 0
     topics_mastered: List[str] = Field(default_factory=list)
-    external_skills: List[Dict[str, Any]] = Field(default_factory=list)
+    external_skills: List[Union[Dict[str, Any], str]] = Field(default_factory=list)
     
     # Configurações de Comportamento
     system_prompt: Optional[str] = None

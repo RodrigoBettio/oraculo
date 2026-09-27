@@ -4180,15 +4180,24 @@ function renderVaultTree() {
     if (document.getElementById('tree-topics-count')) document.getElementById('tree-topics-count').innerText = topics.length;
 
     if (agentsContainer) {
-        agentsContainer.innerHTML = agents.length ? agents.map(a => `
+        agents.sort((a, b) => (b.agent_type === 'gestor' || b.is_manager ? 1 : 0) - (a.agent_type === 'gestor' || a.is_manager ? 1 : 0));
+        agentsContainer.innerHTML = agents.length ? agents.map(a => {
+            const isGestor = a.agent_type === 'gestor' || a.is_manager;
+            const badgeTag = isGestor
+                ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">Gestor</span>'
+                : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono">Especialista</span>';
+            return `
             <div onclick="focusGraphNode('${a.id}')" class="p-1.5 rounded-lg hover:bg-gray-800/80 cursor-pointer flex items-center justify-between group transition-all">
                 <div class="flex items-center space-x-2 truncate">
-                    <span class="text-sm">${a.avatar || '🤖'}</span>
+                    <span class="text-sm">${a.avatar || (isGestor ? '👑' : '🤖')}</span>
                     <span class="font-bold text-gray-200 group-hover:text-purple-300 truncate">${a.label}</span>
                 </div>
-                <span class="text-[10px] text-gray-500">${a.hours || 0}h</span>
-            </div>
-        `).join('') : `<div class="text-gray-500 text-[10px] py-1 pl-2">Nenhum agente neste filtro.</div>`;
+                <div class="flex items-center space-x-1.5">
+                    ${badgeTag}
+                    <span class="text-[10px] text-gray-500">${a.hours || 0}h</span>
+                </div>
+            </div>`;
+        }).join('') : `<div class="text-gray-500 text-[10px] py-1 pl-2">Nenhum agente neste filtro.</div>`;
     }
 
     if (coursesContainer) {
@@ -4200,7 +4209,7 @@ function renderVaultTree() {
                 </div>
                 <span class="text-[10px] text-gray-500 font-mono">${c.lessons_count || 0}</span>
             </div>
-        `).join('') : `<div class="text-gray-500 text-[10px] py-1 pl-2">Nenhum curso indexado nesta área.</div>`;
+        `).join('') : `<div class="text-gray-500 text-[10px] py-1 pl-2">Constelação Otimizada (54 nós de alta performance)</div>`;
     }
 
     if (topicsContainer) {
@@ -4491,7 +4500,12 @@ function onGraphMouseMove(e) {
         tooltip.classList.remove('hidden');
 
         let typeBadge = '';
-        if (hitNode.type === 'agent') typeBadge = '<span class="obsidian-tag obsidian-tag-green">#especialista</span>';
+        if (hitNode.type === 'agent') {
+            const isGestor = hitNode.agent_type === 'gestor' || hitNode.is_manager;
+            typeBadge = isGestor
+                ? '<span class="obsidian-tag font-bold" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">#gestor</span>'
+                : '<span class="obsidian-tag obsidian-tag-green">#especialista</span>';
+        }
         else if (hitNode.type === 'course') typeBadge = '<span class="obsidian-tag obsidian-tag-purple">#curso</span>';
         else if (hitNode.type === 'lesson') {
             const sc = hitNode.status === 'completed' ? 'obsidian-tag-green' : (hitNode.status === 'processing' ? 'obsidian-tag-amber' : 'obsidian-tag-purple');
@@ -4536,10 +4550,18 @@ function onGraphClick(e) {
         document.getElementById('node-detail-type').innerText = `#${hitNode.type}`;
         
         let desc = '';
-        if (hitNode.type === 'agent') desc = `${hitNode.role || 'Especialista'}. Acumula ${hitNode.hours || 0} horas de estudo.`;
+        if (hitNode.type === 'agent') {
+            const isGestor = hitNode.agent_type === 'gestor' || hitNode.is_manager;
+            desc = isGestor
+                ? `👑 Gestor(a) Executivo: ${hitNode.role || 'Liderança Estratégica'}.`
+                : `⚡ Especialista: ${hitNode.role || 'Técnico'}. Acumula ${hitNode.hours || 0} horas de estudo.`;
+        }
         else if (hitNode.type === 'course') desc = `Curso indexado no cofre com ${hitNode.lessons_count || 0} aulas catalogadas.`;
         else if (hitNode.type === 'lesson') desc = `Aula individual. Status: ${hitNode.status || 'pendente'}.`;
-        else if (hitNode.type === 'topic') desc = `Habilidade e padrão dominado extraído das aulas.`;
+        else if (hitNode.type === 'topic') {
+            const srcAgent = hitNode.source_agent_name ? ` de ${hitNode.source_agent_name}` : '';
+            desc = `Habilidade Principal${srcAgent} mapeada para a constelação executiva.`;
+        }
         document.getElementById('node-detail-desc').innerText = desc;
 
         const linksEl = document.getElementById('node-detail-links');
