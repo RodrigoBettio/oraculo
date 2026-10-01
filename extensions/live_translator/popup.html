@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Oráculo Live Translator</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="header">
+      <div class="brand">
+        <div class="brand-dot" id="status-dot"></div>
+        <span>Oráculo Live Translator</span>
+      </div>
+      <span class="version">v1.0.0</span>
+    </div>
+
+    <div class="status-card" id="status-card">
+      <span class="status-label">Status da Conexão:</span>
+      <span class="status-val" id="status-text">Verificando...</span>
+    </div>
+
+    <!-- CONFIGURAÇÃO DA CHAVE GEMINI -->
+    <div class="section">
+      <label for="api-key-input">Chave de API do Gemini (AI Studio)</label>
+      <div class="input-row">
+        <input type="password" id="api-key-input" placeholder="AIzaSy..." autocomplete="off">
+        <button id="toggle-key-btn" class="icon-btn" title="Mostrar/Ocultar">👁️</button>
+      </div>
+      <small class="hint">Usada para conectar ao modelo <code>gemini-3.5-live-translate-preview</code> via WebSocket.</small>
+    </div>
+
+    <!-- IDIOMAS -->
+    <div class="section">
+      <label>Configuração de Idiomas</label>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="outbound-lang">Você fala (PT) ➔ Sala ouve:</label>
+          <select id="outbound-lang">
+            <option value="en" selected>Inglês (EN)</option>
+            <option value="es">Espanhol (ES)</option>
+            <option value="fr">Francês (FR)</option>
+            <option value="de">Alemão (DE)</option>
+            <option value="it">Italiano (IT)</option>
+            <option value="ja">Japonês (JA)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="inbound-lang">Sala fala (EN) ➔ Legendas em:</label>
+          <select id="inbound-lang">
+            <option value="pt-BR" selected>Português (PT-BR)</option>
+            <option value="es">Espanhol (ES)</option>
+            <option value="en">Inglês (EN)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTÕES DE AÇÃO -->
+    <div class="actions">
+      <button id="save-btn" class="primary-btn">Salvar Configurações</button>
+      <button id="open-simulator-btn" class="secondary-btn">🧪 Abrir Simulador de Testes</button>
+    </div>
+
+    <div class="footer">
+      <span>Atalho na chamada: <kbd>Alt</kbd> + <kbd>T</kbd> para alternar microfone</span>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

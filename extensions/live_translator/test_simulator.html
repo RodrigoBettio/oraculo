@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>🧪 Simulador de Tradução — Oráculo Live Translator</title>
+  <link rel="stylesheet" href="hud_translator.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #090d13;
+      color: #f0f6fc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 32px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    h1 {
+      font-size: 24px;
+      color: #58a6ff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    p.subtitle {
+      color: #8b949e;
+      font-size: 14px;
+    }
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .card h2 {
+      font-size: 16px;
+      color: #79c0ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    input[type="password"], input[type="text"], select {
+      flex: 1;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+    button {
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-primary { background: #238636; color: #fff; }
+    .btn-primary:hover { background: #2ea043; }
+    .btn-danger { background: #da3633; color: #fff; }
+    .btn-danger:hover { background: #f85149; }
+    .btn-secondary { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; }
+    .btn-secondary:hover { background: #30363d; color: #58a6ff; }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 768px) {
+      .test-grid { grid-template-columns: 1fr; }
+    }
+    .test-box {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .test-box h3 {
+      font-size: 14px;
+      color: #d2a8ff;
+    }
+    .log-box {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 14px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #8b949e;
+      height: 180px;
+      overflow-y: auto;
+    }
+    .log-entry { margin-bottom: 6px; }
+    .log-entry b.pt { color: #58a6ff; }
+    .log-entry b.en { color: #56d364; }
+    .log-entry b.err { color: #f85149; }
+    .tag {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .tag-live { background: rgba(46, 160, 67, 0.2); color: #3fb950; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div>
+      <h1>🧪 Simulador de Tradução — Oráculo Live Translator</h1>
+      <p class="subtitle">
+        Teste a tradução simultânea de voz via microfone e geração de legendas com o modelo <b>Gemini 3.5 Live Translate</b>.
+      </p>
+    </div>
+
+    <!-- CONFIGURAÇÃO DA CHAVE -->
+    <div class="card">
+      <h2>🔑 1. Configuração do Gemini API Key</h2>
+      <div class="form-row">
+        <input type="password" id="sim-key-input" placeholder="Cole sua chave de API do Gemini aqui...">
+        <button class="btn-primary" id="sim-save-key-btn">Conectar</button>
+      </div>
+      <small style="color: #8b949e;">A chave fica salva localmente no navegador (localStorage). O modelo utilizado é <code>gemini-3.5-live-translate-preview</code>.</small>
+    </div>
+
+    <!-- TESTES DUAIS -->
+    <div class="test-grid">
+      <!-- TESTE A: OUTBOUND (VOCÊ FALA PT ➔ OUVE EN) -->
+      <div class="test-box">
+        <h3>🎤 Teste Outbound (Você fala PT ➔ Voz em Inglês)</h3>
+        <p style="font-size: 12px; color: #8b949e;">
+          Grave sua voz falando em português. O Gemini Live traduzirá e falará em inglês no seu alto-falante.
+        </p>
+        <div class="form-row">
+          <button class="btn-primary" id="mic-toggle-btn">🎙️ Iniciar Microfone</button>
+        </div>
+        <div id="mic-status" style="font-size: 12px; color: #8b949e;">Status: Microfone inativo</div>
+      </div>
+
+      <!-- TESTE B: INBOUND (SIMULAÇÃO DE FALA EM INGLÊS ➔ LEGENDA EM PT) -->
+      <div class="test-box">
+        <h3>💬 Teste Inbound (Simular Inglês ➔ Legenda em PT)</h3>
+        <p style="font-size: 12px; color: #8b949e;">
+          Clique em frases pré-definidas em inglês para ver as legendas traduzidas em português no HUD.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button class="btn-secondary" onclick="simulateInboundSpeech('We need to scale our backend architecture and reduce latency.')">
+            "We need to scale our backend..."
+          </button>
+          <button class="btn-secondary" onclick="simulateInboundSpeech('What is the total estimated budget and timeline for this implementation?')">
+            "What is the total estimated budget..."
+          </button>
+          <button class="btn-secondary" onclick="simulateInboundSpeech('Does this solution integrate with our existing CRM and billing system?')">
+            "Does this solution integrate with CRM..."
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG DE EXECUÇÃO -->
+    <div class="card">
+      <h2>📜 Log de Eventos em Tempo Real</h2>
+      <div class="log-box" id="sim-log">
+        <div class="log-entry">⚡ Simulador pronto. Configure a chave de API e clique em "Iniciar Microfone".</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="gemini_live_client.js"></script>
+  <script src="hud_translator.js"></script>
+  <script>
+    let hud = null;
+    let outboundClient = null;
+    let micStream = null;
+    let audioContext = null;
+    let scriptProcessor = null;
+    let isMicRecording = false;
+
+    // Inicializa o HUD flutuante no simulador
+    window.addEventListener("DOMContentLoaded", () => {
+      hud = new TranslatorHUD({
+        onModeChange: (mode) => log(`Modo alterado para: ${mode}`),
+        onToggleTabCapture: (active) => {
+          hud.setTabCaptureActive(active);
+          log(`Captura de áudio da aba: ${active ? "Ativada" : "Desativada"}`);
+        }
+      });
+
+      const savedKey = localStorage.getItem("oraculo_sim_key") || "";
+      if (savedKey) {
+        document.getElementById("sim-key-input").value = savedKey;
+      }
+    });
+
+    document.getElementById("sim-save-key-btn").addEventListener("click", () => {
+      const key = document.getElementById("sim-key-input").value.trim();
+      if (!key) {
+        alert("Informe uma chave válida.");
+        return;
+      }
+      localStorage.setItem("oraculo_sim_key", key);
+      log("🔑 Chave salva no armazenamento local.");
+      initOutboundClient(key);
+    });
+
+    function log(msg, type = "") {
+      const logBox = document.getElementById("sim-log");
+      const entry = document.createElement("div");
+      entry.className = "log-entry";
+      const time = new Date().toLocaleTimeString();
+      if (type === "pt") {
+        entry.innerHTML = `[${time}] <b class="pt">Você (PT):</b> ${msg}`;
+      } else if (type === "en") {
+        entry.innerHTML = `[${time}] <b class="en">Gemini (EN):</b> ${msg}`;
+      } else if (type === "err") {
+        entry.innerHTML = `[${time}] <b class="err">Erro:</b> ${msg}`;
+      } else {
+        entry.innerHTML = `[${time}] ${msg}`;
+      }
+      logBox.appendChild(entry);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function initOutboundClient(key) {
+      if (outboundClient) {
+        outboundClient.disconnect();
+      }
+
+      outboundClient = new GeminiLiveTranslateClient({
+        apiKey: key,
+        targetLanguageCode: "en",
+        onAudioChunk: (pcm24k) => {
+          playReceivedPcm24k(pcm24k);
+        },
+        onInputTranscript: (text) => {
+          log(text, "pt");
+          hud?.updateOutboundSpeech(text);
+        },
+        onOutputTranscript: (text) => {
+          log(text, "en");
+          hud?.updateOutboundSpeech(null, text);
+        },
+        onStatusChange: (s) => {
+          log(`Status: ${s.status} — ${s.details}`);
+          hud?.setStatus(s.status);
+        },
+        onError: (err) => log(err.message || err, "err")
+      });
+
+      outboundClient.connect();
+    }
+
+    // Reproduz áudio 24kHz recebido do Gemini no navegador
+    let playbackAudioCtx = null;
+    let scheduledTime = 0;
+
+    function playReceivedPcm24k(pcmBuffer) {
+      if (!playbackAudioCtx) {
+        playbackAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      const int16 = new Int16Array(pcmBuffer);
+      const audioBuffer = playbackAudioCtx.createBuffer(1, int16.length, 24000);
+      const channel = audioBuffer.getChannelData(0);
+      for (let i = 0; i < int16.length; i++) {
+        channel[i] = int16[i] / 32768.0;
+      }
+      const source = playbackAudioCtx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(playbackAudioCtx.destination);
+      const startTime = Math.max(playbackAudioCtx.currentTime, scheduledTime);
+      source.start(startTime);
+      scheduledTime = startTime + audioBuffer.duration;
+    }
+
+    // Microfone
+    const micBtn = document.getElementById("mic-toggle-btn");
+    const micStatus = document.getElementById("mic-status");
+
+    micBtn.addEventListener("click", async () => {
+      if (isMicRecording) {
+        stopMic();
+      } else {
+        await startMic();
+      }
+    });
+
+    async function startMic() {
+      const key = document.getElementById("sim-key-input").value.trim();
+      if (!key) {
+        alert("Configure a chave da API do Gemini primeiro!");
+        return;
+      }
+
+      if (!outboundClient || !outboundClient.isConnected) {
+        initOutboundClient(key);
+      }
+
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaStreamSource(micStream);
+
+        const targetSampleRate = 16000;
+        const ratio = audioContext.sampleRate / targetSampleRate;
+        scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
+
+        scriptProcessor.onaudioprocess = (e) => {
+          const input = e.inputBuffer.getChannelData(0);
+          const outputLen = Math.floor(input.length / ratio);
+          const pcm16 = new Int16Array(outputLen);
+
+          for (let i = 0; i < outputLen; i++) {
+            const sample = input[Math.floor(i * ratio)];
+            const clamped = Math.max(-1, Math.min(1, sample));
+            pcm16[i] = clamped < 0 ? clamped * 32768 : clamped * 32767;
+          }
+
+          outboundClient?.sendAudioChunk(pcm16.buffer);
+        };
+
+        source.connect(scriptProcessor);
+        const muteNode = audioContext.createGain();
+        muteNode.gain.value = 0;
+        scriptProcessor.connect(muteNode);
+        muteNode.connect(audioContext.destination);
+
+        isMicRecording = true;
+        micBtn.classList.remove("btn-primary");
+        micBtn.classList.add("btn-danger");
+        micBtn.innerText = "⏹️ Parar Microfone";
+        micStatus.innerText = "Status: 🔴 Gravando e transmitindo ao vivo para o Gemini...";
+        log("🎙️ Microfone ativo. Fale em português!");
+      } catch (err) {
+        alert("Erro ao acessar microfone: " + err.message);
+      }
+    }
+
+    function stopMic() {
+      if (micStream) {
+        micStream.getTracks().forEach((t) => t.stop());
+        micStream = null;
+      }
+      if (audioContext) {
+        audioContext.close();
+        audioContext = null;
+      }
+      isMicRecording = false;
+      micBtn.classList.remove("btn-danger");
+      micBtn.classList.add("btn-primary");
+      micBtn.innerText = "🎙️ Iniciar Microfone";
+      micStatus.innerText = "Status: Microfone inativo";
+      log("⏹️ Microfone parado.");
+    }
+
+    // Simulação Inbound
+    function simulateInboundSpeech(enText) {
+      log(`Simulando fala do participante: "${enText}"`);
+      hud?.updateInboundSubtitle("Traduzindo em tempo real...", enText);
+
+      // Simulação rápida para feedback visual imediato
+      setTimeout(() => {
+        const translations = {
+          "We need to scale our backend architecture and reduce latency.":
+            "Precisamos escalar nossa arquitetura de backend e reduzir a latência.",
+          "What is the total estimated budget and timeline for this implementation?":
+            "Qual é o orçamento total estimado e o cronograma para esta implementação?",
+          "Does this solution integrate with our existing CRM and billing system?":
+            "Esta solução se integra ao nosso CRM e sistema de cobrança existentes?"
+        };
+        const pt = translations[enText] || "Tradução concluída.";
+        hud?.updateInboundSubtitle(pt, enText);
+        log(`Legenda exibida: "${pt}"`);
+      }, 750);
+    }
+  </script>
+</body>
+</html>

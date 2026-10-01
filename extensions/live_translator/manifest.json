@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "Oráculo Live Translator — Google Meet AI",
+  "version": "1.0.0",
+  "description": "Tradução Simultânea em Tempo Real para Google Meet: Fale em Português e transmita áudio traduzido em Inglês; visualize legendas traduzidas em tempo real com Gemini Live API.",
+  "permissions": [
+    "storage",
+    "offscreen",
+    "tabCapture",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://meet.google.com/*",
+    "wss://generativelanguage.googleapis.com/*",
+    "https://generativelanguage.googleapis.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Oráculo Live Translator"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["meet_interceptor.js"],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["hud_translator.js", "content_translator.js"],
+      "css": ["hud_translator.css"],
+      "world": "ISOLATED",
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "audio_worklet_processor.js",
+        "hud_translator.css",
+        "hud_translator.js",
+        "test_simulator.html",
+        "gemini_live_client.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -1,0 +1,290 @@
+/* ==========================================================================
+   Oráculo Live Translator — HUD Visual Cyberpunk / Glassmorphism
+   Interface de Tradução Simultânea em Tempo Real para Google Meet
+   ========================================================================== */
+
+#oraculo-translator-hud {
+  position: fixed;
+  bottom: 84px;
+  right: 24px;
+  width: 440px;
+  max-width: calc(100vw - 48px);
+  z-index: 9999999;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: rgba(10, 14, 20, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 1px rgba(255, 255, 255, 0.3);
+  color: #f0f6fc;
+  font-size: 13px;
+  user-select: none;
+  transition: width 0.2s ease, opacity 0.2s ease;
+  overflow: hidden;
+}
+
+#oraculo-translator-hud.collapsed {
+  width: 250px;
+}
+
+#oraculo-translator-hud.collapsed .hud-body {
+  display: none;
+}
+
+/* === HEADER ARRASTÁVEL === */
+.hud-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: grab;
+}
+
+.hud-header:active {
+  cursor: grabbing;
+}
+
+.hud-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  color: #58a6ff;
+  text-transform: uppercase;
+}
+
+.hud-brand-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2ea043;
+  box-shadow: 0 0 8px #2ea043;
+  animation: pulse-live 2s infinite;
+}
+
+.hud-brand-dot.connecting {
+  background: #e3b341;
+  box-shadow: 0 0 8px #e3b341;
+}
+
+.hud-brand-dot.error {
+  background: #f85149;
+  box-shadow: 0 0 8px #f85149;
+  animation: none;
+}
+
+@keyframes pulse-live {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.hud-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-badge-latency {
+  background: rgba(88, 166, 255, 0.12);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+  color: #79c0ff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.hud-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.hud-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #8b949e;
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.15s ease;
+}
+
+.hud-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #f0f6fc;
+}
+
+/* === CORPO DO HUD === */
+.hud-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* === SELETOR DE MODO DE ÁUDIO === */
+.hud-mode-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hud-mode-btn {
+  background: transparent;
+  border: none;
+  color: #8b949e;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.hud-mode-btn.active.translating {
+  background: linear-gradient(135deg, rgba(35, 134, 54, 0.4) 0%, rgba(46, 160, 67, 0.3) 100%);
+  color: #3fb950;
+  border: 1px solid rgba(46, 160, 67, 0.5);
+  box-shadow: 0 0 12px rgba(46, 160, 67, 0.2);
+}
+
+.hud-mode-btn.active.passthrough {
+  background: linear-gradient(135deg, rgba(88, 166, 255, 0.3) 0%, rgba(31, 111, 235, 0.2) 100%);
+  color: #79c0ff;
+  border: 1px solid rgba(88, 166, 255, 0.5);
+}
+
+/* === CAIXA DE LEGENDA RECEBIDA (INBOUND: EN ➔ PT) === */
+.hud-subtitle-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(188, 140, 255, 0.06);
+  border: 1px solid rgba(188, 140, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px;
+  position: relative;
+  min-height: 80px;
+}
+
+.hud-subtitle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #d2a8ff;
+  font-weight: 700;
+}
+
+.hud-tab-capture-btn {
+  background: rgba(188, 140, 255, 0.15);
+  border: 1px solid rgba(188, 140, 255, 0.3);
+  color: #e2c5ff;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hud-tab-capture-btn:hover {
+  background: rgba(188, 140, 255, 0.25);
+}
+
+.hud-tab-capture-btn.active {
+  background: #238636;
+  border-color: #2ea043;
+  color: #fff;
+}
+
+.hud-subtitle-pt {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #f0f6fc;
+  min-height: 22px;
+}
+
+.hud-subtitle-original {
+  font-size: 11px;
+  color: #8b949e;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+/* === CAIXA DE SUA FALA ENVIADA (OUTBOUND: PT ➔ EN) === */
+.hud-outbound-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.hud-outbound-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #8b949e;
+  font-weight: 700;
+}
+
+.hud-outbound-pt {
+  font-size: 12px;
+  color: #c9d1d9;
+}
+
+.hud-outbound-en {
+  font-size: 13px;
+  font-weight: 600;
+  color: #56d364;
+}
+
+/* === FOOTER DE STATUS E DICAS === */
+.hud-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #8b949e;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hud-shortcut-hint {
+  font-size: 10px;
+  color: #6e7681;
+}
+
+.hud-shortcut-hint kbd {
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 3px;
+  padding: 1px 4px;
+  color: #c9d1d9;
+}
