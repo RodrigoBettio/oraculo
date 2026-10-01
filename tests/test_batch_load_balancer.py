@@ -37,12 +37,14 @@ def test_enqueue_batch_multi_agent():
             if f.exists():
                 f.unlink()
 
-def test_load_balancer_single_agent_concurrency():
+def test_load_balancer_single_agent_concurrency(tmp_path):
     qm = StudyQueueManager()
     qm.queue.clear()
     qm.active_items.clear()
-    original_db_get_all = qm._db_get_all
-    qm._db_get_all = lambda: list(qm.queue)
+    original_db_path = qm._db_path
+    temp_db = tmp_path / "test_oraculo.db"
+    qm._db_path = temp_db
+    qm._init_db()
 
     try:
         for i in range(5):
@@ -57,9 +59,10 @@ def test_load_balancer_single_agent_concurrency():
                 status='queued'
             )
             qm.queue.append(item)
+            qm._db_insert(item)
 
         status = qm.get_status()
         assert status['queue_count'] == 5
         assert status['max_workers'] == qm.max_workers
     finally:
-        qm._db_get_all = original_db_get_all
+        qm._db_path = original_db_path

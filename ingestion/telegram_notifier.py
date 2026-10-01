@@ -29,20 +29,20 @@ COCKPIT_KEYBOARD = [
 def get_cockpit_inline_keyboard():
     return [
         [
-            Button.inline("📊 Relatório Executivo (Geral)", data=b"action:daily_report"),
+            Button.inline("📊 Relatório Executivo", data=b"action:daily_report"),
             Button.inline("📂 Navegar Drive", data=b"drv:root")
         ],
         [
             Button.inline("🔄 Atualizar Status", data=b"action:refresh_status"),
-            Button.inline("🚨 Análise de GAPs (TI)", data=b"action:view_gaps")
+            Button.inline("🚨 GAPs dos Gestores", data=b"action:view_gaps")
         ],
         [
             Button.inline("👥 Organograma", data=b"action:view_agents"),
             Button.inline("⚡ Alex Vance", data=b"action:consult_vance")
         ],
         [
-            Button.inline("🧪 Contratar QA", data=b"action:hire_qa"),
-            Button.inline("☁️ Contratar Cloud", data=b"action:hire_cloud")
+            Button.inline("🧪 Contratar QA (Tech)", data=b"action:hire_qa"),
+            Button.inline("💼 Contratar SDR (Vendas)", data=b"action:hire_sdr")
         ],
         [
             Button.url("🌐 Abrir Cockpit Web", "http://34.46.39.111")
@@ -52,8 +52,12 @@ def get_cockpit_inline_keyboard():
 def get_gap_report_inline_keyboard():
     return [
         [
-            Button.inline("🧪 Contratar Quinn QA", data=b"action:hire_qa"),
-            Button.inline("☁️ Contratar Cláudio Cloud", data=b"action:hire_cloud")
+            Button.inline("🧪 Contratar QA (Tech)", data=b"action:hire_qa"),
+            Button.inline("💼 Contratar SDR (Vendas)", data=b"action:hire_sdr")
+        ],
+        [
+            Button.inline("☁️ Contratar Cloud (SRE)", data=b"action:hire_cloud"),
+            Button.inline("🧠 Contratar Neuro (Mente)", data=b"action:hire_neuro")
         ],
         [
             Button.inline("🔄 Reavaliar GAPs", data=b"action:view_gaps"),
@@ -130,6 +134,8 @@ def get_agent_selector_keyboard(folder_id: str) -> list:
         ("O Monge", "monge"),
         ("Link", "link"),
         ("Ana", "ana"),
+        ("Sobral", "sobral"),
+        ("Thales", "thales"),
     ]
     buttons = []
     for name, short in technical_agents:
@@ -212,7 +218,7 @@ async def handle_callback_query(event):
             await event.edit(status_text, buttons=get_cockpit_inline_keyboard())
 
         elif data_str == "action:view_gaps":
-            await event.answer("📋 Consultando memorando de Helena Torres...", alert=False)
+            await event.answer("📋 Consultando GAPs de todos os gestores...", alert=False)
             gaps_text = await process_telegram_command("/gaps")
             await event.edit(gaps_text, buttons=get_gap_report_inline_keyboard())
 
@@ -239,6 +245,21 @@ async def handle_callback_query(event):
         elif data_str == "action:hire_cloud":
             res = await process_telegram_command("/contratar cloud")
             await event.answer("☁️ Cláudio Cloud contratado com sucesso!", alert=True)
+            await event.edit(res, buttons=get_cockpit_inline_keyboard())
+
+        elif data_str == "action:hire_sdr":
+            res = await process_telegram_command("/contratar sdr")
+            await event.answer("💼 Sofia SDR contratada com sucesso!", alert=True)
+            await event.edit(res, buttons=get_cockpit_inline_keyboard())
+
+        elif data_str == "action:hire_neuro":
+            res = await process_telegram_command("/contratar neuro")
+            await event.answer("🧠 Dr. Lucas Neuro contratado com sucesso!", alert=True)
+            await event.edit(res, buttons=get_cockpit_inline_keyboard())
+
+        elif data_str == "action:hire_copy":
+            res = await process_telegram_command("/contratar copywriter")
+            await event.answer("✍️ Caio Copywriter contratado com sucesso!", alert=True)
             await event.edit(res, buttons=get_cockpit_inline_keyboard())
 
         elif data_str.startswith("action:cancel_act:"):
@@ -309,6 +330,8 @@ async def handle_callback_query(event):
                     "jordan": "agent_jordan_belford_5567", "diamand": "agent_andre_diamand_1281",
                     "jimkwik": "agent_jim_kwik", "monge": "agent_o_monge_8324",
                     "link": "agent_link_4211", "ana": "agent_ana_5058",
+                    "sobral": "agent_sobral_marketing",
+                    "thales": "agent_thales_automations",
                 }
                 agent_id = agent_map.get(agent_short, "")
                 if agent_id and folder_id:
@@ -383,6 +406,37 @@ def set_cockpit_topic(topic_id: int, agent_id: str, agent_name: str):
     except Exception as e:
         logger.error(f"Erro ao salvar mapeamento de tópico: {e}")
 
+LAST_USER_CHAT_ID_FILE = settings.DATA_DIR / "last_user_chat_id.json"
+
+def get_last_user_chat_id() -> Optional[int]:
+    """Retorna o chat_id do usuário registrado (do arquivo ou .env)."""
+    env_id = getattr(settings, "TELEGRAM_USER_CHAT_ID", None)
+    if env_id:
+        try:
+            return int(env_id)
+        except Exception:
+            pass
+    if LAST_USER_CHAT_ID_FILE.exists():
+        try:
+            data = json.loads(LAST_USER_CHAT_ID_FILE.read_text(encoding="utf-8"))
+            return data.get("chat_id")
+        except Exception:
+            pass
+    return None
+
+def set_last_user_chat_id(chat_id: int):
+    """Salva o chat_id do usuário que interagiu com o Bot."""
+    try:
+        from datetime import datetime
+        LAST_USER_CHAT_ID_FILE.parent.mkdir(parents=True, exist_ok=True)
+        LAST_USER_CHAT_ID_FILE.write_text(
+            json.dumps({"chat_id": chat_id, "updated_at": datetime.now().isoformat()}),
+            encoding="utf-8"
+        )
+        logger.info(f"📱 User chat_id {chat_id} registrado para notificações do Bot!")
+    except Exception as e:
+        logger.warning(f"Erro ao salvar last_user_chat_id: {e}")
+
 # Rastreamento de mensagens enviadas pelo robô para evitar loops
 _sent_message_ids = set()
 
@@ -393,7 +447,7 @@ def _record_sent_id(msg):
             _sent_message_ids.clear()
 
 async def send_telegram_notification(title: str, message: str, with_keyboard: bool = True) -> bool:
-    """Envia uma notificação push para as Mensagens Salvas e para o Grupo Cockpit (se configurado)."""
+    """Envia notificação push com prioridade máxima para o Bot direto no privado do usuário e/ou grupo."""
     try:
         formatted_msg = (
             f"🔮 **ORÁCULO NOTIFICAÇÃO**\n\n"
@@ -403,40 +457,57 @@ async def send_telegram_notification(title: str, message: str, with_keyboard: bo
 
         sent_any = False
         group_id = get_cockpit_group_id()
+        user_chat_id = get_last_user_chat_id()
         bot = await get_bot_client()
 
-        # 1. Se o Bot estiver ativo, envia no Grupo Cockpit com botões táteis inline
-        if bot and bot.is_connected() and group_id:
-            try:
-                inline_btns = get_cockpit_inline_keyboard() if with_keyboard else None
-                g_msg = await bot.send_message(group_id, formatted_msg, buttons=inline_btns)
-                _record_sent_id(g_msg)
-                sent_any = True
-            except Exception as bge:
-                logger.warning(f"Erro ao enviar via Bot para grupo {group_id}: {bge}")
-
-        # 2. Envia via User Client para Mensagens Salvas e grupo (se bot não enviou)
-        from ingestion.telegram_client import TelegramManager
-        tm = TelegramManager()
-        client = await tm.get_client()
-        if await client.is_user_authorized():
-            if group_id and not sent_any:
+        # 1. Se o Bot estiver ativo, envia prioritariamente pelo Bot
+        if bot and bot.is_connected():
+            inline_btns = get_cockpit_inline_keyboard() if with_keyboard else None
+            
+            # 1.1 Chat Privado direto com o Bot (evita poluir Mensagens Salvas)
+            if user_chat_id:
                 try:
-                    g_msg = await client.send_message(group_id, formatted_msg)
+                    u_msg = await bot.send_message(user_chat_id, formatted_msg, buttons=inline_btns)
+                    _record_sent_id(u_msg)
+                    sent_any = True
+                    logger.info(f"📲 Notificação enviada via Bot para chat privado ({user_chat_id})")
+                except Exception as bue:
+                    logger.warning(f"Erro ao enviar via Bot para chat privado {user_chat_id}: {bue}")
+
+            # 1.2 Grupo Cockpit
+            if group_id:
+                try:
+                    g_msg = await bot.send_message(group_id, formatted_msg, buttons=inline_btns)
                     _record_sent_id(g_msg)
                     sent_any = True
-                except Exception as ge:
-                    logger.warning(f"Erro ao enviar notificação para grupo {group_id}: {ge}")
+                    logger.info(f"📲 Notificação enviada via Bot para grupo ({group_id})")
+                except Exception as bge:
+                    logger.warning(f"Erro ao enviar via Bot para grupo {group_id}: {bge}")
 
-            kwargs = {"buttons": COCKPIT_KEYBOARD} if with_keyboard else {}
-            me_msg = await client.send_message("me", formatted_msg, **kwargs)
-            _record_sent_id(me_msg)
-            sent_any = True
+        # 2. Se o Bot NÃO conseguiu enviar (sem token, sem chat_id registrado ou falha), recorre ao User Client
+        if not sent_any:
+            from ingestion.telegram_client import TelegramManager
+            tm = TelegramManager()
+            client = await tm.get_client()
+            if await client.is_user_authorized():
+                if group_id:
+                    try:
+                        g_msg = await client.send_message(group_id, formatted_msg)
+                        _record_sent_id(g_msg)
+                        sent_any = True
+                    except Exception as ge:
+                        logger.warning(f"Erro ao enviar notificação para grupo {group_id}: {ge}")
 
-        logger.info(f"📲 Notificação enviada para o Telegram: {title}")
+                kwargs = {"buttons": COCKPIT_KEYBOARD} if with_keyboard else {}
+                me_msg = await client.send_message("me", formatted_msg, **kwargs)
+                _record_sent_id(me_msg)
+                sent_any = True
+
+        logger.info(f"📲 Notificação despachada para o Telegram: {title} (sucesso={sent_any})")
         return sent_any
     except Exception as e:
         logger.warning(f"Erro ao enviar notificação Telegram: {e}")
+        return False
 async def notify_autonomous_proposal(
     title: str,
     description: str,
@@ -551,11 +622,13 @@ async def process_telegram_command(command_text: str) -> str:
             f"📍 **Grupo Oficial**: {group_info}\n\n"
             "Comandos e funcionalidades disponíveis:\n\n"
             "📊 `/status` — Visão em tempo real de workers, fila e tokens\n"
+            "📊 `/relatorio` — Relatório executivo do dia com métricas e especialistas\n"
             "👥 `/agentes` — Organograma estruturado (horas reais vs gestores)\n"
-            "🚨 `/gaps` — Relatório executivo da Helena Torres (carências de QA e Cloud)\n"
-            "➕ `/contratar <qa|cloud>` — Provisionar novo especialista solicitado pela Helena\n"
+            "🚨 `/gaps` — Relatório de GAPs consolidado de TODOS os gestores\n"
+            "➕ `/contratar <cargo>` — Provisionar novo especialista solicitado pelos gestores\n"
             "📁 `/estudar <link_drive>` — Enfileirar curso do Drive direto pelo celular\n"
-            "💬 `/perguntar @agente <dúvida>` — Consultar qualquer especialista (com delegação automática)\n"
+            "📂 `/drive` — Navegar visualmente pelas pastas do Google Drive\n"
+            "💬 `/perguntar @agente <dúvida>` — Consultar qualquer especialista\n"
             "📋 `/tarefas` — Ver backlog de tarefas recebidas do celular ou chat\n"
             "🏢 `/ativar_grupo` — Vincular o grupo atual como Quartel-General Oficial\n"
             "🔄 `/sync` — Forçar compilação de todas as skills\n"
@@ -599,6 +672,61 @@ async def process_telegram_command(command_text: str) -> str:
             return msg
         except Exception as e:
             return f"❌ Erro ao consultar status: {e}"
+
+    # 2.1. Gastos e Consumo de Tokens da API Gemini
+    elif cmd_lower.startswith("/gastos") or cmd_lower.startswith("/custos") or cmd_lower.startswith("/tokens") or "gastos da api" in cmd_lower:
+        try:
+            token_file = settings.DATA_DIR / "token_usage.json"
+            if not token_file.exists():
+                return "ℹ️ Nenhum registro de consumo de tokens encontrado ainda."
+
+            data = json.loads(token_file.read_text(encoding="utf-8"))
+            recs = data.get("records", [])
+            total_tokens = sum(r.get("total_tokens", 0) for r in recs)
+            total_usd = sum(r.get("cost_usd", 0.0) for r in recs)
+            total_brl = sum(r.get("cost_brl", 0.0) for r in recs)
+
+            by_agent = {}
+            for r in recs:
+                det = r.get("details", "")
+                agent = "Outros"
+                if "Jordan" in det:
+                    agent = "Jordan Belford"
+                elif "Bruno" in det or "Codex" in det or "Claude" in det:
+                    agent = "Bruno (Codex)"
+                elif "Sobral" in det or "Tráfego" in det:
+                    agent = "Sobral (Marketing)"
+                elif "Alex" in det or "Vance" in det:
+                    agent = "Alex Vance"
+
+                if agent not in by_agent:
+                    by_agent[agent] = {"calls": 0, "usd": 0.0, "brl": 0.0}
+                by_agent[agent]["calls"] += 1
+                by_agent[agent]["usd"] += r.get("cost_usd", 0.0)
+                by_agent[agent]["brl"] += r.get("cost_brl", 0.0)
+
+            avg_brl = (total_brl / len(recs)) if recs else 0.0
+
+            msg = (
+                f"💰 **AUDITORIA DE GASTOS & TOKENS — API GEMINI**\n"
+                f"━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+                f"💵 **Gasto Total Acumulado**: `R$ {total_brl:.2f}` (`${total_usd:.4f} USD`)\n"
+                f"📊 **Volume de Tokens**: `{total_tokens:,}` tokens consumidos\n"
+                f"🎬 **Aulas Processadas**: `{len(recs)}` chamadas multimodais\n"
+                f"💡 **Custo Médio por Aula**: `~R$ {avg_brl:.2f}` por vídeo\n\n"
+                f"👥 **Distribuição de Custo por Especialista**:\n"
+            )
+            for a, st in by_agent.items():
+                msg += f"• **{a}**: `R$ {st['brl']:.2f}` ({st['calls']} aulas)\n"
+
+            msg += (
+                f"\n━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"🛡️ **Gestão de Custos**: O modelo `gemini-3.8-flash` é ultra-eficiente (~$0.075 por 1M tokens de input). "
+                f"O curso inteiro do Sobral (239 aulas) custará aproximadamente R$ 42,00 no total."
+            )
+            return msg
+        except Exception as e:
+            return f"❌ Erro ao consultar gastos da API: {e}"
 
     # 3. Lista de Agentes Agrupada por Papel Real
     elif cmd_lower.startswith("/agentes") or "equipe & agentes" in cmd_lower:
@@ -647,91 +775,283 @@ async def process_telegram_command(command_text: str) -> str:
         except Exception as e:
             return f"❌ Erro ao listar agentes: {e}"
 
-    # 4. Relatório de Defasagens Intelectuais da Helena Torres (Skill Gaps)
-    elif cmd_lower.startswith("/gaps") or cmd_lower.startswith("/defasagens") or "relatório de gaps" in cmd_lower:
+    # 4. Relatório Executivo de GAPs de Conhecimento (Todos os Gestores)
+    elif cmd_lower.startswith("/gaps") or cmd_lower.startswith("/defasagens") or "relatório de gaps" in cmd_lower or "análise de gaps" in cmd_lower:
         try:
-            from orchestration.manager_sync import analyze_manager_skill_gaps
-            gap_data = analyze_manager_skill_gaps("gestor_tech_cto")
-            if "error" in gap_data:
-                return f"❌ Erro na análise de gaps: {gap_data['error']}"
+            from orchestration.manager_sync import analyze_manager_skill_gaps, get_all_managers_gaps_summary
+            parts = cmd.split(maxsplit=1)
+            area_arg = parts[1].strip().lower() if len(parts) > 1 else ""
 
-            manager_name = gap_data.get("manager_name", "Helena Torres")
-            team_status = gap_data.get("team_status", "Auditoria de equipe em andamento.")
-            gaps = gap_data.get("identified_gaps", [])
-            recs = gap_data.get("recommendations", [])
-            delegation = gap_data.get("immediate_delegation_strategy", "")
+            # Se especificou área (ex: /gaps tech, /gaps vendas, /gaps mente, /gaps marketing)
+            if area_arg and area_arg not in ["todos", "geral", "all", "equipe"]:
+                target_mgr = None
+                if any(x in area_arg for x in ["tech", "ti", "dev", "codigo", "código", "software"]):
+                    target_mgr = ("gestor_tech_cto", "tech", "Tecnologia & Desenvolvimento", "💻", "Tiago Tech (VP de TI)")
+                elif any(x in area_arg for x in ["mkt", "market", "growth", "trafego", "tráfego"]):
+                    target_mgr = ("gestor_marketing", "area_marketing_6867", "Marketing & Growth", "🚀", "Marcelo Marketing (CMO & Growth)")
+                elif any(x in area_arg for x in ["venda", "comercial", "negoc", "sales"]):
+                    target_mgr = ("gestor_sales_director", "sales", "Vendas & Negociação", "💼", "Victor Vendas (Dir. Comercial)")
+                elif any(x in area_arg for x in ["mente", "mind", "foco", "wellness", "saude", "saúde"]):
+                    target_mgr = ("gestor_mind_wellness", "mind", "Mente, Foco & Performance", "🧠", "Marina Mente (Head Wellness)")
 
+                if not target_mgr:
+                    return f"⚠️ Área '{area_arg}' não encontrada.\n\nOpções disponíveis:\n• `/gaps tech` (Tiago Tech)\n• `/gaps marketing` (Marcelo Marketing)\n• `/gaps vendas` (Victor Vendas)\n• `/gaps mente` (Marina Mente)\n• `/gaps` (Visão Consolidada de Todos)"
+
+                m_id, a_id, a_label, emo, m_name = target_mgr
+                gap_data = analyze_manager_skill_gaps(m_id, force_refresh=False)
+                if "error" in gap_data:
+                    return f"❌ Erro na análise de gaps: {gap_data['error']}"
+
+                team_status = gap_data.get("team_status", "Auditoria de equipe em andamento.")
+                gaps = gap_data.get("identified_gaps", [])
+                recs = gap_data.get("recommendations", [])
+                delegation = gap_data.get("immediate_delegation_strategy", "")
+
+                msg = (
+                    f"{emo} **MEMORANDO EXECUTIVO — SKILL GAP REPORT**\n"
+                    f"**De**: {m_name}\n"
+                    f"**Área**: {a_label}\n"
+                    f"**Para**: Rodrigo Bettio Jr.\n\n"
+                    f"📋 **Diagnóstico da Equipe Atual**:\n_{team_status}_\n\n"
+                    f"🚨 **LACUNAS IDENTIFICADAS**:\n"
+                )
+
+                for g in gaps:
+                    impact_badge = "🔴" if "crítico" in g.get("impact", "").lower() else "🟡"
+                    msg += f"{impact_badge} **{g.get('gap_name')}** (Impacto: {g.get('impact')})\n"
+                    msg += f"   • Motivo: {g.get('why_current_team_doesnt_cover')}\n\n"
+
+                msg += "💡 **RECOMENDAÇÕES DE CONTRATAÇÃO & ESTUDO**:\n"
+                for r in recs:
+                    msg += f"• **{r.get('target_agent')}** ({r.get('action_type')})\n"
+                    msg += f"  _Justificativa_: {r.get('rationale')}\n"
+                    materials = ", ".join(r.get("requested_study_materials", []))
+                    if materials:
+                        msg += f"  📚 _Cursos necessários no Drive_: {materials}\n"
+
+                if delegation:
+                    msg += f"\n🎯 **Estratégia Imediata de Delegação**:\n_{delegation}_\n"
+
+                msg += (
+                    f"\n👉 **Ações Sugeridas**:\n"
+                    f"• Para contratar especialistas: envie `/contratar <cargo>`\n"
+                    f"• Para ver todos os gestores: `/gaps`"
+                )
+                return msg
+
+            # Visão Geral Consolidada de Todos os Gestores
+            summary = get_all_managers_gaps_summary(force_refresh=False)
             msg = (
-                f"👩‍💼 **MEMORANDO EXECUTIVO DE T.I. — SKILL GAP REPORT**\n"
-                f"**De**: {manager_name} (VP de Tecnologia & Inovação Digital)\n"
-                f"**Para**: Rodrigo Bettio Jr.\n\n"
-                f"📋 **Diagnóstico da Equipe Atual**:\n_{team_status}_\n\n"
-                f"🚨 **LACUNAS CRÍTICAS IDENTIFICADAS**:\n"
+                "🚨 **RELATÓRIO CONSOLIDADO DE GAPS DE CONHECIMENTO**\n"
+                "**Liderança Executiva**: Levantamento de defasagens apontadas por cada gestor\n"
+                "━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
             )
 
-            for g in gaps:
-                impact_badge = "🔴" if g.get("impact") == "Crítico" else "🟡"
-                msg += f"{impact_badge} **{g.get('gap_name')}** (Impacto: {g.get('impact')})\n"
-                msg += f"   • Motivo: {g.get('why_current_team_doesnt_cover')}\n\n"
+            for item in summary:
+                emo = item.get("emoji", "🏢")
+                a_name = item.get("area_name", "")
+                m_name = item.get("manager_name", "")
+                gaps = item.get("gaps", [])
+                recs = item.get("recommendations", [])
 
-            msg += "💡 **RECOMENDAÇÕES DE CONTRATAÇÃO & ESTUDO**:\n"
-            for r in recs:
-                msg += f"• **{r.get('target_agent')}** ({r.get('action_type')})\n"
-                msg += f"  _Justificativa_: {r.get('rationale')}\n"
-                materials = ", ".join(r.get("requested_study_materials", []))
-                if materials:
-                    msg += f"  _Cursos necessários no Drive_: {materials}\n"
+                msg += f"{emo} **{a_name}**\n   Gestor(a): **{m_name}**\n"
+                if gaps:
+                    for g in gaps[:2]:
+                        impact_badge = "🔴" if "crítico" in g.get("impact", "").lower() else "🟡"
+                        msg += f"   {impact_badge} **{g.get('gap_name')}** ({g.get('impact')})\n"
+                        msg += f"      _{g.get('why_current_team_doesnt_cover')[:90]}..._\n"
+                else:
+                    msg += "   ✅ Equipe capacitada para a demanda atual.\n"
+
+                # Materiais solicitados
+                mat_list = []
+                for r in recs:
+                    for mat in r.get("requested_study_materials", []):
+                        mat_list.append(mat)
+                if mat_list:
+                    msg += f"   📚 **Materiais Solicitados p/ Drive**: {', '.join(mat_list[:2])}\n"
+                msg += "\n"
 
             msg += (
-                f"\n🎯 **Estratégia Imediata de Delegação**:\n_{delegation}_\n\n"
-                f"👉 **Aprovar Contratações**:\n"
-                f"• Para contratar QA: envie `/contratar qa`\n"
-                f"• Para contratar Cloud: envie `/contratar cloud`"
+                "━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                "💡 **Comandos Rápidos**:\n"
+                "• Detalhes por Gestor: `/gaps tech` | `/gaps marketing` | `/gaps vendas` | `/gaps mente`\n"
+                "• Provisionar Especialista: `/contratar <cargo>`\n"
+                "• Enfileirar Cursos: `/estudar <link_drive>`"
             )
             return msg
         except Exception as e:
             return f"❌ Erro ao gerar relatório de gaps: {e}"
 
-    # 5. Provisionamento / Contratação de Novos Especialistas Sugeridos
+    # 5. Provisionamento / Contratação de Novos Especialistas Sugeridos por Qualquer Gestor
     elif cmd_lower.startswith("/contratar"):
         parts = cmd.split(maxsplit=1)
         if len(parts) < 2:
-            return "⚠️ Uso correto: `/contratar qa` ou `/contratar cloud`"
+            return (
+                "➕ **CONTRATAÇÃO DE ESPECIALISTAS PELOS GESTORES**\n\n"
+                "Cada gestor executivo pode solicitar reforços para suprir gaps de conhecimento.\n\n"
+                "🎯 **Especialistas mais solicitados prontos para contratação**:\n\n"
+                "💻 **Tecnologia & Dev (Helena Torres)**:\n"
+                "   • `/contratar qa` — Quinn QA (Testes Automatizados, TDD, Playwright)\n"
+                "   • `/contratar cloud` — Cláudio Cloud (GCP, Docker, Kubernetes, SRE)\n"
+                "   • `/contratar fullstack` — Pedro Fullstack (Desenvolvimento Web & APIs)\n\n"
+                "💼 **Vendas & Negócios (Ricardo Monteiro)**:\n"
+                "   • `/contratar sdr` — Sofia SDR (Prospecção Ativa B2B & Qualificação BANT)\n"
+                "   • `/contratar copywriter` — Caio Copy (Copywriting de Alta Conversão & VSL)\n"
+                "   • `/contratar revops` — Rodrigo RevOps (Métricas de Funil & CRM)\n\n"
+                "🧠 **Mente & Performance (Dra. Camila Reis)**:\n"
+                "   • `/contratar neuro` — Dr. Lucas Neuro (Neurociência, Foco Profundo & Flow)\n"
+                "   • `/contratar habitos` — Helena Hábitos (Rotinas Atômicas & Higiene do Sono)\n\n"
+                "💡 _Ou contrate qualquer outro cargo digitando:_ `/contratar <nome_do_cargo>`"
+            )
 
-        role_target = parts[1].strip().lower()
+        role_target = parts[1].strip()
+        role_lower = role_target.lower()
 
-        if "qa" in role_target or "teste" in role_target:
-            agent_id = "agent_quinn_qa_7781"
-            agent_name = "Quinn QA"
-            role_desc = "Especialista em QA & Testes Automatizados (SDET)"
-            avatar = "🧪"
-            topics = [
-                "Test-Driven Development (TDD)",
-                "Testes Unitários e Integração com PyTest",
-                "Automação End-to-End com Playwright",
-                "Garantia de Qualidade em CI/CD",
-                "Mocks, Spies e Fixtures",
-                "Testes de Carga e Stress"
-            ]
-        elif "cloud" in role_target or "devops" in role_target or "sre" in role_target:
-            agent_id = "agent_claudio_cloud_4421"
-            agent_name = "Cláudio Cloud"
-            role_desc = "Especialista em Infraestrutura Cloud & DevOps/SRE"
-            avatar = "☁️"
-            topics = [
-                "Google Cloud Platform (GCP)",
-                "Docker & Containerização de Produção",
-                "Pipelines CI/CD & Deploy Contínuo",
-                "Kubernetes & Orquestração",
-                "Monitoramento & Observabilidade SRE",
-                "Segurança de Redes, Nginx e SSL"
-            ]
-        else:
-            return f"⚠️ Posição '{role_target}' não mapeada. Opções disponíveis: `/contratar qa` ou `/contratar cloud`."
+        # Catálogo pré-definido cobrindo todas as áreas
+        catalog = {
+            "qa": {
+                "id": "agent_quinn_qa_7781",
+                "name": "Quinn QA",
+                "role": "Especialista em QA & Testes Automatizados (SDET)",
+                "avatar": "🧪",
+                "area_id": "tech",
+                "area_name": "Tecnologia & Desenvolvimento",
+                "manager_name": "Helena Torres (VP de TI)",
+                "topics": ["Test-Driven Development (TDD)", "Testes Unitários e Integração com PyTest", "Automação End-to-End com Playwright", "Garantia de Qualidade em CI/CD", "Mocks, Spies e Fixtures", "Testes de Carga e Stress"],
+                "study_hint": "Playwright, PyTest e TDD por Kent Beck"
+            },
+            "cloud": {
+                "id": "agent_claudio_cloud_4421",
+                "name": "Cláudio Cloud",
+                "role": "Especialista em Infraestrutura Cloud & DevOps/SRE",
+                "avatar": "☁️",
+                "area_id": "tech",
+                "area_name": "Tecnologia & Desenvolvimento",
+                "manager_name": "Helena Torres (VP de TI)",
+                "topics": ["Google Cloud Platform (GCP)", "Docker & Containerização de Produção", "Pipelines CI/CD & Deploy Contínuo", "Kubernetes & Orquestração", "Monitoramento & Observabilidade SRE", "Segurança de Redes, Nginx e SSL"],
+                "study_hint": "Docker, Kubernetes e Google SRE Handbook"
+            },
+            "fullstack": {
+                "id": "agent_pedro_fullstack",
+                "name": "Pedro Fullstack",
+                "role": "Engenheiro Full-Stack & Desenvolvimento Web",
+                "avatar": "⚡",
+                "area_id": "tech",
+                "area_name": "Tecnologia & Desenvolvimento",
+                "manager_name": "Helena Torres (VP de TI)",
+                "topics": ["Next.js & React", "FastAPI & Python", "Tailwind CSS", "Arquitetura REST & WebSockets", "PostgreSQL & SQLite", "TypeScript Moderno"],
+                "study_hint": "Next.js 15, FastAPI Mastery e Clean Architecture"
+            },
+            "sdr": {
+                "id": "agent_sofia_sdr",
+                "name": "Sofia SDR",
+                "role": "Especialista em Prospecção Ativa B2B & Qualificação",
+                "avatar": "🎯",
+                "area_id": "sales",
+                "area_name": "Vendas & Negociação",
+                "manager_name": "Ricardo Monteiro (Dir. Comercial)",
+                "topics": ["Cold Outreach & Cadências", "Qualificação BANT e MEDDPICC", "Social Selling no LinkedIn", "Cold Call de Alto Impacto", "Pesquisa e Mapeamento de Decisores", "Quebra Prévia de Objeções"],
+                "study_hint": "Receita Previsível (Aaron Ross) e Fanatical Prospecting"
+            },
+            "copywriter": {
+                "id": "agent_caio_copywriter",
+                "name": "Caio Copywriter",
+                "role": "Especialista em Copywriting & Redação Persuasiva",
+                "avatar": "✍️",
+                "area_id": "sales",
+                "area_name": "Vendas & Negociação",
+                "manager_name": "Ricardo Monteiro (Dir. Comercial)",
+                "topics": ["Copywriting de Conversão", "Roteiros de VSL (Video Sales Letter)", "E-mail Marketing Persuasivo", "Páginas de Captura & Vendas", "Storytelling Aplicado a Vendas", "Gatilhos Emocionais & Sexy Canvas"],
+                "study_hint": "The Adweek Copywriting Handbook e Cartas de Dan Kennedy"
+            },
+            "revops": {
+                "id": "agent_rodrigo_revops",
+                "name": "Rodrigo RevOps",
+                "role": "Especialista em Revenue Operations & CRM",
+                "avatar": "📈",
+                "area_id": "sales",
+                "area_name": "Vendas & Negociação",
+                "manager_name": "Ricardo Monteiro (Dir. Comercial)",
+                "topics": ["Métricas SaaS (CAC, LTV, Churn, ARR)", "Automação de CRM (HubSpot/Pipedrive)", "Forecast de Vendas", "Gestão de Pipeline Comercial", "Análise de Produtividade Comercial"],
+                "study_hint": "Playbooks de RevOps e Gestão Avançada de Pipeline"
+            },
+            "neuro": {
+                "id": "agent_lucas_neuro",
+                "name": "Dr. Lucas Neuro",
+                "role": "Especialista em Neurociência Aplicada ao Foco & Biohacking",
+                "avatar": "🔬",
+                "area_id": "mind",
+                "area_name": "Mente, Foco & Performance",
+                "manager_name": "Dra. Camila Reis (Head Wellness)",
+                "topics": ["Regulação de Dopamina", "Foco Profundo (Deep Work)", "Estados de Flow Sustentável", "Gestão de Atenção & TDAH", "Higiene Circadiana & Sono Profundo", "Nutrição Cerebral & Nootrópicos"],
+                "study_hint": "Protocolos Huberman Lab e Deep Work de Cal Newport"
+            },
+            "habitos": {
+                "id": "agent_helena_habitos",
+                "name": "Helena Hábitos",
+                "role": "Especialista em Hábitos de Alta Performance & Rotinas",
+                "avatar": "🌱",
+                "area_id": "mind",
+                "area_name": "Mente, Foco & Performance",
+                "manager_name": "Dra. Camila Reis (Head Wellness)",
+                "topics": ["Hábitos Atômicos", "Rotinas Matinais e Noturnas", "Recuperação de Energia", "Prevenção de Burnout", "Gestão de Tempo e Blocos de Foco", "Consistência de Longo Prazo"],
+                "study_hint": "Hábitos Atômicos (James Clear) e Por Que Nós Dormimos"
+            }
+        }
 
+        # Localiza match no catálogo
+        matched_spec = None
+        for key, spec in catalog.items():
+            if key in role_lower or (key == "qa" and "teste" in role_lower) or (key == "cloud" and any(x in role_lower for x in ["devops", "sre", "infra"])) or (key == "sdr" and "prospec" in role_lower) or (key == "copywriter" and "copy" in role_lower) or (key == "neuro" and "foco" in role_lower):
+                matched_spec = spec
+                break
+
+        # Se não estiver no catálogo pré-definido, cria dinamicamente com Gemini
+        if not matched_spec:
+            try:
+                prompt_hire = (
+                    f"Um fundador quer contratar um novo especialista para sua equipe de IA com o cargo: '{role_target}'.\n"
+                    f"Defina qual gestor deve liderá-lo:\n"
+                    f"- gestor_tech_cto (Helena Torres) se for técnico, desenvolvimento, QA, Cloud, dados ou IA.\n"
+                    f"- gestor_sales_director (Ricardo Monteiro) se for vendas, marketing, tráfego, SDR ou copywriting.\n"
+                    f"- gestor_mind_wellness (Dra. Camila Reis) se for mente, saúde, foco, hábitos ou produtividade humana.\n\n"
+                    f"Responda estritamente em JSON com este formato:\n"
+                    f"{{\n"
+                    f'  "id": "agent_{re.sub(r"[^a-z0-9]", "_", role_lower)[:20]}",\n'
+                    f'  "name": "Nome Elegante do Especialista",\n'
+                    f'  "role": "{role_target.title()}",\n'
+                    f'  "avatar": "um emoji adequado",\n'
+                    f'  "area_id": "tech ou sales ou mind",\n'
+                    f'  "area_name": "Nome da Área",\n'
+                    f'  "manager_name": "Nome do Gestor Escolhido",\n'
+                    f'  "topics": ["Topico 1", "Topico 2", "Topico 3", "Topico 4"],\n'
+                    f'  "study_hint": "Cursos ou livros recomendados"\n'
+                    f"}}"
+                )
+                raw_json = _call_gemini_resilient(prompt_hire)
+                if "```json" in raw_json:
+                    raw_json = raw_json.split("```json")[1].split("```")[0].strip()
+                elif "```" in raw_json:
+                    raw_json = raw_json.split("```")[1].split("```")[0].strip()
+                matched_spec = json.loads(raw_json)
+            except Exception as dyn_err:
+                return f"⚠️ Não foi possível mapear automaticamente o cargo '{role_target}'. Use uma das opções recomendadas: `/contratar qa`, `/contratar cloud`, `/contratar sdr`, `/contratar copywriter`, `/contratar neuro`."
+
+        # Salva o novo agente
         try:
             from web.app import save_agent
             from models.agent import AgentProfile
+
+            agent_id = matched_spec["id"]
+            agent_name = matched_spec["name"]
+            role_desc = matched_spec["role"]
+            avatar = matched_spec.get("avatar", "🤖")
+            area_id = matched_spec.get("area_id", "tech")
+            area_name = matched_spec.get("area_name", "Tecnologia")
+            manager_name = matched_spec.get("manager_name", "Gestor de Área")
+            topics = matched_spec.get("topics", [])
+            study_hint = matched_spec.get("study_hint", "Cursos específicos no Drive")
 
             out_file = settings.AGENTS_DIR / f"{agent_id}.json"
             if out_file.exists():
@@ -742,10 +1062,10 @@ async def process_telegram_command(command_text: str) -> str:
                 name=agent_name,
                 role=role_desc,
                 avatar=avatar,
-                area_id="tech",
+                area_id=area_id,
                 agent_type="tecnico",
                 topics_mastered=topics,
-                capabilities=["answer_questions", "generate_specs", "write_code"]
+                capabilities=["answer_questions", "generate_specs", "write_code" if area_id == "tech" else "consulting"]
             )
             save_agent(profile)
 
@@ -759,16 +1079,25 @@ description: {role_desc}. Domina: {', '.join(topics[:4])}.
 ---
 
 # Skill: {agent_name} - {role_desc}
-Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de cursos no Google Drive.
+Especialista provisionado sob liderança de {manager_name}.
+Aguardando ingestão de materiais de estudo no Google Drive ({study_hint}).
 """)
+
+            # Sincroniza mapeamentos do gestor da área
+            try:
+                from orchestration.manager_sync import sync_all_managers_mappings
+                sync_all_managers_mappings()
+            except Exception:
+                pass
 
             return (
                 f"🎉 **NOVO ESPECIALISTA CONTRATADO COM SUCESSO!**\n\n"
                 f"{avatar} **Nome**: {agent_name}\n"
                 f"💼 **Cargo**: {role_desc}\n"
-                f"🏢 **Área**: Tecnologia & Desenvolvimento\n"
-                f"🎯 **Tópicos Alvo**: {', '.join(topics[:3])}...\n\n"
-                f"📁 **Próximo Passo**: Coloque os cursos de {role_target.upper()} na pasta do Google Drive (`Mestre dos Cursos`) e use `/estudar` para iniciar o treinamento!"
+                f"🏢 **Área**: {area_name}\n"
+                f"👑 **Gestor Responsável**: {manager_name}\n"
+                f"🎯 **Tópicos Alvo**: {', '.join(topics[:4])}\n\n"
+                f"📁 **Próximo Passo**: Coloque os materiais de estudo ({study_hint}) na pasta do Google Drive (`Mestre dos Cursos`) e use `/estudar` para iniciar o treinamento de {agent_name}!"
             )
         except Exception as e:
             return f"❌ Erro ao contratar especialista: {e}"
@@ -780,14 +1109,64 @@ Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de 
             return (
                 "📁 **ENFILEIRAR CURSO DO GOOGLE DRIVE**\n\n"
                 "Para enfileirar uma pasta do Google Drive, envie:\n"
-                "`/estudar <link_da_pasta_ou_id>`\n\n"
-                "Exemplo:\n"
-                "`/estudar https://drive.google.com/drive/folders/1MNK7q4Nj8eCIlpuzV4_2NVP7wcUQbS1R`"
+                "`/estudar <link_ou_id> [@agente] [ocr|audio]`\n\n"
+                "Exemplos:\n"
+                "• `/estudar https://drive.google.com/drive/folders/1V9oPEonG4znWlZkueIQO5A0EKzpAWXuG @bruno ocr`\n"
+                "• `/estudar drive:1nnC-MUpO9SIt9w9iCy0Zj5CQL9Eyd5R6 @sobral ocr`"
             )
 
         target = parts[1].strip()
-        match = re.search(r"folders/([a-zA-Z0-9_-]+)", target)
-        folder_id = match.group(1) if match else target
+
+        # Extrair Folder ID
+        folder_id = None
+        m_drv = re.search(r"drive:([a-zA-Z0-9_-]+)", target)
+        m_url = re.search(r"folders/([a-zA-Z0-9_-]+)", target)
+        if m_drv:
+            folder_id = m_drv.group(1)
+        elif m_url:
+            folder_id = m_url.group(1)
+        else:
+            first_token = target.split()[0].strip()
+            folder_id = first_token if not first_token.startswith("@") else None
+
+        if not folder_id:
+            return "❌ Link ou ID da pasta do Google Drive não encontrado na mensagem."
+
+        # Identificar Agente Destino
+        target_agent_id = "agent_claude_code" if "bruno" in target.lower() or "claude" in target.lower() else "agent_alex_vance"
+        target_agent_name = "Bruno" if "bruno" in target.lower() or "claude" in target.lower() else "Alex Vance"
+
+        agent_match = re.search(r"@([a-zA-Z0-9_]+)", target)
+        if agent_match:
+            raw_ag = agent_match.group(1).lower()
+            agent_map = {
+                "vance": ("agent_alex_vance", "Alex Vance"),
+                "alex": ("agent_alex_vance", "Alex Vance"),
+                "bruno": ("agent_claude_code", "Bruno"),
+                "claude": ("agent_claude_code", "Bruno"),
+                "agent_claude_code": ("agent_claude_code", "Bruno"),
+                "quinn": ("agent_quinn_qa_7781", "Quinn QA"),
+                "qa": ("agent_quinn_qa_7781", "Quinn QA"),
+                "claudio": ("agent_claudio_cloud_4421", "Cláudio Cloud"),
+                "cloud": ("agent_claudio_cloud_4421", "Cláudio Cloud"),
+                "jordan": ("agent_jordan_belford_5567", "Jordan Belford"),
+                "diamand": ("agent_andre_diamand_1281", "André Diamand"),
+                "jimkwik": ("agent_jim_kwik", "Jim Kwik"),
+                "jim": ("agent_jim_kwik", "Jim Kwik"),
+                "monge": ("agent_o_monge_8324", "O Monge"),
+                "link": ("agent_link_4211", "Link"),
+                "ana": ("agent_ana_5058", "Ana"),
+                "sobral": ("agent_sobral_marketing", "Sobral"),
+                "agent_sobral_marketing": ("agent_sobral_marketing", "Sobral"),
+                "thales": ("agent_thales_automations", "Thales"),
+                "agent_thales_automations": ("agent_thales_automations", "Thales"),
+            }
+            if raw_ag in agent_map:
+                target_agent_id, target_agent_name = agent_map[raw_ag]
+
+        # Tier de Processamento
+        tier = "multimodal_ocr" if "ocr" in cmd_lower or target_agent_id in ["agent_claude_code", "agent_sobral_marketing", "agent_thales_automations", "agent_quinn_qa_7781"] else "audio_only"
+        tier_label = "Modo Código & OCR (Visão Multimodal)" if tier == "multimodal_ocr" else "Modo Áudio (Transcrição Rápida)"
 
         try:
             from ingestion.drive_client import GoogleDriveManager
@@ -796,24 +1175,26 @@ Agente recém-provisionado pela VP de TI Helena Torres. Aguardando ingestão de 
             if not details or not details.get("success"):
                 return f"❌ Não foi possível acessar a pasta do Drive (`{folder_id}`). Verifique se o compartilhamento está ativo."
 
-            folder_name = details.get("current_folder", {}).get("name", "Pasta Drive")
-            lessons_count = details.get("lessons_count", 0)
+            folder_name = details.get("current_folder", {}).get("name", "Curso Drive")
 
             from ingestion.study_queue import StudyQueueManager
             sq = StudyQueueManager()
-            enqueued = sq.enqueue_drive_course(
+            enqueued = await sq.enqueue_drive_course(
+                agent_id=target_agent_id,
                 folder_id=folder_id,
                 course_name=folder_name,
-                agent_id="agent_alex_vance",
-                agent_name="Alex Vance"
+                tier=tier,
+                only_pending=True
             )
 
+            enqueued_count = len(enqueued)
             return (
-                f"✅ **CURSO ENFILEIRADO COM SUCESSO!**\n\n"
+                f"✅ **ESTUDO DO DRIVE ENFILEIRADO COM SUCESSO!**\n\n"
                 f"📁 **Curso**: {folder_name}\n"
-                f"📚 **Aulas Encontradas**: {lessons_count}\n"
-                f"⚡ **Agente Responsável**: Alex Vance\n"
-                f"🚀 Os workers na VM já começaram o download e processamento!"
+                f"👤 **Especialista**: {target_agent_name}\n"
+                f"⚡ **Aulas Enfileiradas**: {enqueued_count} itens\n"
+                f"👁️ **Formato**: {tier_label}\n\n"
+                f"🚀 Os workers de ingestão já iniciaram o download e processamento contínuo!"
             )
         except Exception as e:
             return f"❌ Erro ao enfileirar curso do Drive: {e}"
@@ -1078,25 +1459,73 @@ async def start_telegram_listener():
         bot_client = await get_bot_client()
 
         has_user_auth = user_client and await user_client.is_user_authorized()
+        if has_user_auth:
+            try:
+                my_user = await user_client.get_me()
+                if my_user and not get_last_user_chat_id():
+                    set_last_user_chat_id(my_user.id)
+                    logger.info(f"📱 last_user_chat_id auto-inicializado com o ID do usuário: {my_user.id}")
+            except Exception as uid_err:
+                logger.warning(f"Erro ao obter user ID do user_client: {uid_err}")
+
         if not has_user_auth and not bot_client:
             logger.info("Telegram não autorizado e sem Bot Token configurado. Listener mobile aguardando.")
             return
 
+        # Cache recente de debounce para evitar comandos duplicados em curto intervalo
+        import time
+        _recent_cmd_cache = {}
+
         async def handle_message_event(event, is_bot: bool):
+            # O Oráculo opera exclusivamente através do Bot Client oficial (@bot_client).
+            # Mensagens de contas pessoais (User Client), chats pessoais ou Mensagens Salvas são 100% ignoradas.
+            if not is_bot:
+                return
+
             txt = (event.message.message or "").strip()
             if not txt:
                 return
 
+            # 1. Ignorar se a mensagem foi enviada pelo próprio sistema
             if event.message.id in _sent_message_ids:
                 return
 
-            if txt.startswith(("🔮", "🧠 [", "🤖 [", "💎 [", "👩‍💼 [", "🏗️ [", "🧘 [", "⚙️ [", "🩺 [", "📈 [", "🧪 [", "☁️ [", "📊 **", "🚨 **", "👥 **", "📍 **", "❌ Erro")):
+            # 2. Ignorar mensagens enviadas por QUALQUER Bot (inclusive este ou outros)
+            sender = await event.get_sender()
+            if getattr(sender, "bot", False):
+                return
+
+            # 3. Filtrar qualquer saída de sistema (com ou sem markdown) para evitar re-interpretação
+            SYSTEM_PREFIXES = (
+                "🔮", "📊", "🚨", "👥", "📍", "❌", "💬 [", "🧠 [", "🤖 [", "💎 [",
+                "👩‍💼 [", "🏗️ [", "🧘 [", "⚙️ [", "🩺 [", "📈 [", "🧪 [", "☁️ [",
+                "✨ [", "ℹ️", "⚠️", "🎓", "▰", "▱", "📂 **NAVEGADOR", "⏱️ **AÇÕES",
+                "🎉 **NOVO ESPECIALISTA", "✅ Compilação"
+            )
+            if any(txt.startswith(p) for p in SYSTEM_PREFIXES):
                 return
 
             chat = await event.get_chat()
             is_group = event.is_group or event.is_channel
             chat_id = event.chat_id
             cockpit_group_id = get_cockpit_group_id()
+
+            # O Bot NUNCA processa suas próprias mensagens enviadas
+            if event.out:
+                return
+
+            # No chat privado com o Bot, registra o ID do usuário para envio direto de relatórios/notificações
+            if not is_group and chat_id:
+                set_last_user_chat_id(chat_id)
+
+            # Debounce: evitar processar exatamente o mesmo comando no mesmo chat em < 3 segundos
+            now_ts = time.time()
+            cache_key = f"{chat_id}:{txt}"
+            if cache_key in _recent_cmd_cache and (now_ts - _recent_cmd_cache[cache_key] < 3.0):
+                return
+            _recent_cmd_cache[cache_key] = now_ts
+            if len(_recent_cmd_cache) > 200:
+                _recent_cmd_cache.clear()
 
             # CASO 1: Comando para vincular o grupo atual como Quartel-General
             if is_group and ("/ativar_grupo" in txt.lower() or "/set_cockpit" in txt.lower() or "/conectar_grupo" in txt.lower()):
@@ -1110,12 +1539,14 @@ async def start_telegram_listener():
                     f"• `@link <pergunta>` ➔ Link (LinkedIn & Autoridade)\n"
                     f"• `@jordan <pergunta>` ➔ Jordan Belford (Vendas & Fechamento)\n"
                     f"• `@diamand <pergunta>` ➔ André Diamand (Sexy Canvas & Desejo)\n"
-                    f"• `@helena <pergunta>` ➔ Helena Torres (VP TI consulta Alex Vance)\n"
+                    f"• `@helena <pergunta>` ➔ Helena Torres (VP TI)\n"
                     f"• `@vance <pergunta>` ➔ Alex Vance (Arquitetura & Engenharia)\n"
+                    f"• `@sobral <pergunta>` ➔ Sobral (Tráfego Pago & Performance)\n"
+                    f"• `@bruno <pergunta>` ➔ Bruno (Codex & Automações)\n"
                     f"• `@monge <pergunta>` ➔ O Monge (Espiritualidade & Códigos)\n"
                     f"• `@oraculo <pergunta>` ➔ Oráculo Central (Visão Geral & Maestro)\n\n"
                     f"📊 **Comandos de Sistema Disponíveis no Grupo**:\n"
-                    f"`/status` | `/agentes` | `/gaps` | `/contratar qa` | `/estudar <link>`"
+                    f"`/status` | `/relatorio` | `/agentes` | `/gaps` | `/contratar` | `/estudar`"
                 )
                 btns = get_cockpit_inline_keyboard() if is_bot else None
                 sent = await event.reply(welcome_group, buttons=btns)
@@ -1123,8 +1554,7 @@ async def start_telegram_listener():
                 return
 
             # CASO 2: Mensagens Privadas (Direto com o Bot ou em Mensagens Salvas)
-            is_me = (not is_group) and (event.is_private or (has_user_auth and event.chat_id == (await user_client.get_me()).id))
-            if is_me:
+            if not is_group:
                 def _get_btn_text(b):
                     return getattr(getattr(b, "button", None), "text", "") or ""
 
@@ -1216,17 +1646,34 @@ async def start_telegram_listener():
                     "@belford": "jordan",
                     "@diamand": "andre",
                     "@helena": "helena",
+                    "@tiago": "tiago",
+                    "@tech": "tiago",
                     "@vance": "alex_vance",
                     "@alex": "alex_vance",
                     "@monge": "monge",
                     "@bruno": "bruno",
                     "@camila": "camila",
+                    "@marina": "marina",
+                    "@mente": "marina",
                     "@ricardo": "ricardo",
+                    "@victor": "victor",
+                    "@vendas": "victor",
+                    "@sofia": "sofia",
+                    "@sdr": "sofia",
+                    "@caio": "caio",
+                    "@copy": "caio",
+                    "@felipe": "felipe",
+                    "@followup": "felipe",
                     "@qa": "quinn",
                     "@cloud": "claudio",
                     "@jim": "jim",
                     "@kwik": "jim",
                     "@ana": "ana",
+                    "@sobral": "sobral",
+                    "@thales": "thales",
+                    "@marcelo": "marcelo",
+                    "@marketing": "marcelo",
+                    "@growth": "marcelo",
                     "@oraculo": "oraculo"
                 }
 
@@ -1259,22 +1706,9 @@ async def start_telegram_listener():
                         _record_sent_id(sent)
                         return
 
-                # Subcaso 3.5: Interpretação de Intenção e Linguagem Natural em Grupo
-                print(f"🧠 [Telegram Grupo] Interpretando linguagem natural: {txt[:50]}", flush=True)
-                try:
-                    from orchestration.intent_interpreter import execute_or_clarify_intent
-                    parsed_res = await execute_or_clarify_intent(txt)
-                    resp_txt = parsed_res.get("response_text", "")
-                    if resp_txt:
-                        btns = None
-                        if parsed_res.get("status") == "executed_drive":
-                            from ingestion.telegram_notifier import get_drive_explorer_keyboard
-                            btns = get_drive_explorer_keyboard(parsed_res.get("folder_data", {}))
-                        sent = await event.reply(resp_txt, buttons=btns)
-                        _record_sent_id(sent)
-                        return
-                except Exception as nl_grp_err:
-                    logger.error(f"Erro ao processar linguagem natural no grupo: {nl_grp_err}")
+                # Em grupos, o Bot NUNCA responde a conversas normais ou mensagens não direcionadas.
+                # Ele responde estritamente a comandos (/...), menções explícitas (@...) ou em tópicos vinculados.
+                return
 
         # Registra no Bot Client (se token configurado)
         if bot_client:
@@ -1286,18 +1720,16 @@ async def start_telegram_listener():
             async def on_bot_callback(evt):
                 await handle_callback_query(evt)
 
-            logger.info("🤖 Bot Telethon configurado com listeners de mensagem e botões inline!")
+            logger.info("🤖 Bot Telethon configurado com listeners exclusivos de mensagem e botões inline!")
 
-        # Registra no User Client (se usuário autenticado)
+        # Sessão de Usuário (User Client):
+        # A conta pessoal MTProto do Rodrigo NÃO possui listeners de mensagens ativas.
+        # Ela é mantida exclusivamente para download/outbound quando necessário, sem interferir em grupos ou mensagens salvas.
         if has_user_auth:
-            @user_client.on(events.NewMessage())
-            async def on_user_message(evt):
-                await handle_message_event(evt, is_bot=False)
-
-            logger.info("👤 Sessão de Usuário Telethon configurada com listeners!")
+            logger.info("👤 Sessão de Usuário Telethon mantida exclusivamente para download/outbound (sem listener de mensagens).")
 
         _listener_started = True
-        print("📱 Telegram Mobile Cockpit Listener iniciado com sucesso (ouvindo em Mensagens Salvas, Bot e Grupos)!", flush=True)
+        print("📱 Telegram Mobile Cockpit Listener iniciado com sucesso (ouvindo exclusivamente via Bot Client oficial)!", flush=True)
 
         # Inicia o Bot do 2º Cérebro (Obsidian Ingestion) se token configurado
         try:

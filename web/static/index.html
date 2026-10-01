@@ -303,15 +303,21 @@
 
                 <!-- Grade Rápida de Áreas (Quick Cards) -->
                 <div>
-                    <div class="flex items-center justify-between mb-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                         <div class="flex items-center space-x-2">
                             <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Visão Geral dos Domínios & Gestores</h3>
                             <span class="text-[11px] text-gray-500">• Clique para abrir o painel</span>
                         </div>
-                        <button onclick="triggerManagersSync()" id="btn-sync-managers" title="Sincroniza mapeamento de Gestores e Especialistas" class="px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 hover:border-indigo-400/50 text-xs font-semibold flex items-center space-x-1.5 transition-all shadow-sm">
-                            <i data-lucide="refresh-cw" id="icon-sync-managers" class="w-3.5 h-3.5"></i>
-                            <span>Sincronizar Gestores & Especialistas</span>
-                        </button>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="openNewAreaModal()" class="px-3 py-1.5 rounded-xl bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/50 text-xs font-semibold flex items-center space-x-1.5 transition-all shadow-sm">
+                                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                                <span>+ Nova Área</span>
+                            </button>
+                            <button onclick="triggerManagersSync()" id="btn-sync-managers" title="Sincroniza mapeamento de Gestores e Especialistas" class="px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 hover:border-indigo-400/50 text-xs font-semibold flex items-center space-x-1.5 transition-all shadow-sm">
+                                <i data-lucide="refresh-cw" id="icon-sync-managers" class="w-3.5 h-3.5"></i>
+                                <span>Sincronizar Gestores</span>
+                            </button>
+                        </div>
                     </div>
                     <div id="quick-areas-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <!-- Renderizado via app.js -->

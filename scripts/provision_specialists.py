@@ -88,6 +88,43 @@ SPECIALISTS = [
                 "source": "curated_suite"
             }
         ]
+    },
+    {
+        "id": "gestor_marketing",
+        "name": "Marcelo Marketing",
+        "role": "Diretor de Marketing, Aquisição & Growth",
+        "avatar": "🚀",
+        "status": "ativo",
+        "area_id": "area_marketing_6867",
+        "agent_type": "gestor",
+        "topics_mastered": [
+            "Estratégia de Marketing Digital & Growth",
+            "Aquisição de Tráfego Pago & Performance",
+            "Psicologia de Consumo & Sexy Canvas",
+            "Branding & Posicionamento de Marca",
+            "Otimização de Conversão (CRO) & Funis",
+            "Gestão de Comunidades & Conteúdo Orgânico",
+            "Métricas de Marketing (CAC, ROAS, LTV, CPA)",
+            "Marketing de Influência & Parcerias Estratégicas",
+            "Testes A/B & Experimentação Contínua",
+            "Alinhamento Marketing-Vendas (Smarketing)"
+        ],
+        "capabilities": [
+            "delegate_tasks",
+            "evaluate_campaigns",
+            "cross_area_negotiation",
+            "growth_strategy",
+            "cac_roas_analysis",
+            "status_reporting"
+        ],
+        "external_skills": [
+            {
+                "id": "conversion-copywriting",
+                "name": "Conversion Copywriting & Scripting",
+                "description": "Copywriting persuasivo e roteirização de alta conversão.",
+                "source": "curated_suite"
+            }
+        ]
     }
 ]
 

@@ -1,6 +1,7 @@
 """
 Oráculo — Relatório Diário Executivo
 Gera relatório consolidado de todos os gestores com métricas, execuções e pendências.
+Formatação estruturada com quebras de linha para cada especialista e seção dedicada de GAPs.
 """
 
 import asyncio
@@ -23,21 +24,15 @@ except Exception:
     BRT = timezone(timedelta(hours=-3))
 
 
-async def generate_area_report(manager_id: str, area_name: str, emoji: str) -> str:
-    """Gera relatório de uma área específica baseado no gestor."""
-    # Placeholder for future expansion
-    pass
-
-
 async def generate_daily_executive_report(filter_area: Optional[str] = None) -> str:
     """Consolida o relatório executivo de todas as áreas ou filtra por área específica."""
     now = datetime.now(BRT)
     
     managers = [
         ("gestor_tech_cto", "tech", "TECNOLOGIA & DESENVOLVIMENTO", "💻", "Helena Torres (VP de TI)"),
-        ("gestor_sales_director", "sales", "VENDAS & NEGOCIAÇÃO", "💼", "Ricardo Monteiro (Dir. Comercial)"),
-        ("gestor_sales_director", "area_marketing_6867", "MARKETING & BRANDING", "🚀", "Ricardo Monteiro (Growth & Mkt)"),
-        ("gestor_mind_wellness", "mind", "MENTE, FOCO & SUPER CÉREBRO", "🧠", "Dra. Camila Reis (Head Wellness)"),
+        ("gestor_marketing", "area_marketing_6867", "MARKETING & GROWTH", "🚀", "Marcelo Marketing (CMO & Growth)"),
+        ("gestor_sales_director", "sales", "VENDAS & NEGOCIAÇÃO", "💼", "Victor Vendas (Dir. Comercial)"),
+        ("gestor_mind_wellness", "mind", "MENTE, FOCO & SUPER CÉREBRO", "🧠", "Marina Mente (Head Wellness)"),
     ]
     
     # Filtro opcional por área
@@ -64,48 +59,81 @@ async def generate_daily_executive_report(filter_area: Optional[str] = None) -> 
     
     footer = (
         f"\n━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"💡 _Para ver GAPs detalhados de qualquer gestor: `/gaps <tech|vendas|marketing|mente>`_\n"
         f"🤖 _Gerado automaticamente pelo Oráculo às {now.strftime('%H:%M')} BRT_"
     )
     
     return header + "\n".join(sections) + footer
 
 
-async def generate_area_report_section(manager_id, area_id, area_name, emoji, manager_name) -> str:
-    """Gera uma seção do relatório para uma área com métricas ricas de especialistas."""
+async def generate_area_report_section(manager_id: str, area_id: str, area_name: str, emoji: str, manager_name: str) -> str:
+    """Gera uma seção do relatório para uma área com especialistas em linhas separadas e GAPs do gestor."""
     agents_dir = settings.AGENTS_DIR
     area_agents = []
     total_area_hours = 0.0
     total_area_videos = 0
 
-    for f in agents_dir.glob("*.json"):
-        try:
-            agent = json.loads(f.read_text(encoding='utf-8'))
-            # Normaliza correspondência de área (ex: area_marketing_6867 ou marketing)
-            agent_aid = agent.get('area_id', '')
-            is_match = (agent_aid == area_id) or (area_id == "area_marketing_6867" and "marketing" in agent_aid.lower())
-            
-            if is_match and agent.get('agent_type') == 'tecnico':
-                area_agents.append(agent)
-                total_area_hours += float(agent.get("total_hours_studied", 0.0) or 0.0)
-                total_area_videos += int(agent.get("total_videos_studied", 0) or 0)
-        except Exception:
-            continue
-    
-    # Contagem de estudos processados hoje
-    processed_dir = settings.PROCESSED_DIR
-    today = datetime.now(BRT).date()
-    studied_today = 0
-    if processed_dir.exists():
-        for pf in processed_dir.iterdir():
+    if agents_dir.exists():
+        for f in agents_dir.glob("*.json"):
             try:
-                mtime = datetime.fromtimestamp(pf.stat().st_mtime, tz=BRT).date()
-                if mtime == today:
-                    studied_today += 1
+                agent = json.loads(f.read_text(encoding='utf-8'))
+                agent_aid = agent.get('area_id', '')
+                is_match = (agent_aid == area_id) or (area_id == "area_marketing_6867" and "marketing" in agent_aid.lower())
+                
+                if is_match and agent.get('agent_type') == 'tecnico':
+                    area_agents.append(agent)
+                    total_area_hours += float(agent.get("total_hours_studied", 0.0) or 0.0)
+                    total_area_videos += int(agent.get("total_videos_studied", 0) or 0)
             except Exception:
                 continue
     
+    # Ordenar especialistas por horas de estudo (maior primeiro)
+    area_agents.sort(key=lambda x: float(x.get("total_hours_studied", 0.0) or 0.0), reverse=True)
+
+    # Formatar especialistas em linhas separadas com quebra de linha
+    agent_lines = []
+    for a in area_agents:
+        videos = int(a.get("total_videos_studied", 0) or 0)
+        hours = float(a.get("total_hours_studied", 0.0) or 0.0)
+        role = a.get("role", "Especialista")
+        avatar = a.get("avatar", "👤")
+        name = a.get("name", a.get("id"))
+        if videos > 0:
+            status_tag = f"`{videos} aulas` • `{hours:.1f}h` ✅"
+        else:
+            status_tag = f"`{hours:.1f}h` 🐣 _(Aguardando cursos)_"
+        agent_lines.append(f"   • {avatar} **{name}** ({role}): {status_tag}")
+    
+    specialists_text = "\n".join(agent_lines) if agent_lines else "   • _Nenhum especialista vinculado ainda._"
+
+    # GAPs de conhecimento identificados pelo gestor da área
+    from orchestration.manager_sync import analyze_manager_skill_gaps
+    gap_data = analyze_manager_skill_gaps(manager_id, force_refresh=False)
+    identified_gaps = gap_data.get("identified_gaps", [])
+    recs = gap_data.get("recommendations", [])
+
+    gap_lines = []
+    if identified_gaps:
+        for g in identified_gaps[:2]:
+            impact = g.get("impact", "Alto")
+            badge = "🔴" if "crítico" in impact.lower() else "🟡"
+            gap_lines.append(f"   {badge} **{g.get('gap_name')}** ({impact})")
+        
+        mats = []
+        for r in recs:
+            for m in r.get("requested_study_materials", []):
+                mats.append(m)
+        if mats:
+            gap_lines.append(f"      📚 *Material Solicitado*: {', '.join(mats[:2])}")
+    
+    if gap_lines:
+        gaps_section = "🔍 **GAPs de Conhecimento Apontados pelo Gestor**:\n" + "\n".join(gap_lines)
+    else:
+        gaps_section = "🔍 **GAPs de Conhecimento**: ✅ Equipe alinhada com as metas atuais."
+
     # Contagem de tarefas
     tasks_dir = settings.DATA_DIR / "tasks"
+    today = datetime.now(BRT).date()
     tasks_today = 0
     tasks_pending = 0
     if tasks_dir.exists():
@@ -119,39 +147,17 @@ async def generate_area_report_section(manager_id, area_id, area_name, emoji, ma
                     tasks_pending += 1
             except Exception:
                 continue
-    
-    # Status da fila
-    try:
-        from ingestion.study_queue import StudyQueueManager
-        sqm = StudyQueueManager()
-        queue_status = sqm.get_status()
-        queued = queue_status.get('queued', 0)
-        processing = queue_status.get('downloading', 0) + queue_status.get('studying', 0)
-    except Exception:
-        queued = 0
-        processing = 0
-    
-    # Lista formatada de especialistas com suas horas reais
-    agent_badges = []
-    for a in area_agents:
-        videos = a.get("total_videos_studied", 0)
-        hours = a.get("total_hours_studied", 0.0)
-        role = a.get("role", "")
-        if videos > 0:
-            badge = f"**{a['name']}** ({videos} aulas • {hours:.1f}h) ✅"
-        else:
-            badge = f"**{a['name']}** ({role}) ✅"
-        agent_badges.append(badge)
-    
-    agent_list = ", ".join(agent_badges) if agent_badges else "Nenhum especialista vinculado"
-    
+
     section = f"""
 {emoji} **{area_name}**
    Gestor(a): **{manager_name}**
-   
-   📊 Métricas da Área: **{total_area_videos} aulas absorvidas** ({total_area_hours:.1f}h de estudo)
-   👥 Especialistas: {agent_list}
-   📋 Backlog: {tasks_today} criadas hoje | {tasks_pending} pendentes
+
+   📊 **Métricas da Área**: **{total_area_videos} aulas absorvidas** ({total_area_hours:.1f}h de estudo)
+👥 **Especialistas da Equipe**:
+{specialists_text}
+
+{gaps_section}
+   📋 **Backlog**: {tasks_today} criadas hoje | {tasks_pending} pendentes
 """
     return section
 

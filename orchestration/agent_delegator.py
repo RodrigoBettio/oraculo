@@ -82,7 +82,21 @@ class AgentDelegator:
             "ana": "agent_ana_5058",
             "bruno": "agent_claude_code",
             "camila": "gestor_mind_wellness",
-            "ricardo": "gestor_sales_director"
+            "marina": "gestor_mind_wellness",
+            "mente": "gestor_mind_wellness",
+            "ricardo": "gestor_sales_director",
+            "victor": "gestor_sales_director",
+            "vendas": "gestor_sales_director",
+            "tiago": "gestor_tech_cto",
+            "tech": "gestor_tech_cto",
+            "sofia": "agent_sofia_sdr",
+            "sdr": "agent_sofia_sdr",
+            "caio": "agent_caio_copywriter",
+            "copy": "agent_caio_copywriter",
+            "copywriter": "agent_caio_copywriter",
+            "felipe": "agent_felipe_followup",
+            "followup": "agent_felipe_followup",
+            "follow_up": "agent_felipe_followup"
         }
         resolved_id = aliases.get(clean_id, clean_id)
 
@@ -256,14 +270,17 @@ DÚVIDA DO RODRIGO: {query}
 
         # Mapeamento defensivo para equipes conhecidas
         if not subordinates:
-            if "helena" in manager_id.lower() or "tech" in area_id.lower():
-                known_ids = ["agent_alex_vance", "agent_quinn_qa_7781", "agent_claudio_cloud_4421", "agent_claude_code"]
+            if "helena" in manager_id.lower() or "tiago" in manager_id.lower() or "tech" in area_id.lower():
+                known_ids = ["agent_alex_vance", "agent_quinn_qa_7781", "agent_claudio_cloud_4421", "agent_claude_code", "agent_thales_automations"]
                 subordinates = [ag for ag in all_agents if ag.get("id") in known_ids]
-            elif "sales" in area_id.lower() or "ricardo" in manager_id.lower():
-                known_ids = ["agent_jordan_belford_5567", "agent_andre_diamand_1281", "agent_ana_5058"]
+            elif "marketing" in area_id.lower() or "marcelo" in manager_id.lower():
+                known_ids = ["agent_sobral_marketing", "agent_andre_diamand_1281", "agent_ana_5058"]
                 subordinates = [ag for ag in all_agents if ag.get("id") in known_ids]
-            elif "mind" in area_id.lower() or "camila" in manager_id.lower():
-                known_ids = ["agent_jim_kwik", "agent_o_monge_8324"]
+            elif "sales" in area_id.lower() or "ricardo" in manager_id.lower() or "victor" in manager_id.lower():
+                known_ids = ["agent_jordan_belford_5567", "agent_sofia_sdr", "agent_caio_copywriter", "agent_felipe_followup"]
+                subordinates = [ag for ag in all_agents if ag.get("id") in known_ids]
+            elif "mind" in area_id.lower() or "camila" in manager_id.lower() or "marina" in manager_id.lower():
+                known_ids = ["agent_jim_kwik", "agent_o_monge_8324", "agent_link_4211"]
                 subordinates = [ag for ag in all_agents if ag.get("id") in known_ids]
 
         # Constrói o catálogo de competências da equipe

@@ -8,6 +8,7 @@
   "subagent_ids": [
     "agent_alex_vance",
     "agent_claude_code",
+    "agent_thales_automations",
     "agent_quinn_qa_7781",
     "agent_claudio_cloud_4421"
   ],

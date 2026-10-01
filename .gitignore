@@ -31,11 +31,13 @@ data/processed/
 data/skills/
 data/workspaces/
 data/autonomous_actions/
+data/gaps/
 data/token_usage.json
 data/token_usage.tmp
 data/*.mp4
 data/deploy.log
 data/last_study_session.json
+*.tar.gz
 
 # IDE
 .idea/

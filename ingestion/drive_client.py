@@ -527,25 +527,13 @@ class GoogleDriveManager:
                     _explore_folder(os["id"], sub_theme_name, depth + 1, out_themes=target_themes)
 
         if subfolders:
-            from concurrent.futures import ThreadPoolExecutor
-            def _inspect_single_sub(sf):
+            for sf in subfolders:
                 if any(k in sf["name"].lower() for k in ["material", "materiais", "slide", "anexo", "apoio", "recurso", "pdf", "codigo", "code"]):
                     m_cont = self.list_folder_contents(sf["id"], course_name=folder_name, theme_name=None)
-                    return ("support", m_cont)
+                    direct_support.extend(m_cont["support_files"])
+                    direct_support.extend(m_cont["videos"])
                 else:
-                    sub_themes = []
-                    _explore_folder(sf["id"], sf["name"], depth=0, out_themes=sub_themes)
-                    return ("theme", sub_themes)
-
-            with ThreadPoolExecutor(max_workers=min(8, len(subfolders))) as executor:
-                results = list(executor.map(_inspect_single_sub, subfolders))
-
-            for rtype, rdata in results:
-                if rtype == "support":
-                    direct_support.extend(rdata["support_files"])
-                    direct_support.extend(rdata["videos"])
-                elif rtype == "theme":
-                    themes.extend(rdata)
+                    _explore_folder(sf["id"], sf["name"], depth=0, out_themes=themes)
 
         all_videos_count = len(direct_videos) + sum(t["videos_count"] for t in themes)
         all_studied_count = sum(1 for v in direct_videos if v["is_studied"]) + sum(t["studied_count"] for t in themes)

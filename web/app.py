@@ -1307,10 +1307,14 @@ def load_all_areas() -> List[Dict[str, Any]]:
     agent_map = {a["id"]: a for a in agents}
 
     for f in settings.AREAS_DIR.glob("*.json"):
+        if f.name.endswith("_gap_analysis.json"):
+            continue
         try:
             with open(f, "r", encoding="utf-8") as file:
                 data = json.load(file)
             area_id = data.get("id")
+            if not area_id or not data.get("name"):
+                continue
             
             # Agentes associados a esta área da vida
             area_agents = [

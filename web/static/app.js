@@ -797,9 +797,17 @@ function renderQuickAreasGrid() {
                         <p class="text-[11px] text-gray-400 truncate max-w-[180px]">${area.description || 'Área estratégica'}</p>
                     </div>
                 </div>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold" style="background: ${color}20; color: ${color}; border: 1px solid ${color}40;">
-                    ${health}% SAÚDE
-                </span>
+                <div class="flex items-center space-x-1.5">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold" style="background: ${color}20; color: ${color}; border: 1px solid ${color}40;">
+                        ${health}% SAÚDE
+                    </span>
+                    <button onclick="event.stopPropagation(); openEditAreaModal('${area.id}')" title="Editar Área" class="p-1 rounded-lg bg-gray-800/80 hover:bg-gray-700 text-gray-400 hover:text-white transition-all">
+                        <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button onclick="event.stopPropagation(); deleteAreaById('${area.id}', '${(area.name || '').replace(/'/g, "\\'")}')" title="Excluir Área" class="p-1 rounded-lg bg-gray-800/80 hover:bg-rose-500/20 text-gray-400 hover:text-rose-400 transition-all">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="pt-2 border-t border-gray-800/80 flex items-center justify-between text-xs text-gray-400">
@@ -1921,6 +1929,28 @@ async function deleteCurrentArea() {
         backToOrbitalView();
     } catch (e) {
         console.error('Erro ao excluir área:', e);
+    }
+}
+
+async function deleteAreaById(areaId, areaName) {
+    if (!areaId) return;
+    if (!confirm(`Tem certeza que deseja excluir a área "${areaName || areaId}"? Os agentes permanecerão ativos, apenas desvinculados.`)) return;
+
+    try {
+        const res = await fetch(`/api/areas/${areaId}`, { method: 'DELETE' });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            alert(`Erro ao excluir área: ${err.detail || 'Falha no servidor'}`);
+            return;
+        }
+        if (currentSelectedAreaId === areaId) {
+            backToOrbitalView();
+        }
+        await loadAgents();
+        await loadAreas();
+    } catch (e) {
+        console.error('Erro ao excluir área:', e);
+        alert(`Erro de conexão: ${e.message}`);
     }
 }
 

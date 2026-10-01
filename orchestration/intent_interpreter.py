@@ -52,9 +52,9 @@ O usuário enviou a seguinte mensagem no Telegram:
 "{text}"
 
 O sistema possui as seguintes áreas e agentes:
-- Área Tech (Gestora: Helena Torres / Especialistas: Alex Vance [@vance], Quinn QA [@qa], Cláudio Cloud [@cloud], Bruno [@bruno])
+- Área Tech (Gestora: Helena Torres / Especialistas: Alex Vance [@vance], Bruno [@bruno], Thales [@thales / "agent_thales_automations"], Quinn QA [@qa], Cláudio Cloud [@cloud])
 - Área Vendas (Gestor: Ricardo Monteiro / Especialista: Jordan Belford [@jordan])
-- Área Marketing & Branding (Gestor: Ricardo Monteiro / Especialistas: André Diamand [@diamand], Ana [@ana])
+- Área Marketing & Branding (Gestor: Ricardo Monteiro / Especialistas: Sobral [@sobral / "agent_sobral_marketing"], André Diamand [@diamand], Ana [@ana])
 - Área Mente & Super Cérebro (Gestora: Dra. Camila Reis / Especialistas: Jim Kwik [@jim], O Monge [@monge], Link [@link])
 
 Analise a mensagem e retorne RIGOROSAMENTE um JSON com as seguintes chaves:
