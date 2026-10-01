@@ -202,6 +202,7 @@ class SalesHUD {
 
     document.body.appendChild(this.container);
     this.setupEventListeners();
+    this.startAutoSave();
   }
 
   setupEventListeners() {
@@ -440,6 +441,97 @@ class SalesHUD {
     } else {
       objCard.classList.remove("active");
     }
+  }
+
+  /**
+   * Persiste a sessão da call atual no localStorage.
+   * Salva métricas, objeções detectadas, sinais de compra, transcrição e resultado.
+   */
+  persistCallSession() {
+    try {
+      const state = this.engine.getState();
+      const totalDuration = this.engine.talkTime.meSeconds + this.engine.talkTime.clientSeconds;
+
+      // Só persiste se houve conversa real (> 30 segundos de fala total)
+      if (totalDuration < 30) return;
+
+      const sessionData = {
+        id: `call_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+        date: new Date().toISOString(),
+        duration: Math.round(totalDuration),
+        finalProbability: state.probability,
+        finalStatus: state.status,
+        objectionsDetected: this.engine.history
+          .filter(h => h.objection)
+          .map(h => ({ id: h.objection, time: h.timestamp })),
+        buyingSignals: this.engine.history
+          .filter(h => h.signal)
+          .map(h => ({ id: h.signal, time: h.timestamp })),
+        talkRatio: state.talkRatio,
+        dealContext: state.dealContext,
+        transcriptSummary: this.engine.history.slice(-100).map(h => ({
+          t: h.timestamp,
+          s: h.speaker,
+          txt: h.text?.substring(0, 200),
+          p: h.probability
+        })),
+        totalSnippets: this.engine.history.length
+      };
+
+      // Carrega sessões existentes e adiciona a nova (mantém últimas 50)
+      const existing = JSON.parse(localStorage.getItem("oraculo_call_sessions") || "[]");
+      existing.push(sessionData);
+      const trimmed = existing.slice(-50);
+      localStorage.setItem("oraculo_call_sessions", JSON.stringify(trimmed));
+
+      console.log(`[SalesHUD] 💾 Sessão salva: ${sessionData.id} (${totalDuration}s, ${state.probability}%)`);
+    } catch (e) {
+      console.warn("[SalesHUD] Erro ao persistir sessão:", e);
+    }
+  }
+
+  /**
+   * Inicia o auto-save periódico (a cada 60 segundos) e no unload da página.
+   */
+  startAutoSave() {
+    // Auto-save a cada 60 segundos
+    this._autoSaveInterval = setInterval(() => {
+      this.persistCallSession();
+    }, 60000);
+
+    // Salva ao fechar/navegar da página
+    window.addEventListener("beforeunload", () => {
+      this.persistCallSession();
+    });
+
+    console.log("[SalesHUD] ⏱️ Auto-save ativado (60s + beforeunload)");
+  }
+
+  /**
+   * Retorna todas as sessões salvas para análise/exportação.
+   */
+  static getSavedSessions() {
+    try {
+      return JSON.parse(localStorage.getItem("oraculo_call_sessions") || "[]");
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /**
+   * Exporta o histórico de calls como JSON para download.
+   */
+  static exportSessionsAsJSON() {
+    const sessions = SalesHUD.getSavedSessions();
+    const blob = new Blob([JSON.stringify(sessions, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `oraculo_sales_sessions_${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 }
 

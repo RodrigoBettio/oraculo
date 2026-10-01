@@ -178,6 +178,148 @@ const JORDAN_PLAYBOOK = {
         step2_pivot: "Nossa tecnologia usa linguagem natural calibrada com o tom da sua empresa. Se o cliente fizer uma pergunta fora do escopo, ele transfere para você na hora.",
         step3_close: "Posso te mandar um áudio teste agora no seu próprio WhatsApp para você ver como é humanizado?"
       }
+    },
+
+    VOU_PENSAR: {
+      id: "VOU_PENSAR",
+      title: "Empurrando com a Barriga / Vou Pensar",
+      severity: "critica",
+      weight: -18,
+      keywords: [
+        "vou pensar", "pensar", "analisar", "avaliar", "refletir",
+        "manda por email", "manda proposta", "manda pdf", "envia proposta",
+        "manda material", "vou dar uma olhada", "deixa eu ver"
+      ],
+      semantic_triggers: [
+        "vou pensar com calma",
+        "preciso pensar sobre isso",
+        "deixa eu analisar em casa",
+        "manda a proposta por email",
+        "pode enviar por whatsapp pra eu ver depois",
+        "vou refletir e te retorno",
+        "vou dar uma estudada",
+        "deixa eu pensar e te falo",
+        "preciso processar essas informacoes",
+        "me manda um resumo",
+        "manda pdf com os detalhes",
+        "vou avaliar com calma e retorno",
+        "vou pensar e qualquer coisa te chamo"
+      ],
+      jordan_script: {
+        step1_agree: "Faz todo sentido querer processar as informações. Eu faço questão que você tome a melhor decisão.",
+        step2_pivot: "Normalmente, quando alguém diz 'vou pensar', tem uma dúvida específica que eu não respondi. Pode ser preço, pode ser funcionalidade, pode ser timing — qual é a sua?",
+        step3_close: "Se eu resolver essa dúvida agora, conseguimos fechar hoje e já começar o setup na segunda. O que te trava?"
+      }
+    },
+
+    FALTA_PROVA_SOCIAL: {
+      id: "FALTA_PROVA_SOCIAL",
+      title: "Credibilidade / Falta de Prova Social",
+      severity: "alta",
+      weight: -14,
+      keywords: [
+        "cases", "case", "depoimento", "depoimentos", "portfolio",
+        "quem usa", "clientes seus", "referencias", "referencia",
+        "cnpj", "tempo de mercado", "quanto tempo voces tem"
+      ],
+      semantic_triggers: [
+        "voce tem case de sucesso",
+        "quem mais usa isso",
+        "tem algum cliente que eu possa conversar",
+        "cade os depoimentos",
+        "qual o cnpj da empresa",
+        "quanto tempo voces tem de mercado",
+        "nunca ouvi falar de voces",
+        "como sei que funciona de verdade",
+        "tem portfolio pra me mostrar",
+        "tem referencia no seu segmento"
+      ],
+      jordan_script: {
+        step1_agree: "Essa é uma preocupação inteligente. Profissional que pesquisa antes de investir toma decisão melhor.",
+        step2_pivot: "Nós temos clientes ativos em nichos parecidos com o seu que tiveram resultados em menos de 30 dias. Posso te mostrar prints reais e até passar o contato de um para conversar direto.",
+        step3_close: "Quer que eu te envie agora 2 depoimentos de clientes do seu segmento e marcamos um piloto para você validar pessoalmente?"
+      }
+    },
+
+    MEDO_LGPD_SEGURANCA: {
+      id: "MEDO_LGPD_SEGURANCA",
+      title: "Medo de LGPD / Segurança de Dados",
+      severity: "media",
+      weight: -12,
+      keywords: [
+        "lgpd", "dados", "seguranca", "seguro", "privacidade",
+        "banir", "banido", "bloquear", "bloqueio", "vazamento",
+        "hackear", "hacker", "compliance"
+      ],
+      semantic_triggers: [
+        "meus dados ficam seguros",
+        "e a lgpd como fica",
+        "whatsapp pode banir meu numero",
+        "nao quero ter problema com dados",
+        "como protegem as informacoes",
+        "tem risco de vazar dados do cliente",
+        "e se der problema de privacidade",
+        "meu whatsapp pode ser bloqueado"
+      ],
+      jordan_script: {
+        step1_agree: "Essa preocupação mostra maturidade. Segurança de dados é inegociável para nós também.",
+        step2_pivot: "Todos os dados são criptografados em trânsito e em repouso, rodamos em infraestrutura Google Cloud com certificação SOC 2, e nosso bot usa a API oficial do WhatsApp Business — zero risco de banimento.",
+        step3_close: "Quer que eu te envie nosso documento de compliance e política de privacidade para seu jurídico validar enquanto avançamos?"
+      }
+    },
+
+    INTEGRACAO_SISTEMA: {
+      id: "INTEGRACAO_SISTEMA",
+      title: "Integração com Sistemas Existentes",
+      severity: "media",
+      weight: -10,
+      keywords: [
+        "integra", "integracao", "integrar", "erp", "bling", "tiny",
+        "omie", "nfe", "nota fiscal", "sistema atual", "meu sistema",
+        "conecta", "conectar", "api", "webhook"
+      ],
+      semantic_triggers: [
+        "integra com meu erp",
+        "funciona junto com o bling",
+        "conecta com o tiny",
+        "integra com o omie",
+        "consigo usar com meu sistema atual",
+        "como faz a integracao",
+        "tem api pra conectar",
+        "e o meu sistema de notas"
+      ],
+      jordan_script: {
+        step1_agree: "Ótima pergunta. Ninguém quer jogar fora um sistema que já funciona.",
+        step2_pivot: "Nosso sistema conecta via webhook ou API com qualquer plataforma: Bling, Tiny, Omie, RD Station, ou qualquer ERP que tenha integração. Não substituímos — complementamos.",
+        step3_close: "Posso agendar uma call técnica de 15 minutos com seu responsável de TI para validar a integração antes de avançar?"
+      }
+    },
+
+    NAO_E_MOMENTO: {
+      id: "NAO_E_MOMENTO",
+      title: "Adiamento / Não é o Momento",
+      severity: "alta",
+      weight: -14,
+      keywords: [
+        "momento", "agora nao", "janeiro", "fevereiro", "depois do carnaval",
+        "ano que vem", "proximo mes", "comeco do ano", "apos", "daqui a pouco"
+      ],
+      semantic_triggers: [
+        "nao e o momento certo",
+        "depois do carnaval a gente ve",
+        "vamos deixar para janeiro",
+        "ano que vem pode ser",
+        "final do ano ta complicado",
+        "estou reorganizando a empresa",
+        "preciso organizar a casa primeiro",
+        "agora nao da mas no futuro sim",
+        "vamos conversar daqui uns meses"
+      ],
+      jordan_script: {
+        step1_agree: "Entendo que timing é tudo em negócios. Você conhece sua empresa melhor que ninguém.",
+        step2_pivot: "Mas me responde uma coisa: o que muda entre agora e janeiro? Porque o custo de cada mês sem a solução são clientes que entram em contato e ninguém responde. Em 3 meses isso pode ser 50-100 leads perdidos.",
+        step3_close: "E se a gente começar o setup agora — você só paga a mensalidade quando estiver 100% rodando? Assim você não perde o timing e controla o investimento."
+      }
     }
   },
 
@@ -258,6 +400,82 @@ const JORDAN_PLAYBOOK = {
         "sensacional essa ideia"
       ],
       jordan_alert: "⚡ MOMENTO DE PICO EMOCIONAL: Ancore o valor e emende a proposta de implantação imediatamente."
+    },
+
+    PEDIDO_DEMO: {
+      id: "PEDIDO_DEMO",
+      title: "Pedido de Demo / Teste / Trial",
+      weight: +16,
+      keywords: [
+        "testar", "teste", "trial", "demonstracao", "demo",
+        "ver funcionando", "experimentar", "provar"
+      ],
+      semantic_triggers: [
+        "posso testar antes de fechar",
+        "tem versao de teste",
+        "quero ver funcionando na pratica",
+        "da pra experimentar antes",
+        "tem um trial gratuito",
+        "posso fazer um teste rapido",
+        "quero ver rodando no meu negocio"
+      ],
+      jordan_alert: "🧪 PEDIDO DE DEMO = Interesse concreto! Ofereça piloto de 7 dias SEM risco e peça os dados de acesso."
+    },
+
+    PERGUNTA_SUPORTE_ONBOARDING: {
+      id: "PERGUNTA_SUPORTE_ONBOARDING",
+      title: "Interesse em Suporte e Onboarding",
+      weight: +15,
+      keywords: [
+        "suporte", "pos-venda", "acompanhamento", "onboarding",
+        "treinamento", "quem me atende", "ajuda depois"
+      ],
+      semantic_triggers: [
+        "como funciona o suporte de voces",
+        "tem alguem pra me ajudar no dia a dia",
+        "se der problema quem eu chamo",
+        "voces dao treinamento pro meu pessoal",
+        "como e o acompanhamento depois que comeca",
+        "tem suporte no whatsapp"
+      ],
+      jordan_alert: "🤝 CLIENTE PENSANDO NO DIA A DIA! Garanta suporte direto e feche a contratação agora."
+    },
+
+    INCLUSAO_TERCEIROS_POSITIVA: {
+      id: "INCLUSAO_TERCEIROS_POSITIVA",
+      title: "Inclusão Positiva de Stakeholders",
+      weight: +12,
+      keywords: [
+        "trazer meu socio", "mostrar pro time", "meu gerente ver",
+        "apresentar pro diretor", "chamar meu parceiro"
+      ],
+      semantic_triggers: [
+        "posso trazer meu socio pra proxima call",
+        "vou mostrar pro meu time",
+        "quero que meu gerente veja isso",
+        "posso apresentar isso internamente",
+        "meu parceiro precisa conhecer"
+      ],
+      jordan_alert: "👥 MOBILIZANDO STAKEHOLDERS! Ofereça uma call conjunta imediata — não deixe esfriar."
+    },
+
+    COMPARACAO_FAVORAVEL: {
+      id: "COMPARACAO_FAVORAVEL",
+      title: "Comparação Competitiva Favorável",
+      weight: +18,
+      keywords: [
+        "melhor que", "mais completo", "prefiro voces", "superior",
+        "ganharam", "melhor opcao", "mais bonito"
+      ],
+      semantic_triggers: [
+        "gostei mais do que o concorrente",
+        "voces sao melhores que o outro",
+        "a outra empresa nao tinha isso",
+        "ja vi outras opcoes e a de voces e melhor",
+        "prefiro o de voces",
+        "voces tem mais recursos que os outros"
+      ],
+      jordan_alert: "🏆 COMPARAÇÃO FAVORÁVEL! Reforce o diferencial exclusivo e FECHE AGORA antes que pesquise mais."
     }
   },
 
@@ -341,6 +559,47 @@ const JORDAN_PLAYBOOK = {
         step1_agree: `Faz total sentido alinhar com seu sócio/parceiro, é uma decisão conjunta.`,
         step2_pivot: `Para economizar o seu tempo de ter que explicar toda a parte técnica do ${ctx.product}, o que acha de eu entrar 10 minutos numa call com vocês dois?`,
         step3_close: `Assim eu tiro as dúvidas financeiras direto com ele e você não perde tempo. Qual melhor horário amanhã?`
+      };
+    }
+
+    if (objectionId === "VOU_PENSAR") {
+      return {
+        step1_agree: `Faz todo sentido querer processar. Eu faço questão que você tome a melhor decisão sobre o ${ctx.product}.`,
+        step2_pivot: `Normalmente, quando alguém diz "vou pensar", tem uma dúvida específica que eu não respondi. Pode ser preço, pode ser se funciona para ${ctx.client}, pode ser timing — qual é a sua?`,
+        step3_close: `Se eu resolver essa dúvida agora, conseguimos fechar hoje e já começar o setup. O que te trava?`
+      };
+    }
+
+    if (objectionId === "FALTA_PROVA_SOCIAL") {
+      return {
+        step1_agree: `Essa é uma preocupação inteligente. Dono de ${ctx.client} que pesquisa antes de investir toma decisão melhor.`,
+        step2_pivot: `Temos clientes ativos em nichos parecidos com ${ctx.client} que viram resultado com o ${ctx.product} em menos de 30 dias. Posso te mostrar prints reais e até passar o contato de um para conversar direto.`,
+        step3_close: `Quer que eu te envie agora 2 depoimentos de clientes do seu segmento e marcamos um piloto para você validar pessoalmente?`
+      };
+    }
+
+    if (objectionId === "MEDO_LGPD_SEGURANCA") {
+      return {
+        step1_agree: `Essa preocupação mostra maturidade. Segurança de dados do ${ctx.client} é inegociável para nós também.`,
+        step2_pivot: `O ${ctx.product} roda em infraestrutura Google Cloud com criptografia de ponta a ponta. Se usa WhatsApp, é via API Business oficial — zero risco de banimento.`,
+        step3_close: `Quer que eu te envie nosso documento de compliance para seu jurídico validar enquanto avançamos com o setup?`
+      };
+    }
+
+    if (objectionId === "INTEGRACAO_SISTEMA") {
+      return {
+        step1_agree: `Ótima pergunta. Ninguém quer jogar fora um sistema que já funciona no ${ctx.client}.`,
+        step2_pivot: `O ${ctx.product} conecta via webhook ou API com qualquer plataforma: Bling, Tiny, Omie, RD Station. Não substituímos seu sistema — complementamos.`,
+        step3_close: `Posso agendar uma call técnica de 15 minutos com seu responsável de TI para validar a integração antes de fechar?`
+      };
+    }
+
+    if (objectionId === "NAO_E_MOMENTO") {
+      const lostLeadsPerMonth = Math.round(monthly > 0 ? (monthly / ticket) * 15 : 30);
+      return {
+        step1_agree: `Entendo que timing é tudo em negócios. Você conhece o ${ctx.client} melhor que ninguém.`,
+        step2_pivot: `Mas o que muda entre agora e o "momento ideal"? Cada mês sem o ${ctx.product} podem ser ${lostLeadsPerMonth}+ leads que entram e ninguém responde a tempo.`,
+        step3_close: `E se a gente começar o setup agora — você só paga a mensalidade quando estiver 100% rodando? Assim não perde o timing.`
       };
     }
 

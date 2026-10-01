@@ -4,6 +4,19 @@
  * Latência de Inferência: < 50ms (Zero-blocking, Pure JS Local)
  */
 
+const PT_STOPWORDS = new Set([
+  "voce", "voces", "ele", "ela", "eles", "elas", "nos",
+  "tem", "temos", "tinha", "tinham", "ter",
+  "que", "para", "pra", "pras", "pro", "pros", "com", "sem", "por",
+  "seu", "sua", "seus", "suas", "dele", "dela", "deles", "delas",
+  "outro", "outra", "outros", "outras",
+  "mais", "menos", "muito", "muita", "muitos", "muitas", "pouco",
+  "aqui", "ali", "la", "esse", "essa", "esses", "essas", "isso", "este", "esta", "isto",
+  "onde", "como", "quando", "qual", "quais", "quem",
+  "uma", "uns", "umas", "pelo", "pela", "pelos", "pelas", "num", "numa",
+  "mas", "porem", "so", "sozinho", "todo", "toda", "tudo"
+]);
+
 class LayaSalesEngine {
   constructor(playbook, dealContext) {
     this.playbook = playbook || JORDAN_PLAYBOOK;
@@ -62,27 +75,91 @@ class LayaSalesEngine {
   }
 
   /**
+   * Verifica se dois tokens têm correspondência semântica ou morfológica.
+   * Evita falsos positivos onde palavras curtas ("pro") casam por acaso com palavras longas ("processo").
+   */
+  isTokenMatch(p, t) {
+    if (p === t) return true;
+    const minLen = Math.min(p.length, t.length);
+    if (minLen >= 4 && (p.startsWith(t) || t.startsWith(p))) return true;
+    return false;
+  }
+
+  /**
    * Algoritmo de Similaridade Semântica por N-Grams e Co-ocorrência.
+   * Filtra stopwords do português para garantir foco nas palavras conceituais.
    */
   calculateSemanticSimilarity(phrase, trigger) {
-    const pTokens = phrase.split(" ").filter(w => w.length > 2);
-    const tTokens = trigger.split(" ").filter(w => w.length > 2);
-
-    if (pTokens.length === 0 || tTokens.length === 0) return 0.0;
-
     // 1. Verificação de Substring direta
     if (phrase.includes(trigger) || trigger.includes(phrase)) return 1.0;
 
-    // 2. Coincidência de tokens significativos (Jaccard ponderado)
+    const filterTokens = (tokens) => tokens.filter(w => w.length > 2 && !PT_STOPWORDS.has(w));
+
+    const pAllTokens = phrase.split(" ").filter(w => w.length > 2);
+    const tAllTokens = trigger.split(" ").filter(w => w.length > 2);
+
+    const pTokens = filterTokens(pAllTokens);
+    const tTokens = filterTokens(tAllTokens);
+
+    const finalPTokens = pTokens.length > 0 ? pTokens : pAllTokens;
+    const finalTTokens = tTokens.length > 0 ? tTokens : tAllTokens;
+
+    if (finalPTokens.length === 0 || finalTTokens.length === 0) return 0.0;
+
+    // 2. Coincidência de tokens significativos
     let matches = 0;
-    for (const t of tTokens) {
-      if (pTokens.some(p => p.includes(t) || t.includes(p))) {
+    for (const t of finalTTokens) {
+      if (finalPTokens.some(p => this.isTokenMatch(p, t))) {
         matches++;
       }
     }
 
-    const similarity = matches / tTokens.length;
+    // Se o gatilho tem mais de 1 token, precisa casar pelo menos 2 tokens ou >= 60%
+    if (finalTTokens.length > 1 && matches < 2 && (matches / finalTTokens.length) < 0.60) {
+      return 0.0;
+    }
+
+    const similarity = matches / finalTTokens.length;
     return similarity;
+  }
+
+  /**
+   * Detecta se uma keyword está em contexto de negação na frase.
+   * Ex: "não achei caro" → retorna true (negação presente antes de "caro")
+   * Ex: "o preço não é problema" → retorna true (negação presente logo após "preço")
+   * Previne falsos positivos em afirmações de segurança ou aceitação do cliente.
+   */
+  hasNegationContext(normalizedText, keyword) {
+    const kwIndex = normalizedText.indexOf(keyword);
+    if (kwIndex === -1) {
+      // Se não achou a palavra exata, checa se tokens longos estão presentes com negação
+      const tokens = keyword.split(" ").filter(w => w.length > 3);
+      for (const tok of tokens) {
+        if (this.hasNegationContext(normalizedText, tok)) return true;
+      }
+      return false;
+    }
+
+    // 1. Verifica os 30 caracteres ANTES da keyword por palavras de negação (ex: "não achei caro")
+    const windowStart = Math.max(0, kwIndex - 30);
+    const windowBefore = normalizedText.substring(windowStart, kwIndex);
+    const negationBefore = /\b(nao|nem|nenhum|nenhuma|nunca|jamais|zero|sem)\b/;
+    if (negationBefore.test(windowBefore)) {
+      const doubleNegation = /\b(nao|nem)\b.*\b(nao|nem)\b/;
+      if (!doubleNegation.test(windowBefore)) {
+        return true;
+      }
+    }
+
+    // 2. Verifica os 35 caracteres DEPOIS da keyword (ex: "o preço não é problema", "o valor é tranquilo")
+    const windowEnd = Math.min(normalizedText.length, kwIndex + keyword.length + 35);
+    const windowAfter = normalizedText.substring(kwIndex + keyword.length, windowEnd);
+    const negationAfter = /\b(nao|nem)\s+(e|eh|tem|sera|seria)?\s*(um\s*)?(problema|impedimento|empecilho|questao|dilema|dificuldade)\b|\b(ta|esta|e|eh)\s+(tranquilo|tranquila|ok|de boa|suave)\b/;
+    if (negationAfter.test(windowAfter)) {
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -132,7 +209,24 @@ class LayaSalesEngine {
     let highestScore = 0;
 
     for (const [key, obj] of Object.entries(this.playbook.objections)) {
-      // 1. Verificação de Keywords Dominantes (Garante match para palavras-chave como 'caro', 'salgado', etc.)
+      // Verifica se o cluster suporta filtro de negação (ex: Preço Alto, Complexidade)
+      // Objeções como 'NAO_E_MOMENTO' ou 'TEMPO_IMPLANTACAO' têm a negação como parte do próprio gatilho!
+      const negationSensitive = obj.negation_cancels ?? (key === "PRECO_ALTO" || key === "COMPLEXIDADE_ADOTABILIDADE" || key === "DESCONFIANCA_TECNICA");
+
+      let isClusterNegated = false;
+      if (negationSensitive && obj.keywords) {
+        for (const kw of obj.keywords) {
+          const normKw = this.normalizeText(kw);
+          if (normKw.length >= 3 && text.includes(normKw) && this.hasNegationContext(text, normKw)) {
+            console.log(`[Laya] Negação detectada para "${normKw}" — ignorando cluster ${key}`);
+            isClusterNegated = true;
+            break;
+          }
+        }
+      }
+      if (isClusterNegated) continue;
+
+      // 1. Verificação de Keywords Dominantes
       if (obj.keywords) {
         for (const kw of obj.keywords) {
           const normKw = this.normalizeText(kw);
@@ -216,13 +310,21 @@ class LayaSalesEngine {
     }
 
     if (bestSignal) {
+      // Se há objeção ativa e a frase tem conjunção adversativa (ex: "gostei mas tá caro", "legal porém não é o momento"),
+      // a objeção real sempre prevalece sobre o elogio de polidez!
+      const hasAdversative = /\b(mas|porem|so que|contudo|entretanto|no entanto)\b/.test(text);
+      if (this.activeObjection && hasAdversative) {
+        console.log(`[Laya] Sinal "${bestSignal.id}" ignorado pois há objeção com ressalva adversativa ("${this.activeObjection.id}")`);
+        return;
+      }
+
       this.activeBuyingSignal = {
         ...bestSignal,
         confidence: Math.round(highestScore * 100),
         detected_at: new Date().toLocaleTimeString()
       };
 
-      // Remove objeção ativa anterior (o cliente avançou na Linha Reta)
+      // Remove objeção ativa anterior apenas se não houver ressalva adversativa
       this.activeObjection = null;
 
       // Aplica bônus de conversão na probabilidade de fechamento

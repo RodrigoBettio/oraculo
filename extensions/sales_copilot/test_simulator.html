@@ -164,6 +164,30 @@
           <span class="tag obj">Falta de Tempo</span><br>
           "Estamos muito enrolados agora, vamos ver mês que vem."
         </button>
+        <button class="sim-btn danger" onclick="simulateSpeech('client', 'Vou pensar com calma e qualquer coisa te chamo, me manda por email.')">
+          <span class="tag obj">Vou Pensar (~40% calls)</span><br>
+          "Vou pensar com calma, me manda por email."
+        </button>
+        <button class="sim-btn danger" onclick="simulateSpeech('client', 'Quem mais usa isso? Tem algum case de sucesso no meu segmento?')">
+          <span class="tag obj">Falta de Prova Social</span><br>
+          "Quem mais usa? Tem case no meu nicho?"
+        </button>
+        <button class="sim-btn danger" onclick="simulateSpeech('client', 'E a LGPD? O WhatsApp não corre risco de banir meu número?')">
+          <span class="tag obj">Medo LGPD / Bloqueio</span><br>
+          "E a LGPD? WhatsApp pode banir meu número?"
+        </button>
+        <button class="sim-btn danger" onclick="simulateSpeech('client', 'Isso integra com o meu ERP atual como o Bling ou Omie?')">
+          <span class="tag obj">Integração ERP</span><br>
+          "Isso integra com o meu Bling ou Omie?"
+        </button>
+        <button class="sim-btn danger" onclick="simulateSpeech('client', 'Gostei mas não é o momento certo agora, vamos deixar pro ano que vem.')">
+          <span class="tag obj">Não é o Momento</span><br>
+          "Não é o momento agora, ano que vem a gente vê."
+        </button>
+        <button class="sim-btn" style="border-color: #e3b341;" onclick="simulateSpeech('client', 'Achei o projeto sensacional, não achei caro!')">
+          <span class="tag" style="background: rgba(227, 179, 65, 0.2); color: #e3b341;">🛡️ Filtro de Negação</span><br>
+          "Projeto ótimo, não achei caro!" (Sem falso positivo)
+        </button>
       </div>
     </div>
 
@@ -178,6 +202,22 @@
         <button class="sim-btn success" onclick="simulateSpeech('client', 'Você emite nota fiscal? Como funciona o pagamento?')">
           <span class="tag buy">Forma de Pagamento</span><br>
           "Você emite nota fiscal? Como funciona o pagamento?"
+        </button>
+        <button class="sim-btn success" onclick="simulateSpeech('client', 'Posso fazer um teste antes de fechar? Tem versão de demonstração?')">
+          <span class="tag buy">Pedido de Demo / Trial</span><br>
+          "Posso fazer um teste? Tem demo?"
+        </button>
+        <button class="sim-btn success" onclick="simulateSpeech('client', 'Como funciona o suporte de vocês e o acompanhamento no dia a dia?')">
+          <span class="tag buy">Suporte & Onboarding</span><br>
+          "Como funciona o suporte no dia a dia?"
+        </button>
+        <button class="sim-btn success" onclick="simulateSpeech('client', 'Posso trazer meu sócio na próxima reunião para apresentar pra ele?')">
+          <span class="tag buy">Inclusão de Stakeholders</span><br>
+          "Posso trazer meu sócio pra ver junto?"
+        </button>
+        <button class="sim-btn success" onclick="simulateSpeech('client', 'Gostei muito mais do de vocês do que o concorrente, é bem mais completo.')">
+          <span class="tag buy">Comparação Favorável</span><br>
+          "Gostei mais de vocês que do concorrente."
         </button>
         <button class="sim-btn success" onclick="simulateSpeech('client', 'Caramba, que rápido! Isso é muito foda.')">
           <span class="tag buy">Entusiasmo Máximo</span><br>
