@@ -162,20 +162,28 @@
 
       <!-- TESTE B: INBOUND (SIMULAÇÃO DE FALA EM INGLÊS ➔ LEGENDA EM PT) -->
       <div class="test-box">
-        <h3>💬 Teste Inbound (Simular Inglês ➔ Legenda em PT)</h3>
+        <h3>💬 Teste Inbound (Teleprompter de Legendas em Tempo Real)</h3>
         <p style="font-size: 12px; color: #8b949e;">
-          Clique em frases pré-definidas em inglês para ver as legendas traduzidas em português no HUD.
+          Clique em perguntas e objeções reais em inglês para ver o teleprompter traduzir em português no HUD.
         </p>
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <button class="btn-secondary" onclick="simulateInboundSpeech('We need to scale our backend architecture and reduce latency.')">
-            "We need to scale our backend..."
+            "We need to scale our backend..." (Técnico)
           </button>
           <button class="btn-secondary" onclick="simulateInboundSpeech('What is the total estimated budget and timeline for this implementation?')">
-            "What is the total estimated budget..."
+            "What is the total estimated budget..." (Preço)
           </button>
           <button class="btn-secondary" onclick="simulateInboundSpeech('Does this solution integrate with our existing CRM and billing system?')">
-            "Does this solution integrate with CRM..."
+            "Does this solution integrate with CRM..." (Integração)
           </button>
+          <button class="btn-secondary" onclick="simulateInboundSpeech('I have to consult with my board before making any financial commitment.')">
+            "I have to consult with my board..." (Decisor)
+          </button>
+        </div>
+
+        <div style="margin-top: 10px; display: flex; gap: 8px;">
+          <input type="text" id="custom-en-input" placeholder="Digite ou cole qualquer frase em inglês...">
+          <button class="btn-primary" onclick="sendCustomEnglish()">Traduzir</button>
         </div>
       </div>
     </div>
@@ -388,12 +396,62 @@
           "What is the total estimated budget and timeline for this implementation?":
             "Qual é o orçamento total estimado e o cronograma para esta implementação?",
           "Does this solution integrate with our existing CRM and billing system?":
-            "Esta solução se integra ao nosso CRM e sistema de cobrança existentes?"
+            "Esta solução se integra ao nosso CRM e sistema de cobrança existentes?",
+          "I have to consult with my board before making any financial commitment.":
+            "Preciso consultar a diretoria antes de assumir qualquer compromisso financeiro."
         };
         const pt = translations[enText] || "Tradução concluída.";
-        hud?.updateInboundSubtitle(pt, enText);
+        hud?.updateInboundSubtitle(pt, enText, "John Smith");
         log(`Legenda exibida: "${pt}"`);
-      }, 750);
+      }, 500);
+    }
+
+    async function sendCustomEnglish() {
+      const input = document.getElementById("custom-en-input");
+      const text = input.value.trim();
+      if (!text) return;
+
+      log(`Enviando frase personalizada: "${text}"`);
+      hud?.updateInboundSubtitle("Traduzindo com Gemini...", text, "Participante");
+
+      const key = document.getElementById("sim-key-input").value.trim();
+      if (!key) {
+        // Fallback rápido se não houver chave ainda
+        setTimeout(() => {
+          hud?.updateInboundSubtitle(`(Tradução simulada): "${text}"`, text, "Participante");
+        }, 400);
+        return;
+      }
+
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`;
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [
+                  {
+                    text: `Você é um intérprete de reuniões B2B. Traduza do inglês para português brasileiro direto e profissional, mantendo termos técnicos comuns intactos (deploy, setup, API, CRM). Retorne APENAS a tradução em português.\n\nFala: "${text}"`
+                  }
+                ]
+              }
+            ],
+            generationConfig: { temperature: 0.1, maxOutputTokens: 120 }
+          })
+        });
+
+        const data = await res.json();
+        const pt = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || text;
+        hud?.updateInboundSubtitle(pt, text, "Participante");
+        log(`Legenda exibida: "${pt}"`);
+        input.value = "";
+      } catch (err) {
+        hud?.updateInboundSubtitle(text, text, "Participante");
+        log(`Erro ao traduzir: ${err.message}`, "err");
+      }
     }
   </script>
 </body>

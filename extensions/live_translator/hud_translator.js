@@ -1,6 +1,6 @@
 /**
- * Oráculo Live Translator — Interface do HUD Flutuante no Google Meet
- * Renderiza legendas traduzidas em tempo real e controles de transmissão de áudio.
+ * Oráculo Live Translator — HUD Visual Teleprompter & Legendas em Tempo Real
+ * Focado 100% na compreensão imediata da fala estrangeira (Inglês ➔ Português)
  */
 
 class TranslatorHUD {
@@ -8,10 +8,11 @@ class TranslatorHUD {
     this.container = null;
     this.isDragging = false;
     this.dragOffset = { x: 0, y: 0 };
-    this.currentMode = "TRANSLATING"; // 'TRANSLATING' | 'PASSTHROUGH'
     this.isTabCapturing = false;
+    this.fontSize = 17; // Tamanho padrão (px)
+    this.isHistoryOpen = false;
+    this.historyList = [];
 
-    this.onModeChange = options.onModeChange || (() => {});
     this.onToggleTabCapture = options.onToggleTabCapture || (() => {});
 
     this.init();
@@ -26,61 +27,55 @@ class TranslatorHUD {
       <div class="hud-header" id="trans-drag-handle">
         <div class="hud-brand">
           <div class="hud-brand-dot" id="trans-status-dot"></div>
-          <span>Oráculo Live Translator</span>
+          <span>Oráculo Live Subtitles</span>
         </div>
         <div class="hud-header-right">
-          <span class="hud-badge-latency" id="trans-latency-badge">⚡ ~850ms</span>
+          <span class="hud-badge-latency" id="trans-latency-badge">⚡ ~250ms</span>
           <div class="hud-controls">
+            <button class="hud-btn" id="trans-history-btn" title="Histórico da conversa">📜 Histórico</button>
             <button class="hud-btn" id="trans-toggle-btn" title="Minimizar / Expandir">_</button>
           </div>
         </div>
       </div>
 
       <div class="hud-body">
-        <!-- SELETOR DE MODO -->
-        <div class="hud-mode-selector">
-          <button class="hud-mode-btn active translating" id="trans-mode-translate" title="Sua voz em português é traduzida e falada em inglês na chamada">
-            🌐 Traduzir (PT ➔ EN)
+        <!-- BARRA DE FERRAMENTAS -->
+        <div class="hud-toolbar">
+          <button class="hud-tab-capture-btn" id="trans-tab-btn" title="Capturar áudio da reunião para tradução ao vivo">
+            📡 Ativar Áudio da Reunião
           </button>
-          <button class="hud-mode-btn" id="trans-mode-passthrough" title="Transmite sua voz original em português sem tradução">
-            🎙️ Voz Direta (Bypass)
-          </button>
+          <div class="hud-font-tools">
+            <button class="hud-mini-btn" id="trans-font-dec" title="Diminuir fonte">A-</button>
+            <button class="hud-mini-btn" id="trans-font-inc" title="Aumentar fonte">A+</button>
+          </div>
         </div>
 
-        <!-- CAIXA DE LEGENDA RECEBIDA (INBOUND: PARTICIPANTE FALA EM INGLÊS ➔ VOCÊ LÊ EM PORTUGUÊS) -->
+        <!-- TELEPROMPTER DE LEGENDA PRINCIPAL (AO VIVO) -->
         <div class="hud-subtitle-box">
-          <div class="hud-subtitle-header">
-            <span>Legenda em Português (Ao Vivo)</span>
-            <button class="hud-tab-capture-btn" id="trans-tab-btn" title="Capturar áudio da reunião para traduzir a fala dos participantes em legendas">
-              📡 Capturar Áudio da Chamada
-            </button>
+          <div class="hud-speaker-tag" id="trans-speaker-tag">
+            <div class="pulse-dot"></div>
+            <span id="trans-speaker-name">Participante (EN ➔ PT)</span>
           </div>
           <div class="hud-subtitle-pt" id="trans-sub-pt">
-            Aguardando fala dos participantes...
+            Aguardando fala em inglês na chamada...
           </div>
           <div class="hud-subtitle-original" id="trans-sub-orig">
-            (Ative a captura de áudio para legendas em tempo real)
+            (Ative o áudio da chamada ou as legendas CC para tradução instantânea)
           </div>
         </div>
 
-        <!-- CAIXA DE SUA FALA ENVIADA (OUTBOUND: VOCÊ FALOU EM PT ➔ TRANSMITIDO EM EN) -->
-        <div class="hud-outbound-box">
-          <div class="hud-outbound-header">
-            <span>Sua Transmissão para a Sala</span>
-            <span id="trans-outbound-status" style="color: #3fb950;">● Ao Vivo</span>
-          </div>
-          <div class="hud-outbound-pt" id="trans-out-pt">
-            Você: (fale em português no microfone...)
-          </div>
-          <div class="hud-outbound-en" id="trans-out-en">
-            Sala ouve: (áudio em inglês será sintetizado)
+        <!-- GAVETA DE HISTÓRICO ROLÁVEL -->
+        <div class="hud-history-drawer" id="trans-history-drawer">
+          <div style="font-weight: 700; color: #8b949e; margin-bottom: 8px;">HISTÓRICO RECENTE:</div>
+          <div id="trans-history-content">
+            <div style="color: #6e7681; font-style: italic;">Nenhuma fala registrada ainda nesta reunião.</div>
           </div>
         </div>
 
-        <!-- FOOTER COM ATALHOS -->
+        <!-- FOOTER COM INFORMAÇÕES -->
         <div class="hud-footer">
-          <span>Gemini 3.5 Live Translate</span>
-          <span class="hud-shortcut-hint">Alternar: <kbd>Alt</kbd> + <kbd>T</kbd></span>
+          <span>Gemini Live • Tradução Simultânea</span>
+          <span class="hud-shortcut-hint">Pressione <kbd>Alt</kbd> + <kbd>T</kbd> para minimizar</span>
         </div>
       </div>
     `;
@@ -92,9 +87,10 @@ class TranslatorHUD {
   setupEventListeners() {
     const handle = document.getElementById("trans-drag-handle");
     const toggleBtn = document.getElementById("trans-toggle-btn");
-    const modeTranslate = document.getElementById("trans-mode-translate");
-    const modePassthrough = document.getElementById("trans-mode-passthrough");
     const tabBtn = document.getElementById("trans-tab-btn");
+    const historyBtn = document.getElementById("trans-history-btn");
+    const fontInc = document.getElementById("trans-font-inc");
+    const fontDec = document.getElementById("trans-font-dec");
 
     // Toggle Minimizar
     toggleBtn?.addEventListener("click", () => {
@@ -102,14 +98,27 @@ class TranslatorHUD {
       toggleBtn.innerText = this.container.classList.contains("collapsed") ? "+" : "_";
     });
 
-    // Seletor de Modo Traduzir
-    modeTranslate?.addEventListener("click", () => {
-      this.setMode("TRANSLATING");
+    // Toggle Histórico
+    historyBtn?.addEventListener("click", () => {
+      this.isHistoryOpen = !this.isHistoryOpen;
+      const drawer = document.getElementById("trans-history-drawer");
+      drawer?.classList.toggle("open", this.isHistoryOpen);
+      historyBtn.classList.toggle("active", this.isHistoryOpen);
     });
 
-    // Seletor de Modo Pass-Through
-    modePassthrough?.addEventListener("click", () => {
-      this.setMode("PASSTHROUGH");
+    // Ajuste de Fonte
+    fontInc?.addEventListener("click", () => {
+      if (this.fontSize < 24) {
+        this.fontSize += 2;
+        this.applyFontSize();
+      }
+    });
+
+    fontDec?.addEventListener("click", () => {
+      if (this.fontSize > 13) {
+        this.fontSize -= 2;
+        this.applyFontSize();
+      }
     });
 
     // Captura da Aba
@@ -117,12 +126,12 @@ class TranslatorHUD {
       this.onToggleTabCapture(!this.isTabCapturing);
     });
 
-    // Atalho global Alt + T
+    // Atalho global Alt + T para minimizar/expandir
     window.addEventListener("keydown", (e) => {
       if (e.altKey && e.code === "KeyT") {
         e.preventDefault();
-        const nextMode = this.currentMode === "TRANSLATING" ? "PASSTHROUGH" : "TRANSLATING";
-        this.setMode(nextMode);
+        this.container.classList.toggle("collapsed");
+        toggleBtn.innerText = this.container.classList.contains("collapsed") ? "+" : "_";
       }
     });
 
@@ -147,29 +156,11 @@ class TranslatorHUD {
     });
   }
 
-  setMode(mode) {
-    this.currentMode = mode;
-    const modeTranslate = document.getElementById("trans-mode-translate");
-    const modePassthrough = document.getElementById("trans-mode-passthrough");
-    const outStatus = document.getElementById("trans-outbound-status");
-
-    if (mode === "TRANSLATING") {
-      modeTranslate?.classList.add("active", "translating");
-      modePassthrough?.classList.remove("active", "passthrough");
-      if (outStatus) {
-        outStatus.innerText = "● Traduzindo EN";
-        outStatus.style.color = "#3fb950";
-      }
-    } else {
-      modePassthrough?.classList.add("active", "passthrough");
-      modeTranslate?.classList.remove("active", "translating");
-      if (outStatus) {
-        outStatus.innerText = "● Voz Direta PT";
-        outStatus.style.color = "#79c0ff";
-      }
+  applyFontSize() {
+    const subPt = document.getElementById("trans-sub-pt");
+    if (subPt) {
+      subPt.style.fontSize = `${this.fontSize}px`;
     }
-
-    this.onModeChange(mode);
   }
 
   setTabCaptureActive(active) {
@@ -177,36 +168,75 @@ class TranslatorHUD {
     const tabBtn = document.getElementById("trans-tab-btn");
     if (tabBtn) {
       tabBtn.classList.toggle("active", active);
-      tabBtn.innerText = active ? "🟢 Legendas Ativas" : "📡 Capturar Áudio da Chamada";
+      tabBtn.innerText = active ? "🟢 Áudio da Reunião Conectado" : "📡 Ativar Áudio da Reunião";
     }
   }
 
   /**
-   * Atualiza a legenda em português da fala de outros participantes.
+   * Atualiza a legenda em português da fala do participante em tempo real.
    */
-  updateInboundSubtitle(ptText, originalEnText = "") {
+  updateInboundSubtitle(ptText, originalEnText = "", speakerName = "Participante") {
     const subPt = document.getElementById("trans-sub-pt");
     const subOrig = document.getElementById("trans-sub-orig");
+    const speakerEl = document.getElementById("trans-speaker-name");
+
+    if (speakerEl && speakerName) {
+      speakerEl.innerText = `${speakerName} (EN ➔ PT)`;
+    }
+
     if (subPt && ptText) {
       subPt.innerText = ptText;
     }
+
     if (subOrig && originalEnText) {
       subOrig.innerText = `Original: "${originalEnText}"`;
     }
+
+    // Adiciona ao histórico recente
+    if (ptText && ptText.length > 3) {
+      this.addToHistory(speakerName, ptText, originalEnText);
+    }
   }
 
-  /**
-   * Atualiza o log da fala enviada pelo usuário.
-   */
-  updateOutboundSpeech(ptText, enTranslatedText = "") {
-    const outPt = document.getElementById("trans-out-pt");
-    const outEn = document.getElementById("trans-out-en");
-    if (outPt && ptText) {
-      outPt.innerText = `Você: "${ptText}"`;
+  addToHistory(speaker, ptText, enText) {
+    const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    
+    // Evita duplicatas consecutivas
+    const lastItem = this.historyList[this.historyList.length - 1];
+    if (lastItem && lastItem.pt === ptText) return;
+
+    this.historyList.push({
+      time: timeStr,
+      speaker,
+      pt: ptText,
+      en: enText
+    });
+
+    // Mantém no máximo 50 itens
+    if (this.historyList.length > 50) {
+      this.historyList.shift();
     }
-    if (outEn && enTranslatedText) {
-      outEn.innerText = `Sala ouve: "${enTranslatedText}"`;
-    }
+
+    this.renderHistory();
+  }
+
+  renderHistory() {
+    const content = document.getElementById("trans-history-content");
+    if (!content) return;
+
+    content.innerHTML = this.historyList
+      .slice(-15)
+      .reverse()
+      .map(
+        (item) => `
+        <div class="hud-history-item">
+          <div class="hud-history-time">[${item.time}] <b>${item.speaker}</b></div>
+          <div class="hud-history-pt">${item.pt}</div>
+          ${item.en ? `<div class="hud-history-en">"${item.en}"</div>` : ""}
+        </div>
+      `
+      )
+      .join("");
   }
 
   setStatus(status, latencyMs = null) {
@@ -216,7 +246,7 @@ class TranslatorHUD {
     if (dot) {
       dot.className = "hud-brand-dot";
       if (status === "READY" || status === "TRANSLATING") {
-        // normal live green
+        // verde ao vivo
       } else if (status === "CONNECTING") {
         dot.classList.add("connecting");
       } else if (status === "ERROR" || status === "DISCONNECTED") {

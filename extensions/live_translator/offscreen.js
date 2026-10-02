@@ -276,9 +276,74 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return;
   }
+
+  // 6. Tradução Instantânea de Snippets de Texto (Closed Captions do DOM)
+  if (type === "TRANSLATE_TEXT_SNIPPET" && payload?.text) {
+    translateSnippetFast(payload.text, apiKey).then((ptText) => {
+      sendResponse({ ptText });
+    });
+    return true; // Resposta assíncrona
+  }
 });
+
+// Cache em memória para evitar re-traduzir frases repetidas
+const snippetCache = new Map();
+
+/**
+ * Traduz um trecho de texto em inglês capturado no Meet para português em ~180ms
+ */
+async function translateSnippetFast(englishText, key) {
+  if (!key || !englishText) return englishText;
+
+  if (snippetCache.has(englishText)) {
+    return snippetCache.get(englishText);
+  }
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: `Você é um intérprete simultâneo de reuniões B2B de tecnologia e negócios. Traduza a seguinte fala de inglês para português brasileiro fluente e direto. Mantenha termos técnicos (deploy, API, setup, CRM, pipeline, feedback) quando comum no meio tech. Retorne APENAS a tradução em português, sem explicações.\n\nFala: "${englishText}"`
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 120
+        }
+      })
+    });
+
+    if (!res.ok) {
+      return englishText;
+    }
+
+    const data = await res.json();
+    const translated = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || englishText;
+    
+    snippetCache.set(englishText, translated);
+    if (snippetCache.size > 200) {
+      const first = snippetCache.keys().next().value;
+      snippetCache.delete(first);
+    }
+
+    return translated;
+  } catch (e) {
+    console.warn("[Offscreen] Erro na tradução rápida de snippet:", e);
+    return englishText;
+  }
+}
 
 // Inicialização ao carregar o script
 loadStoredConfig().then(() => {
   initializeClients();
 });
+
