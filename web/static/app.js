@@ -2021,11 +2021,15 @@ function renderCurrentSpecContent() {
     if (currentSpecTab === 'agent') {
         pre.innerText = currentSpecData.agent_md || 'Nenhum agent.md disponível';
     } else {
-        const skills = currentSpecData.skills || [];
-        if (skills.length === 0) {
-            pre.innerText = '# Nenhuma skill.md gerada ainda para este agente.';
+        if (currentSpecData.skill_md && currentSpecData.skill_md.trim().length > 0) {
+            pre.innerText = currentSpecData.skill_md;
         } else {
-            pre.innerText = skills.map((s, idx) => `<!-- ================= SKILL ${idx + 1}: ${s.name.toUpperCase()} ================= -->\n\n${s.skill_md}`).join('\n\n\n');
+            const skills = currentSpecData.skills || [];
+            if (skills.length === 0) {
+                pre.innerText = '# Nenhuma skill.md gerada ainda para este agente.';
+            } else {
+                pre.innerText = skills.map((s, idx) => `<!-- ================= SKILL ${idx + 1}: ${s.name.toUpperCase()} ================= -->\n\n${s.skill_md || s.markdown || ''}`).join('\n\n\n');
+            }
         }
     }
 }

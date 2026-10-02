@@ -52,7 +52,7 @@ O usuário enviou a seguinte mensagem no Telegram:
 "{text}"
 
 O sistema possui as seguintes áreas e agentes:
-- Área Tech (Gestora: Helena Torres / Especialistas: Alex Vance [@vance], Bruno [@bruno], Thales [@thales / "agent_thales_automations"], Quinn QA [@qa], Cláudio Cloud [@cloud])
+- Área Tech (Gestor: Thiago Tech / Especialistas: Alex Vance [@vance], Bruno [@bruno], Thales [@thales / "agent_thales_automations"], Quinn QA [@qa], Cláudio Cloud [@cloud])
 - Área Vendas (Gestor: Ricardo Monteiro / Especialista: Jordan Belford [@jordan])
 - Área Marketing & Branding (Gestor: Ricardo Monteiro / Especialistas: Sobral [@sobral / "agent_sobral_marketing"], André Diamand [@diamand], Ana [@ana])
 - Área Mente & Super Cérebro (Gestora: Dra. Camila Reis / Especialistas: Jim Kwik [@jim], O Monge [@monge], Link [@link])
@@ -61,7 +61,7 @@ Analise a mensagem e retorne RIGOROSAMENTE um JSON com as seguintes chaves:
 {{
   "intent": "STUDY" | "CONSULT" | "REPORT" | "GAPS" | "STATUS" | "NAVIGATE_DRIVE" | "TASK" | "CHAT",
   "target_agent_id": id do agente especialista ou gestor (ex: "agent_jim_kwik", "agent_alex_vance", "agent_andre_diamand_1281", "gestor_tech_cto", etc.) ou null se não aplicável,
-  "target_agent_name": nome do agente reconhecido (ex: "Jim Kwik", "Alex Vance", "Helena Torres") ou null,
+  "target_agent_name": nome do agente reconhecido (ex: "Jim Kwik", "Alex Vance", "Thiago Tech") ou null,
   "course_name": nome do curso, livro ou assunto a ser estudado/analisado (ex: "Super Cérebro", "Sexy Canvas", "Clean Architecture") ou null,
   "source_type": "telegram" | "google_drive" | null,
   "tier": "audio_only" | "standard_video" | "ocr_code" | null,

@@ -33,35 +33,35 @@ def test_laya_initialization_and_cache():
     print(f"✅ Teste 1: Laya carregou {len(laya.agents_cache)} agentes em memória.")
 
 
-def test_helena_tech_routing():
-    """Valida o roteamento executivo de Helena Torres (Tech)."""
+def test_thiago_tech_routing():
+    """Valida o roteamento executivo de Thiago Tech (Tech)."""
     laya = LayaDispatcher()
-    helena = {"id": "gestor_tech_cto", "name": "Helena Torres", "area_id": "tech", "agent_type": "gestor"}
+    thiago = {"id": "gestor_tech_cto", "name": "Thiago Tech", "area_id": "tech", "agent_type": "gestor"}
 
     # 1. Playwright -> Quinn QA
     t0 = time.perf_counter()
-    r_qa = laya.route_manager_demand(helena, "Qual a melhor estratégia para automação de testes E2E com Playwright?")
+    r_qa = laya.route_manager_demand(thiago, "Qual a melhor estratégia para automação de testes E2E com Playwright?")
     dt_qa = (time.perf_counter() - t0) * 1000
     assert r_qa["decision"] == "DELEGATE"
     assert r_qa["specialist"]["id"] == "agent_quinn_qa_7781"
     assert dt_qa < 15.0, f"Roteamento demorou {dt_qa:.2f}ms (esperado < 15ms)"
 
     # 2. Docker / Kubernetes -> Cláudio Cloud
-    r_cloud = laya.route_manager_demand(helena, "Como configurar um cluster Kubernetes com Docker no GCP?")
+    r_cloud = laya.route_manager_demand(thiago, "Como configurar um cluster Kubernetes com Docker no GCP?")
     assert r_cloud["decision"] == "DELEGATE"
     assert r_cloud["specialist"]["id"] == "agent_claudio_cloud_4421"
 
     # 3. FastAPI / Clean Architecture -> Alex Vance
-    r_vance = laya.route_manager_demand(helena, "Como desenhar microsserviços com FastAPI e Clean Architecture?")
+    r_vance = laya.route_manager_demand(thiago, "Como desenhar microsserviços com FastAPI e Clean Architecture?")
     assert r_vance["decision"] == "DELEGATE"
     assert r_vance["specialist"]["id"] == "agent_alex_vance"
 
     # 4. GAP Tecnológico (Direito Tributário)
-    r_gap = laya.route_manager_demand(helena, "Como emitir nota fiscal de exportação e apurar o Simples Nacional?")
+    r_gap = laya.route_manager_demand(thiago, "Como emitir nota fiscal de exportação e apurar o Simples Nacional?")
     assert r_gap["decision"] == "GAP", "Demanda de tributação deve ser classificada como GAP na equipe de Tech"
     assert r_gap["specialist"] is None
 
-    print(f"✅ Teste 2: Roteamento da Helena Torres validado (Playwright->Quinn, Docker->Cláudio, FastAPI->Vance, GAP->Detectado) em {dt_qa:.2f}ms.")
+    print(f"✅ Teste 2: Roteamento de Thiago Tech validado (Playwright->Quinn, Docker->Cláudio, FastAPI->Vance, GAP->Detectado) em {dt_qa:.2f}ms.")
 
 
 def test_ricardo_sales_routing():
@@ -205,7 +205,7 @@ def test_agent_delegator_integration_with_laya():
 
 if __name__ == "__main__":
     test_laya_initialization_and_cache()
-    test_helena_tech_routing()
+    test_thiago_tech_routing()
     test_ricardo_sales_routing()
     test_marcelo_marketing_routing()
     test_camila_mind_routing()

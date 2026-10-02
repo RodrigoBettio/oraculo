@@ -74,6 +74,9 @@ class AgentDelegator:
             "link": "agent_link_4211",
             "diamand": "agent_andre_diamand_1281",
             "andre": "agent_andre_diamand_1281",
+            "thiago": "gestor_tech_cto",
+            "tiago": "gestor_tech_cto",
+            "tech": "gestor_tech_cto",
             "helena": "gestor_tech_cto",
             "monge": "agent_o_monge_8324",
             "o_monge": "agent_o_monge_8324",
@@ -389,10 +392,10 @@ NÃO inclua blocos de código nem explicações de sintaxe.
         origin_role = origin_agent.get("role")
         origin_avatar = origin_agent.get("avatar", "🧠")
 
-        # CASO 1: Gestores Executivos (Helena Torres, Ricardo Monteiro, Camila Reis)
+        # CASO 1: Gestores Executivos (Thiago Tech, Ricardo Monteiro, Camila Reis, Marcelo Marketing)
         # Gestores NUNCA são técnicos, NUNCA programam e NUNCA fazem trabalho braçal diretamente.
         # Seu fluxo é: avaliar a demanda -> acionar o especialista técnico certo da equipe -> sintetizar o impacto executivo para o Rodrigo.
-        if origin_agent.get("agent_type") == "gestor" or "gestor" in origin_id.lower() or "helena" in origin_id.lower():
+        if origin_agent.get("agent_type") == "gestor" or "gestor" in origin_id.lower() or "thiago" in origin_id.lower() or "tiago" in origin_id.lower() or "helena" in origin_id.lower():
             return self.consult_as_manager(origin_agent, query)
 
         # CASO 2: Avaliação de Competência e Delegação
@@ -441,7 +444,7 @@ NÃO inclua blocos de código nem explicações de sintaxe.
             f"Como {origin_role}, meu foco técnico é outro, e identifiquei que **atualmente nenhum especialista da nossa equipe** "
             f"possui formação ou cursos absorvidos sobre essa área no organograma.\n\n"
             f"💡 **Como podemos resolver**:\n"
-            f"1. Você pode consultar a nossa VP de TI (**@Helena Torres** via `/perguntar @helena`) para que ela registre essa defasagem (GAP) na equipe.\n"
+            f"1. Você pode consultar o nosso VP de TI (**@Thiago Tech** via `/perguntar @thiago`) para que ele registre essa defasagem (GAP) na equipe.\n"
             f"2. Ou disponibilizar cursos sobre o tema na pasta do Google Drive (`Mestre dos Cursos`), permitindo que a nossa esteira de estudos treine um novo especialista dedicado!"
         )
 

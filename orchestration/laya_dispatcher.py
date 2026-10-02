@@ -1,9 +1,9 @@
 """
 Oráculo — Motor Laya de Decisão Rápida (System 1 Dispatcher)
-Arquitetura: Bruno (AI Builder), Helena Torres (VP Tech) & Alex Vance (Chief Architect)
+Arquitetura: Bruno (AI Builder), Thiago Tech (VP Tech) & Alex Vance (Chief Architect)
 
 Raciocínio Heurístico em < 5ms para:
-1. Roteamento de Gestores Executivos (Helena, Ricardo, Camila, Marcelo)
+1. Roteamento de Gestores Executivos (Thiago Tech, Ricardo, Camila, Marcelo)
 2. Guardrail de Competência e Hand-off de Especialistas
 3. Detecção de GAPs Técnicos em Tempo Real (Zero Tokens de LLM)
 4. Atribuição Automática de Cursos e Pastas do Google Drive
@@ -40,7 +40,7 @@ PT_STOPWORDS = {
 
 # Assinaturas explícitas de domínios técnicos e seus especialistas líderes
 DOMAIN_SIGNATURES: Dict[str, Dict[str, Any]] = {
-    # === TECNOLOGIA (HELENA TORRES) ===
+    # === TECNOLOGIA (THIAGO TECH) ===
     "agent_quinn_qa_7781": {
         "keywords": [
             "playwright", "cypress", "selenium", "teste", "testes", "tdd", "bdd",
@@ -347,7 +347,7 @@ class LayaDispatcher:
 
         # Mapeamento defensivo se a lista estiver vazia por arquivo ausente
         if not subordinates:
-            if "tech" in area_id.lower() or "helena" in manager_id.lower() or "tiago" in manager_id.lower():
+            if "tech" in area_id.lower() or "thiago" in manager_id.lower() or "tiago" in manager_id.lower() or "helena" in manager_id.lower():
                 known_ids = ["agent_alex_vance", "agent_quinn_qa_7781", "agent_claudio_cloud_4421", "agent_claude_code", "agent_thales_automations"]
             elif "marketing" in area_id.lower() or "marcelo" in manager_id.lower():
                 known_ids = ["agent_sobral_marketing", "agent_andre_diamand_1281", "agent_ana_5058"]

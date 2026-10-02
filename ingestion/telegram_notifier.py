@@ -1,7 +1,7 @@
 """
 Oráculo Mobile Telegram Gateway — Cockpit Supremo & Mesa Redonda de Grupo
 Envia notificações push para o celular e grupo, gerencia o teclado tátil,
-e permite diálogo multi-agente em Grupos do Telegram com menções (@link, @jordan, @helena, etc.).
+e permite diálogo multi-agente em Grupos do Telegram com menções (@link, @jordan, @thiago, etc.).
 """
 
 import asyncio
@@ -317,7 +317,7 @@ async def handle_callback_query(event):
                 await event.edit(
                     "🎯 **ATRIBUIR ESTUDO A AGENTE**\n\n"
                     "Selecione o agente técnico que deve estudar este conteúdo.\n\n"
-                    "⚠️ _Gestores (Helena, Ricardo, Camila) não executam — apenas delegam._",
+                    "⚠️ _Gestores (Thiago Tech, Ricardo, Camila, Marcelo) não executam — apenas delegam._",
                     buttons=get_agent_selector_keyboard(folder_id)
                 )
             
@@ -786,7 +786,7 @@ async def process_telegram_command(command_text: str) -> str:
             if area_arg and area_arg not in ["todos", "geral", "all", "equipe"]:
                 target_mgr = None
                 if any(x in area_arg for x in ["tech", "ti", "dev", "codigo", "código", "software"]):
-                    target_mgr = ("gestor_tech_cto", "tech", "Tecnologia & Desenvolvimento", "💻", "Tiago Tech (VP de TI)")
+                    target_mgr = ("gestor_tech_cto", "tech", "Tecnologia & Desenvolvimento", "💻", "Thiago Tech (VP de TI)")
                 elif any(x in area_arg for x in ["mkt", "market", "growth", "trafego", "tráfego"]):
                     target_mgr = ("gestor_marketing", "area_marketing_6867", "Marketing & Growth", "🚀", "Marcelo Marketing (CMO & Growth)")
                 elif any(x in area_arg for x in ["venda", "comercial", "negoc", "sales"]):
@@ -795,7 +795,7 @@ async def process_telegram_command(command_text: str) -> str:
                     target_mgr = ("gestor_mind_wellness", "mind", "Mente, Foco & Performance", "🧠", "Marina Mente (Head Wellness)")
 
                 if not target_mgr:
-                    return f"⚠️ Área '{area_arg}' não encontrada.\n\nOpções disponíveis:\n• `/gaps tech` (Tiago Tech)\n• `/gaps marketing` (Marcelo Marketing)\n• `/gaps vendas` (Victor Vendas)\n• `/gaps mente` (Marina Mente)\n• `/gaps` (Visão Consolidada de Todos)"
+                    return f"⚠️ Área '{area_arg}' não encontrada.\n\nOpções disponíveis:\n• `/gaps tech` (Thiago Tech)\n• `/gaps marketing` (Marcelo Marketing)\n• `/gaps vendas` (Victor Vendas)\n• `/gaps mente` (Marina Mente)\n• `/gaps` (Visão Consolidada de Todos)"
 
                 m_id, a_id, a_label, emo, m_name = target_mgr
                 gap_data = analyze_manager_skill_gaps(m_id, force_refresh=False)
@@ -891,7 +891,7 @@ async def process_telegram_command(command_text: str) -> str:
                 "➕ **CONTRATAÇÃO DE ESPECIALISTAS PELOS GESTORES**\n\n"
                 "Cada gestor executivo pode solicitar reforços para suprir gaps de conhecimento.\n\n"
                 "🎯 **Especialistas mais solicitados prontos para contratação**:\n\n"
-                "💻 **Tecnologia & Dev (Helena Torres)**:\n"
+                "💻 **Tecnologia & Dev (Thiago Tech)**:\n"
                 "   • `/contratar qa` — Quinn QA (Testes Automatizados, TDD, Playwright)\n"
                 "   • `/contratar cloud` — Cláudio Cloud (GCP, Docker, Kubernetes, SRE)\n"
                 "   • `/contratar fullstack` — Pedro Fullstack (Desenvolvimento Web & APIs)\n\n"
@@ -917,7 +917,7 @@ async def process_telegram_command(command_text: str) -> str:
                 "avatar": "🧪",
                 "area_id": "tech",
                 "area_name": "Tecnologia & Desenvolvimento",
-                "manager_name": "Helena Torres (VP de TI)",
+                "manager_name": "Thiago Tech (VP de TI)",
                 "topics": ["Test-Driven Development (TDD)", "Testes Unitários e Integração com PyTest", "Automação End-to-End com Playwright", "Garantia de Qualidade em CI/CD", "Mocks, Spies e Fixtures", "Testes de Carga e Stress"],
                 "study_hint": "Playwright, PyTest e TDD por Kent Beck"
             },
@@ -928,7 +928,7 @@ async def process_telegram_command(command_text: str) -> str:
                 "avatar": "☁️",
                 "area_id": "tech",
                 "area_name": "Tecnologia & Desenvolvimento",
-                "manager_name": "Helena Torres (VP de TI)",
+                "manager_name": "Thiago Tech (VP de TI)",
                 "topics": ["Google Cloud Platform (GCP)", "Docker & Containerização de Produção", "Pipelines CI/CD & Deploy Contínuo", "Kubernetes & Orquestração", "Monitoramento & Observabilidade SRE", "Segurança de Redes, Nginx e SSL"],
                 "study_hint": "Docker, Kubernetes e Google SRE Handbook"
             },
@@ -939,7 +939,7 @@ async def process_telegram_command(command_text: str) -> str:
                 "avatar": "⚡",
                 "area_id": "tech",
                 "area_name": "Tecnologia & Desenvolvimento",
-                "manager_name": "Helena Torres (VP de TI)",
+                "manager_name": "Thiago Tech (VP de TI)",
                 "topics": ["Next.js & React", "FastAPI & Python", "Tailwind CSS", "Arquitetura REST & WebSockets", "PostgreSQL & SQLite", "TypeScript Moderno"],
                 "study_hint": "Next.js 15, FastAPI Mastery e Clean Architecture"
             },
@@ -1013,7 +1013,7 @@ async def process_telegram_command(command_text: str) -> str:
                 prompt_hire = (
                     f"Um fundador quer contratar um novo especialista para sua equipe de IA com o cargo: '{role_target}'.\n"
                     f"Defina qual gestor deve liderá-lo:\n"
-                    f"- gestor_tech_cto (Helena Torres) se for técnico, desenvolvimento, QA, Cloud, dados ou IA.\n"
+                    f"- gestor_tech_cto (Thiago Tech) se for técnico, desenvolvimento, QA, Cloud, dados ou IA.\n"
                     f"- gestor_sales_director (Ricardo Monteiro) se for vendas, marketing, tráfego, SDR ou copywriting.\n"
                     f"- gestor_mind_wellness (Dra. Camila Reis) se for mente, saúde, foco, hábitos ou produtividade humana.\n\n"
                     f"Responda estritamente em JSON com este formato:\n"
@@ -1208,7 +1208,7 @@ Aguardando ingestão de materiais de estudo no Google Drive ({study_hint}).
         except Exception as e:
             return f"❌ Erro ao enfileirar curso do Drive: {e}"
 
-    # 7. Consultar Especialista com Loop de Delegação da Helena Torres ou Oráculo Central
+    # 7. Consultar Especialista com Loop de Delegação de Thiago Tech ou Oráculo Central
     elif cmd_lower.startswith("/perguntar") or "consultar especialista" in cmd_lower:
         parts = cmd.split(maxsplit=2)
         if len(parts) < 3:
@@ -1217,7 +1217,7 @@ Aguardando ingestão de materiais de estudo no Google Drive ({study_hint}).
                 "Uso correto:\n"
                 "`/perguntar @nome_do_agente sua pergunta aqui...`\n\n"
                 "Exemplos:\n"
-                "• `/perguntar @helena Como você planeja a cobertura de testes da nossa stack?`\n"
+                "• `/perguntar @thiago Como você planeja a cobertura de testes da nossa stack?`\n"
                 "• `/perguntar @link Como melhorar meu título no LinkedIn?`\n"
                 "• `/perguntar @jordan Como quebrar a objeção de 'está caro'?`\n"
                 "• `/perguntar @diamand Como aplicar o Sexy Canvas nesse produto?`\n"
@@ -1405,7 +1405,7 @@ Aguardando ingestão de materiais de estudo no Google Drive ({study_hint}).
                 "2. Crie tópicos dedicados como:\n"
                 "   • `⚡ Alex Vance`\n"
                 "   • `🤖 Jordan Belford`\n"
-                "   • `👩‍💼 Helena Torres`\n"
+                "   • `💻 Thiago Tech`\n"
                 "   • `💎 André Diamand`\n"
                 "   • `🧠 Link`\n"
                 "   • `🧘 O Monge`\n"
@@ -1432,10 +1432,10 @@ Aguardando ingestão de materiais de estudo no Google Drive ({study_hint}).
             "```\n"
             "status - Visão em tempo real de workers, fila e progresso\n"
             "agentes - Organograma estruturado de especialistas\n"
-            "gaps - Relatório executivo de TI da Helena Torres\n"
+            "gaps - Relatório executivo de TI de Thiago Tech\n"
             "contratar - Provisionar novos especialistas (QA ou Cloud)\n"
             "estudar - Enfileirar pasta de cursos do Google Drive\n"
-            "perguntar - Consultar especialista (@helena, @vance, etc.)\n"
+            "perguntar - Consultar especialista (@thiago, @vance, etc.)\n"
             "topicos - Ver e vincular tópicos no Fórum do grupo\n"
             "sync - Forçar compilação e sincronização de skills\n"
             "botfather - Ver este guia de comandos do BotFather\n"
@@ -1548,7 +1548,7 @@ async def start_telegram_listener():
                     f"• `@link <pergunta>` ➔ Link (LinkedIn & Autoridade)\n"
                     f"• `@jordan <pergunta>` ➔ Jordan Belford (Vendas & Fechamento)\n"
                     f"• `@diamand <pergunta>` ➔ André Diamand (Sexy Canvas & Desejo)\n"
-                    f"• `@helena <pergunta>` ➔ Helena Torres (VP TI)\n"
+                    f"• `@thiago <pergunta>` ➔ Thiago Tech (VP TI)\n"
                     f"• `@vance <pergunta>` ➔ Alex Vance (Arquitetura & Engenharia)\n"
                     f"• `@sobral <pergunta>` ➔ Sobral (Tráfego Pago & Performance)\n"
                     f"• `@bruno <pergunta>` ➔ Bruno (Codex & Automações)\n"
@@ -1608,7 +1608,7 @@ async def start_telegram_listener():
                             "Exemplos:\n"
                             "• `/vincular_topico @vance`\n"
                             "• `/vincular_topico @jordan`\n"
-                            "• `/vincular_topico @helena`\n"
+                            "• `/vincular_topico @thiago`\n"
                             "• `/vincular_topico @diamand`"
                         )
                         _record_sent_id(sent)
@@ -1648,12 +1648,13 @@ async def start_telegram_listener():
                     _record_sent_id(sent)
                     return
 
-                # Subcaso 3.3: Mapeamento de menções explícitas (@link, @jordan, @helena, etc.)
+                # Subcaso 3.3: Mapeamento de menções explícitas (@link, @jordan, @thiago, etc.)
                 agent_triggers = {
                     "@link": "link",
                     "@jordan": "jordan",
                     "@belford": "jordan",
                     "@diamand": "andre",
+                    "@thiago": "thiago",
                     "@helena": "helena",
                     "@tiago": "tiago",
                     "@tech": "tiago",

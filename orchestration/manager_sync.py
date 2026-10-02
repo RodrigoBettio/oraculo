@@ -497,7 +497,7 @@ Responda estritamente em formato JSON:
 def get_all_managers_gaps_summary(force_refresh: bool = False) -> List[Dict[str, Any]]:
     """Consolida os diagnósticos de gaps de todos os 4 gestores executivos em tempo real."""
     managers_list = [
-        ("gestor_tech_cto", "tech", "Tecnologia & Desenvolvimento", "💻", "Helena Torres"),
+        ("gestor_tech_cto", "tech", "Tecnologia & Desenvolvimento", "💻", "Thiago Tech"),
         ("gestor_marketing", "area_marketing_6867", "Marketing & Growth", "🚀", "Marcelo Marketing"),
         ("gestor_sales_director", "sales", "Vendas & Negociação", "💼", "Victor Vendas"),
         ("gestor_mind_wellness", "mind", "Mente, Foco & Performance", "🧠", "Marina Mente")

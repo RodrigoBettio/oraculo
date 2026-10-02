@@ -634,6 +634,87 @@ def compile_agent_rich_skill(agent_id: str) -> str:
     avatar = profile.avatar
     seniority = profile.get_seniority_info()
 
+    if agent_type == 'gestor':
+        area_labels = {
+            "tech": "Tecnologia & Desenvolvimento",
+            "area_marketing_6867": "Marketing & Growth",
+            "marketing": "Marketing & Growth",
+            "sales": "Vendas & Negociação Comercial",
+            "mind": "Mente, Foco & Performance Humana"
+        }
+        area_name = area_labels.get(profile.area_id, profile.area_id.title() if profile.area_id else "Liderança")
+
+        # Subordinados técnicos da área carregados dinamicamente
+        subordinates = []
+        try:
+            for af in settings.AGENTS_DIR.glob("*.json"):
+                try:
+                    with open(af, "r", encoding="utf-8") as f:
+                        ad = json.load(f)
+                        if ad.get("area_id") == profile.area_id and ad.get("agent_type") == "tecnico" and ad.get("id") != profile.id:
+                            subordinates.append(ad)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        skill_md = f"""---
+name: {skill_slug}
+description: {profile.name} ({role}). Liderança Executiva & Orquestração Estratégica. NÃO-TÉCNICO (NÃO escreve código nem gera scripts). Domina {', '.join(topics_list[:5])}, Detecção de GAPs e Delegação Especializada.
+---
+
+# Skill: {profile.name} — {role}
+
+> [!IMPORTANT]
+> **Identidade Operacional & Escopo**:
+> {profile.name} é o **Líder Executivo Estratégico de {area_name}**. Ele **NUNCA programa, escreve código ou implementa scripts diretamente**.
+> Qualquer solicitação técnica dirigida a ele é analisada estrategicamente e delegada aos especialistas técnicos de sua equipe subordinada.
+
+## 1. Ficha Técnica & Governança
+- **ID do Agente**: `{profile.id}`
+- **Nome**: {profile.name} ({avatar})
+- **Cargo / Papel**: {role}
+- **Área**: {area_name} (`{profile.area_id}`)
+- **Hierarquia Corporativa**: 👑 Gestor Executivo & Orquestrador de Domínio (NÃO-TÉCNICO)
+- **Estilo de Liderança**: Baseada em métricas, pragmática, orientada a entregas e focada em mitigar riscos e custos.
+
+## 2. Habilidades & Atribuições Executivas
+"""
+        for top in topics_list:
+            skill_md += f"- `{top}`\n"
+
+        skill_md += f"""
+## 3. Equipe de Especialistas Sob Sua Liderança
+| Especialista | Cargo / Foco | Competências Principais | Quando Acionar |
+|---|---|---|---|
+"""
+        if subordinates:
+            for sub in subordinates:
+                s_name = sub.get("name", "Especialista")
+                s_avatar = sub.get("avatar", "👤")
+                s_role = sub.get("role", "Técnico")
+                s_topics = ", ".join(sub.get("topics_mastered", [])[:4])
+                s_hint = f"Demandas operacionais e técnicas de {s_role.lower()}."
+                skill_md += f"| **{s_name}** ({s_avatar}) | {s_role} | {s_topics} | {s_hint} |\n"
+        else:
+            skill_md += "| *(Nenhum especialista subordinado vinculado ainda)* | - | - | - |\n"
+
+        skill_md += f"""
+## 4. Protocolo de Atuação e Resposta (System 1 + System 2)
+1. **Triagem em < 5ms via Laya (System 1)**: Ao receber uma solicitação do Rodrigo, avalia o domínio e o especialista adequado sem queimar chamadas de LLM.
+2. **Delegação Técnica Especializada**: Toda demanda técnica de backend, testes, nuvem, vendas ou tráfego deve ser delegada aos especialistas de sua equipe subordinada.
+3. **Detecção e Reporte de GAPs**: Monitora ativamente as defasagens de competência na equipe. Se a demanda exigir competências que a equipe não possui, emite instantaneamente um Relatório Executivo de GAP com plano de capacitação via Google Drive ou provisionamento de especialista.
+4. **Síntese Executiva de Negócio**: Recebe o parecer técnico do especialista e entrega uma síntese executiva focada em prazos, complexidade, riscos mitigados e impacto no ROI.
+
+## 5. Critérios de Ativação & Uso
+Consulte ou acione esta liderança executiva quando:
+1. For necessário definir roadmap de produto, priorização de backlog ou direção estratégica.
+2. Precisar de uma avaliação executiva de trade-offs, riscos e cronograma de entregas.
+3. Desejar identificar defasagens intelectuais (GAPs) na equipe técnica e planejar novos treinamentos.
+4. For necessário orquestrar e delegar demandas complexas entre múltiplos especialistas técnicos.
+"""
+        return skill_md
+
     skill_md = f"""---
 name: {skill_slug}
 description: Especialista {profile.name} ({role}). Domina: {', '.join(topics_list[:6])}. Use para orientação técnica, regras determinísticas de código, arquitetura e automações aprendidas em {courses_str}.
@@ -648,7 +729,7 @@ description: Especialista {profile.name} ({role}). Domina: {', '.join(topics_lis
 - **ID do Agente**: `{profile.id}`
 - **Especialista**: {profile.name} ({avatar})
 - **Cargo / Papel**: {role}
-- **Hierarquia Corporativa**: {'👑 Gestor Executivo de Domínio' if agent_type == 'gestor' else '⚡ Especialista Técnico'}
+- **Hierarquia Corporativa**: ⚡ Especialista Técnico
 - **Nível de Senioridade**: {seniority.get('rank', 'Pleno')} ({seniority.get('badge', '🥈')})
 - **Horas Reais Absorvidas**: `{total_hours:.2f}h` ({profile.total_videos_studied} aulas indexadas)
 - **Base de Cursos & Escolas**: {courses_str}
@@ -658,15 +739,7 @@ description: Especialista {profile.name} ({role}). Domina: {', '.join(topics_lis
     for top in topics_list:
         skill_md += f"- `{top}`\n"
 
-    if agent_type == 'gestor':
-        skill_md += f"""
-## 3. Liderança Executiva, Orquestração & Delegação (NÃO-TÉCNICA)
-- **Papel 100% Executivo & Estratégico**: Como {role}, você NUNCA programa, escreve código ou realiza tarefas braçais operacionais diretamente.
-- **Delegação Especializada**: Toda demanda técnica de backend, testes, nuvem ou infraestrutura deve ser delegada aos especialistas da sua equipe subordinada.
-- **Detecção e Reporte de GAPs**: Monitora ativamente as defasagens de competência na equipe. Se a demanda exigir habilidades que a equipe não possui, emite um Relatório Executivo de GAP para o Rodrigo.
-- **Foco em Negócio & Governança**: Priorização de backlog, estimativa executiva de prazos, mitigação de riscos, alocação de equipe e impacto no ROI.
-"""
-    elif has_multiple_courses:
+    if has_multiple_courses:
         skill_md += f"""
 ## 3. Diretrizes de Execução & Arquitetura Multi-Paradigma
 - **Autoridade Técnica & Visão Agnóstica**: Como Arquiteto de IA, você domina múltiplos ecossistemas e paradigmas concorrentes ({courses_str}).
@@ -768,24 +841,21 @@ O especialista opera sob múltiplos paradigmas. A tabela abaixo sintetiza a sepa
         skill_md += f"\n## {current_sec}. Skills & Padrões de Design Engineering Comunitários (GitHub)\n"
         skill_md += "Este especialista também domina e aplica as seguintes especificações de engenharia e design importadas da comunidade:\n\n"
         for ext in profile.external_skills:
-            ext_name = ext.get("name", ext.get("id", "Skill"))
-            ext_id = ext.get("id", "")
-            ext_desc = ext.get("description", "")
+            if isinstance(ext, dict):
+                ext_name = ext.get("name", ext.get("id", "Skill"))
+                ext_id = ext.get("id", "")
+                ext_desc = ext.get("description", "")
+            elif isinstance(ext, str):
+                ext_name = ext.replace("-", " ").title()
+                ext_id = ext
+                ext_desc = "Especificação técnica especializada importada do catálogo de skills."
+            else:
+                continue
             skill_md += f"- **`{ext_id}`** ({ext_name}): {ext_desc[:200]}...\n"
         current_sec += 1
 
     sec_crit = current_sec
-    if agent_type == 'gestor':
-        skill_md += f"""
-## {sec_crit}. Critérios de Ativação & Uso
-Consulte ou acione esta liderança executiva quando:
-1. For necessário definir roadmap de produto, priorização de backlog ou direção estratégica.
-2. Precisar de uma avaliação executiva de trade-offs, riscos e cronograma de entregas.
-3. Desejar identificar defasagens intelectuais (GAPs) na equipe técnica e planejar novos treinamentos.
-4. For necessário orquestrar e delegar demandas complexas entre múltiplos especialistas técnicos.
-"""
-    else:
-        skill_md += f"""
+    skill_md += f"""
 ## {sec_crit}. Critérios de Ativação & Uso
 Consulte ou acione este especialista quando:
 1. For necessário aplicar regras técnicas de {', '.join(topics_list[:3])}.
@@ -797,16 +867,39 @@ Consulte ou acione este especialista quando:
 
 @app.get("/api/agents/{agent_id}/spec")
 def get_agent_spec(agent_id: str):
-    """Retorna as especificações em markdown (skill.md e agent.md) do funcionário."""
+    """Retorna a especificação formal completa (skill.md oficial, agent.md e módulos de aula) do especialista."""
     profile = get_agent_profile(agent_id)
     if not profile:
         raise HTTPException(status_code=404, detail="Agente não encontrado")
 
+    area = None
+    if profile.area_id:
+        area_file = settings.AREAS_DIR / f"{profile.area_id}.json"
+        if area_file.exists():
+            try:
+                with open(area_file, "r", encoding="utf-8") as f:
+                    area = json.load(f)
+            except Exception:
+                pass
+
     skill_file = settings.DATA_DIR / "skills" / agent_id / "SKILL.md"
     agent_file = settings.DATA_DIR / "skills" / agent_id / "AGENT.md"
 
-    # Se a skill não existir ou tiver menos de 1000 bytes e o agente tiver fontes estudadas, recompila rica
-    if not skill_file.exists() or (skill_file.stat().st_size < 1000 and profile.sources):
+    # Se a skill não existir ou tiver menos de 300 bytes, ou se for gestor com template legado, recompila
+    recompile_needed = False
+    if not skill_file.exists() or skill_file.stat().st_size < 300:
+        recompile_needed = True
+    elif profile.sources and skill_file.stat().st_size < 1000:
+        recompile_needed = True
+    elif profile.agent_type == "gestor":
+        try:
+            cur_txt = skill_file.read_text(encoding="utf-8")
+            if "Estagiário" in cur_txt or "0.00 horas" in cur_txt:
+                recompile_needed = True
+        except Exception:
+            recompile_needed = True
+
+    if recompile_needed:
         compiled_skill = compile_agent_rich_skill(agent_id)
         if compiled_skill:
             skill_file.parent.mkdir(parents=True, exist_ok=True)
@@ -823,24 +916,100 @@ def get_agent_spec(agent_id: str):
         with open(agent_file, "r", encoding="utf-8") as f:
             agent_content = f.read()
     else:
+        agent_type_label = "Gestor Executivo & Orquestrador" if profile.agent_type == "gestor" else "Especialista Técnico de Execução"
+        area_name = area.get("name") if area else "Tecnologia & Desenvolvimento"
         seniority = profile.get_seniority_info()
         topics_str = "\n".join([f"- `{t}`" for t in (profile.topics_mastered or [])])
         agent_content = f"""# Persona: {profile.name}
 **Cargo**: {profile.role}
-**Hierarquia**: {profile.agent_type.upper()}
-**Nível**: {seniority.get('rank', 'Pleno')} ({seniority.get('badge', '🥈')})
+**Hierarquia**: {agent_type_label}
+**Área**: {area_name}
+**Senioridade**: {seniority.get('rank', 'Pleno')} ({seniority.get('badge', '🥈')})
 
 ## Contexto de Negócio
-Atua como referência técnica e consultiva no domínio de sua área. 
-Conecta-se aos gestores executivos para receber metas e reportar entregas de alta confiabilidade.
+Atua como referência no domínio de sua área. 
+Conecta-se à Mesa Redonda do Oráculo para receber objetivos, alinhar entregas e garantir alto padrão de execução.
 
 ## Competências Principais
 {topics_str}
 """
 
+    # Extrai módulos de skills reais (aulas estudadas reais com OCR e sínteses, ou tópicos executivos)
+    skills = []
+    lessons_found = []
+    agent_group_names = {s.group_name.strip().lower() for s in profile.sources if s.group_name}
+    for p_file in settings.PROCESSED_DIR.rglob("*.json"):
+        try:
+            with open(p_file, "r", encoding="utf-8") as f:
+                doc = json.load(f)
+                gname = (doc.get("group_name") or "").strip().lower()
+                if gname and any(ag in gname or gname in ag for ag in agent_group_names):
+                    lessons_found.append(doc)
+        except Exception:
+            continue
+
+    if lessons_found:
+        for idx, doc in enumerate(lessons_found[:15]):
+            title = doc.get("title") or doc.get("file_name") or f"Aula {idx + 1}"
+            slug = re.sub(r'[^a-zA-Z0-9_]', '_', title.lower()).strip('_')
+            summary = doc.get("summary") or "Conhecimento absorvido em aula prática do curso."
+            extracted_code = doc.get("extracted_codes", [])
+            code_str = ""
+            if extracted_code:
+                code_sample = extracted_code[0]
+                code_str = f"\n\n```python\n{code_sample.get('code', '')[:300]}\n```"
+
+            s_md = f"""# Skill: {title}
+**Agente Responsável**: {profile.name}  
+**Curso**: {doc.get('group_name', 'Curso Técnico')}  
+**Status**: Absorvido com Sucesso  
+
+### 📘 Síntese da Aula
+{summary}
+
+### 💡 Conceitos Dominados
+{chr(10).join(['- ' + t for t in doc.get('topics', [])[:5]])}
+{code_str}
+"""
+            skills.append({
+                "name": slug,
+                "title": title,
+                "markdown": s_md,
+                "skill_md": s_md
+            })
+    else:
+        for top in (profile.topics_mastered or [])[:15]:
+            slug = re.sub(r'[^a-zA-Z0-9_]', '_', top.lower()).strip('_')
+            if profile.agent_type == "gestor":
+                s_md = f"""# Atribuição Executiva: {top}
+**Líder Responsável**: {profile.name} ({profile.role})  
+**Governança**: Gestão Estratégica & Delegação Especializada  
+
+### 📋 Escopo de Liderança
+Responsável pela supervisão, priorização e garantia de conformidade de **{top}**.
+As execuções técnicas operacionais são delegadas aos especialistas de sua equipe subordinada.
+"""
+            else:
+                s_md = f"""# Especialização: {top}
+**Especialista**: {profile.name} ({profile.role})  
+**Status**: Competência Técnica Ativa  
+
+### 📋 Escopo Técnico
+Aplica o conhecimento estruturado de **{top}** para implementação de código, arquitetura ou diagnósticos táticos.
+"""
+            skills.append({
+                "name": slug,
+                "title": top,
+                "markdown": s_md,
+                "skill_md": s_md
+            })
+
     return {
+        "agent": profile.model_dump(),
+        "area": area,
+        "agent_md": agent_content,
         "skill_md": skill_content,
-        "agent_md": agent_content
+        "skills": skills
     }
 
 @app.put("/api/agents/{agent_id}/spec")
@@ -1641,118 +1810,6 @@ def get_area_knowledge_graph(area_id: str):
         "nodes": nodes,
         "links": links
     }
-
-@app.get("/api/agents/{agent_id}/spec")
-def get_agent_spec(agent_id: str):
-    """Gera a especificação formal de agent.md e modular skill.md para o especialista."""
-    agent = get_agent_profile(agent_id)
-    if not agent:
-        raise HTTPException(status_code=404, detail="Agente não encontrado")
-
-    area = None
-    if agent.area_id:
-        area_file = settings.AREAS_DIR / f"{agent.area_id}.json"
-        if area_file.exists():
-            with open(area_file, "r", encoding="utf-8") as f:
-                area = json.load(f)
-
-    agent_type_label = "Gestor Executivo & Orquestrador" if agent.agent_type == "gestor" else "Especialista Técnico de Execução"
-    area_name = area.get("name") if area else "Geral"
-    seniority = agent.get_seniority_info()
-
-    agent_md = f"""# Agente: {agent.name}
-**ID**: `{agent.id}`  
-**Papel**: {agent.role}  
-**Hierarquia**: {agent_type_label}  
-**Área da Vida**: {area_name}  
-**Senioridade**: {seniority.get('rank')} ({agent.total_hours_studied}h estudadas)
-
----
-
-## 🎯 Contexto e Diretrizes de Negócio
-- Responsável estratégico pela área de **{area_name}**.
-- Tom de voz: Assertivo, analítico, focado em resultados tangíveis e métricas.
-- Alinhado aos objetivos de alta performance e automação da organização.
-
-## 🔄 Protocolo de Escalação & Delegação
-1. **Comunicação Inter-Gestores**:
-   - Este agente pode debater diretamente na Mesa Redonda do Oráculo com os demais gestores de área.
-2. **Delegação Técnica**:
-   - Para execução de tarefas operacionais profundas, consulta suas ferramentas e aciona os subagentes técnicos especializados.
-3. **Escalação para Decisão Humana (Human-in-the-Loop)**:
-   - Despesas financeiras, limites de verba de tráfego pago ou alterações estruturais exigem confirmação do Usuário.
-
-## 💡 Habilidades & Tópicos Dominados ({len(agent.topics_mastered)})
-"""
-    for top in agent.topics_mastered:
-        agent_md += f"- `{top}`\n"
-
-    skills = []
-    for top in agent.topics_mastered[:15]:
-        slug = re.sub(r'[^a-zA-Z0-9_]', '_', top.lower()).strip('_')
-        skill_md = f"""# Skill: {top}
-**Agente Responsável**: {agent.name}  
-**Status**: Dominado via Absorção de Cursos  
-
-### 📋 Descrição e Escopo
-Aplica o conhecimento estruturado de **{top}** para resolução de problemas reais, geração de código ou recomendações táticas.
-
-### ⚙️ Entradas Requeridas
-- Contexto da solicitação ou parâmetros da tarefa
-- Dados do projeto ou código pré-existente
-
-### 📤 Artefatos de Saída
-- Código limpo, documento `.md`, arquitetura técnica ou plano de ação.
-"""
-        skills.append({
-            "name": slug,
-            "title": top,
-            "markdown": skill_md
-        })
-
-    # Carrega arquivo skill.md real se existir
-    real_skill_file = settings.DATA_DIR / "skills" / agent_id / "SKILL.md"
-    real_skill_content = ""
-    if real_skill_file.exists():
-        try:
-            with open(real_skill_file, "r", encoding="utf-8") as sf:
-                real_skill_content = sf.read()
-        except Exception:
-            pass
-
-    if not real_skill_content:
-        # Fallback concatenando as skills dos tópicos
-        real_skill_content = f"# Skill: {agent.name}\n**ID**: `{agent.id}`\n**Papel**: {agent.role}\n**Hierarquia**: {agent_type_label}\n\n" + "\n\n---\n\n".join([s["markdown"] for s in skills])
-
-    return {
-        "agent": agent.model_dump(),
-        "area": area,
-        "agent_md": agent_md,
-        "skill_md": real_skill_content,
-        "skills": skills
-    }
-
-@app.put("/api/agents/{agent_id}/spec")
-def update_agent_spec(agent_id: str, req: UpdateAgentSpecRequest):
-    """Permite editar diretamente o skill.md e agent.md do funcionário."""
-    agent = get_agent_profile(agent_id)
-    if not agent:
-        raise HTTPException(status_code=404, detail="Agente não encontrado")
-
-    skill_dir = settings.DATA_DIR / "skills" / agent_id
-    skill_dir.mkdir(parents=True, exist_ok=True)
-
-    if req.skill_md is not None:
-        skill_file = skill_dir / "SKILL.md"
-        with open(skill_file, "w", encoding="utf-8") as sf:
-            sf.write(req.skill_md)
-
-    if req.agent_md is not None:
-        agent_file = skill_dir / "AGENT.md"
-        with open(agent_file, "w", encoding="utf-8") as af:
-            af.write(req.agent_md)
-
-    return {"message": f"Especificação de {agent.name} salva com sucesso!", "agent_id": agent_id}
 
 # ----------------- GRAFO DE CONHECIMENTO (OBSIDIAN GRAPH VIEW) -----------------
 

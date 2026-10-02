@@ -82,18 +82,22 @@ def test_full_consultation_hand_off():
     assert "Quinn" in full_response, "Deveria conter a resposta do especialista Quinn QA"
     print("✅ Teste 5: Diálogo completo com Hand-Off e resposta de Quinn QA executado com perfeição!")
 
-def test_helena_executive_delegation_to_qa():
-    query = "Helena, qual a estratégia recomendada para testes E2E do nosso login com Playwright?"
-    full_response = agent_delegator.consult("helena", query)
+def test_thiago_tech_executive_delegation_to_qa():
+    query = "Thiago, qual a estratégia recomendada para testes E2E do nosso login com Playwright?"
+    full_response = agent_delegator.consult("thiago", query)
 
     print("\n" + "=" * 60)
-    print("👩‍💼 Resposta Executiva de Helena Torres:")
+    print("💻 Resposta Executiva de Thiago Tech:")
     print(full_response)
     print("=" * 60)
 
-    assert "Helena Torres" in full_response, "Deveria conter a síntese executiva de Helena Torres"
-    assert "Quinn" in full_response, "Helena deveria ter acionado a especialista Quinn QA para Playwright"
-    print("✅ Teste 6: Helena Torres atuou como executiva não-técnica e acionou Quinn QA!")
+    assert "Thiago Tech" in full_response, "Deveria conter a síntese executiva de Thiago Tech"
+    assert "Quinn" in full_response, "Thiago Tech deveria ter acionado a especialista Quinn QA para Playwright"
+
+    # Valida compatibilidade retroativa com alias 'helena'
+    alias_response = agent_delegator.consult("helena", query)
+    assert "Thiago Tech" in alias_response, "Alias 'helena' deve resolver para o gestor Thiago Tech"
+    print("✅ Teste 6: Thiago Tech atuou como executivo não-técnico e acionou Quinn QA (com alias helena compatível)!")
 
 def test_autonomous_governor_flow():
     from orchestration.autonomous_governor import autonomous_governor
@@ -124,6 +128,6 @@ if __name__ == "__main__":
     test_competency_alex_vance_own_domain()
     test_competency_jordan_sales_own_domain()
     test_full_consultation_hand_off()
-    test_helena_executive_delegation_to_qa()
+    test_thiago_tech_executive_delegation_to_qa()
     test_autonomous_governor_flow()
-    print("\n🎉 TODOS OS TESTES DE DELEGAÇÃO, HELENA EXECUTIVA E GOVERNADOR PASSARAM COM SUCESSO!")
+    print("\n🎉 TODOS OS TESTES DE DELEGAÇÃO, THIAGO TECH E GOVERNADOR PASSARAM COM SUCESSO!")

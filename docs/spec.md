@@ -1,6 +1,6 @@
 # 📋 Oráculo System Specification (docs/spec.md)
 > **Versão Oficial**: 2.1.0 — Outubro/2026  
-> **Liderança Executiva**: Helena Torres (👩‍💼 VP de TI & Inovação), Marcelo Marketing (🚀 CMO & Growth), Victor Vendas (💼 Dir. Comercial), Marina Mente (🧠 Head Wellness)  
+> **Liderança Executiva**: Thiago Tech (💻 VP de TI & Inovação), Marcelo Marketing (🚀 CMO & Growth), Victor Vendas (💼 Dir. Comercial), Marina Mente (🧠 Head Wellness)  
 > **Padrão de Engenharia**: SDD (Spec-Driven Development) + TDD (Test-Driven Development) + Clean Architecture
 
 ---
@@ -51,7 +51,7 @@ Nenhuma decisão estrutural deve ser tomada sem a consulta prévia ao gestor exe
       ┌──────────────────────┬───────────────┴───────────────┬──────────────────────┐
       ▼                      ▼                               ▼                      ▼
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
-│ 👩‍💼 Helena Torres │   │ 🚀 Marcelo Mkt   │   │ 💼 Victor Vendas │   │ 🧠 Marina Mente  │
+│ 💻 Thiago Tech   │   │ 🚀 Marcelo Mkt   │   │ 💼 Victor Vendas │   │ 🧠 Marina Mente  │
 │ VP de TI & Eng.  │   │ CMO & Growth     │   │ Diretor Comercial│   │ Head Wellness    │
 └────────┬─────────┘   └────────┬─────────┘   └────────┬─────────┘   └────────┬─────────┘
          │                      │                      │                      │

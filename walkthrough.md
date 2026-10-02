@@ -1,6 +1,6 @@
 # 🚀 Walkthrough: Oráculo 2.2 — Delegação Inter-Agentes, Telegram Cockpit & Edge AI
 
-> **Liderança Técnica**: Helena Torres (👩‍💼 VP de TI) & Alex Vance (⚡ Arquiteto-Chefe)  
+> **Liderança Técnica**: Thiago Tech (💻 VP de TI) & Alex Vance (⚡ Arquiteto-Chefe)  
 > **Status**: 100% Implementado, Testado e Operacional em Produção
 
 ---
@@ -34,7 +34,7 @@ flowchart TD
         HandOff --> Claudio["☁️ Cláudio Cloud (GCP SRE & Docker)"]
         HandOff --> Jordan["🤖 Jordan Belford (Vendas Linha Reta)"]
         HandOff --> Link["🧠 Link (LinkedIn & Autoridade)"]
-        HandOff --> Helena["👩‍💼 Helena Torres (VP TI Liderança)"]
+        HandOff --> Thiago["💻 Thiago Tech (VP TI Liderança)"]
     end
 ```
 
@@ -52,8 +52,8 @@ Implementamos o motor de governança técnica que impede que agentes respondam f
 3. **Novos Especialistas Provisionados**:
    - `🧪 Quinn QA` (`agent_quinn_qa_7781`): Especialista em QA & Testes Automatizados (SDET) com Playwright e TDD.
    - `☁️ Cláudio Cloud` (`agent_claudio_cloud_4421`): Especialista em Infraestrutura Cloud, GCP SRE e Docker Hardening.
-4. **Tratamento de GAPs de Equipe**:
-   - Dúvidas sobre áreas não cobertas por nenhum agente (ex: Direito ou Contabilidade) geram aviso de GAP com recomendação para notificar a Helena Torres ou colocar cursos no Google Drive.
+5. **Tratamento de GAPs de Equipe**:
+   - Dúvidas sobre áreas não cobertas por nenhum agente (ex: Direito ou Contabilidade) geram aviso de GAP com recomendação para notificar o Thiago Tech ou colocar cursos no Google Drive.
 
 ---
 

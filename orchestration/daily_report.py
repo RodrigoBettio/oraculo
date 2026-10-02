@@ -29,7 +29,7 @@ async def generate_daily_executive_report(filter_area: Optional[str] = None) -> 
     now = datetime.now(BRT)
     
     managers = [
-        ("gestor_tech_cto", "tech", "TECNOLOGIA & DESENVOLVIMENTO", "💻", "Helena Torres (VP de TI)"),
+        ("gestor_tech_cto", "tech", "TECNOLOGIA & DESENVOLVIMENTO", "💻", "Thiago Tech (VP de TI)"),
         ("gestor_marketing", "area_marketing_6867", "MARKETING & GROWTH", "🚀", "Marcelo Marketing (CMO & Growth)"),
         ("gestor_sales_director", "sales", "VENDAS & NEGOCIAÇÃO", "💼", "Victor Vendas (Dir. Comercial)"),
         ("gestor_mind_wellness", "mind", "MENTE, FOCO & SUPER CÉREBRO", "🧠", "Marina Mente (Head Wellness)"),

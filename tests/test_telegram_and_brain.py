@@ -65,7 +65,7 @@ def test_drive_keyboards_and_manager_lock():
                 agent_texts.append(btn.text)
 
     # Nomes proibidos de gestores
-    assert not any("Helena" in t for t in agent_texts), "Helena Torres (gestora) NÃO pode aparecer no seletor!"
+    assert not any("Thiago" in t or "Helena" in t for t in agent_texts), "Thiago Tech (gestor) NÃO pode aparecer no seletor!"
     assert not any("Ricardo" in t for t in agent_texts), "Ricardo Monteiro (gestor) NÃO pode aparecer no seletor!"
     assert not any("Camila" in t for t in agent_texts), "Dra. Camila Reis (gestora) NÃO pode aparecer no seletor!"
 
@@ -90,7 +90,7 @@ async def test_daily_report_generation():
     assert "VENDAS & NEGOCIAÇÃO" in report
     assert ("MARKETING & GROWTH" in report or "MARKETING & BRANDING" in report)
     assert "MENTE, FOCO & SUPER CÉREBRO" in report
-    assert "Helena Torres" in report
+    assert ("Thiago Tech" in report or "Tiago Tech" in report or "Helena Torres" in report)
     assert ("Ricardo Monteiro" in report or "Victor Vendas" in report)
     assert ("Dra. Camila Reis" in report or "Marina Mente" in report)
     assert ("Marcelo Marketing" in report or "André Diamand" in report)
