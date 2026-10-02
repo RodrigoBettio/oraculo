@@ -1177,6 +1177,15 @@ Aguardando ingestão de materiais de estudo no Google Drive ({study_hint}).
 
             folder_name = details.get("current_folder", {}).get("name", "Curso Drive")
 
+            # Se o usuário não especificou @agente, usa o LayaDispatcher para atribuir automaticamente
+            if not agent_match:
+                from orchestration.laya_dispatcher import LayaDispatcher
+                laya = LayaDispatcher()
+                auto_agent = laya.auto_assign_folder(folder_name)
+                if auto_agent:
+                    target_agent_id = auto_agent.get("id", target_agent_id)
+                    target_agent_name = f"{auto_agent.get('name')} (🎯 Atribuído via Laya)"
+
             from ingestion.study_queue import StudyQueueManager
             sq = StudyQueueManager()
             enqueued = await sq.enqueue_drive_course(

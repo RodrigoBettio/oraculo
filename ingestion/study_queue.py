@@ -463,7 +463,18 @@ class StudyQueueManager:
         only_pending: bool = True,
         start_worker: bool = True
     ) -> List[QueueItem]:
-        """Adiciona todas as aulas de um curso do Drive na fila, preservando a divisão por temas e arquivos de apoio."""
+        # System 1 (Laya): Se agent_id for nulo ou 'default', auto-atribui ao especialista correto
+        if not agent_id or agent_id in ["default", "auto", "unassigned"]:
+            try:
+                from orchestration.laya_dispatcher import LayaDispatcher
+                laya = LayaDispatcher()
+                assigned = laya.auto_assign_folder(course_name)
+                if assigned:
+                    agent_id = assigned.get("id", agent_id)
+                    logger.info(f"[LayaDispatcher] Curso '{course_name}' auto-atribuído a {assigned.get('name')}")
+            except Exception as e:
+                logger.warning(f"Falha na auto-atribuição do curso via Laya: {e}")
+
         from ingestion.drive_client import GoogleDriveManager
         dm = GoogleDriveManager()
         course_node = dm._inspect_course_folder(folder_id, course_name)

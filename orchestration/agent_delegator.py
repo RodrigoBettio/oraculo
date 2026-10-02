@@ -12,6 +12,7 @@ from typing import Dict, Any, List, Optional
 from pathlib import Path
 
 from config import settings
+from orchestration.laya_dispatcher import LayaDispatcher
 
 logger = logging.getLogger("agent_delegator")
 
@@ -144,6 +145,53 @@ class AgentDelegator:
         origin_role = origin_agent.get("role")
         origin_topics = origin_agent.get("topics_mastered", [])[:10]
 
+        # === System 1: Avaliação Rápida Determinística via Laya (< 5ms) ===
+        try:
+            laya = LayaDispatcher()
+            origin_score = laya.calculate_agent_score(origin_id, query)
+            best_agent, highest_score, is_gap = laya.classify_intent(query)
+
+            query_tokens = laya.tokenize(query)
+            detected_topic = " ".join(query_tokens[:4]) if query_tokens else "o tema consultado"
+
+            # 1. Se for um GAP claro em toda a equipe (score máximo < 1.8)
+            if is_gap or highest_score < 1.8:
+                return DelegationDecision(
+                    is_competent=False,
+                    detected_topic=detected_topic,
+                    target_agent_id=None,
+                    target_agent_name=None,
+                    target_agent_role=None,
+                    target_agent_avatar=None,
+                    reason=f"GAP técnico identificado por Laya: nenhum especialista da equipe cobre o assunto (score {highest_score:.1f} < 1.8)"
+                )
+
+            # 2. Se o próprio origin_agent domina o assunto (score alto ou é o melhor agente com boa folga)
+            if origin_score >= 3.0 or (best_agent and best_agent.get("id") == origin_id and origin_score >= 1.8):
+                return DelegationDecision(
+                    is_competent=True,
+                    detected_topic=detected_topic,
+                    target_agent_id=None,
+                    target_agent_name=None,
+                    target_agent_role=None,
+                    target_agent_avatar=None,
+                    reason=f"Laya confirmou competência de {origin_name} com score {origin_score:.1f}"
+                )
+
+            # 3. Se outro especialista tem pontuação claramente superior (Hand-off claro)
+            if best_agent and best_agent.get("id") != origin_id and highest_score >= 3.5 and highest_score > origin_score * 1.5:
+                return DelegationDecision(
+                    is_competent=False,
+                    detected_topic=detected_topic,
+                    target_agent_id=best_agent.get("id"),
+                    target_agent_name=best_agent.get("name"),
+                    target_agent_role=best_agent.get("role"),
+                    target_agent_avatar=best_agent.get("avatar"),
+                    reason=f"Laya identificou hand-off para {best_agent.get('name')} com score {highest_score:.1f} vs {origin_score:.1f}"
+                )
+        except Exception as laya_err:
+            logger.warning(f"Laya evaluate_competency fallback: {laya_err}")
+
         # Resumo dos outros especialistas disponíveis para a IA de roteamento
         team_catalog = []
         for ag in all_agents:
@@ -262,92 +310,38 @@ DÚVIDA DO RODRIGO: {query}
         manager_avatar = manager_agent.get("avatar", "👩‍💼")
         area_id = manager_agent.get("area_id", "tech")
 
-        all_agents = self.get_all_agents()
-        subordinates = [
-            ag for ag in all_agents
-            if ag.get("area_id") == area_id and ag.get("agent_type") == "tecnico" and ag.get("id") != manager_id
-        ]
-
-        # Mapeamento defensivo para equipes conhecidas
-        if not subordinates:
-            if "helena" in manager_id.lower() or "tiago" in manager_id.lower() or "tech" in area_id.lower():
-                known_ids = ["agent_alex_vance", "agent_quinn_qa_7781", "agent_claudio_cloud_4421", "agent_claude_code", "agent_thales_automations"]
-                subordinates = [ag for ag in all_agents if ag.get("id") in known_ids]
-            elif "marketing" in area_id.lower() or "marcelo" in manager_id.lower():
-                known_ids = ["agent_sobral_marketing", "agent_andre_diamand_1281", "agent_ana_5058"]
-                subordinates = [ag for ag in all_agents if ag.get("id") in known_ids]
-            elif "sales" in area_id.lower() or "ricardo" in manager_id.lower() or "victor" in manager_id.lower():
-                known_ids = ["agent_jordan_belford_5567", "agent_sofia_sdr", "agent_caio_copywriter", "agent_felipe_followup"]
-                subordinates = [ag for ag in all_agents if ag.get("id") in known_ids]
-            elif "mind" in area_id.lower() or "camila" in manager_id.lower() or "marina" in manager_id.lower():
-                known_ids = ["agent_jim_kwik", "agent_o_monge_8324", "agent_link_4211"]
-                subordinates = [ag for ag in all_agents if ag.get("id") in known_ids]
-
-        # Constrói o catálogo de competências da equipe
-        team_catalog = []
-        for ag in subordinates:
-            topics = ", ".join(ag.get("topics_mastered", [])[:5])
-            team_catalog.append(f"- ID: '{ag.get('id')}' | Nome: '{ag.get('name')}' | Cargo: '{ag.get('role')}' | Domina: {topics}")
-        catalog_str = "\n".join(team_catalog) if team_catalog else "Nenhum especialista atualmente na equipe."
-
-        routing_prompt = f"""
-Você é {manager_name} ({manager_role}), Gestor(a) Executivo(a) de Domínio no ecossistema Oráculo.
-Seu papel é ESTRITAMENTE de liderança executiva, estratégia e alocação de equipe. Você NUNCA programa ou faz trabalho operacional.
-O Rodrigo perguntou: "{query}".
-
-ESPECIALISTAS SUBORDINADOS À SUA ÁREA:
-{catalog_str}
-
-MISSÃO DE ALOCAÇÃO:
-1. Qual especialista da sua equipe é o responsável técnico adequado para elaborar a solução técnica detalhada?
-   - Exemplo (Tech): Se a demanda envolver testes, Playwright, automação de testes ou TDD -> Quinn QA.
-   - Exemplo (Tech): Se a demanda envolver GCP, Docker, Kubernetes, SRE ou infraestrutura em nuvem -> Cláudio Cloud.
-   - Exemplo (Tech): Se a demanda envolver arquitetura de software, FastAPI, microsserviços, backend ou IA -> Alex Vance.
-2. Se NENHUM especialista da sua equipe possuir as habilidades necessárias para essa demanda (ex: DBA especialista em tuning, Segurança Ofensiva, Inteligência de Negócios fora do escopo atual), classifique como "GAP".
-
-Retorne ESTRITAMENTE um JSON no formato:
-{{
-  "decision": "DELEGATE" ou "GAP",
-  "specialist_id": "ID_DO_ESPECIALISTA" ou null,
-  "detected_domain": "Resumo do domínio técnico em poucas palavras",
-  "reason": "Justificativa estratégica"
-}}
-"""
+        # === System 1: Roteamento Determinístico e Detecção de GAP via Laya (< 5ms) ===
         try:
-            raw_res = self._call_gemini_fast(routing_prompt)
-            match = re.search(r"\{.*\}", raw_res, re.DOTALL)
-            if match:
-                data = json.loads(match.group(0))
-                decision = data.get("decision", "DELEGATE")
-                spec_id = data.get("specialist_id")
-                domain = data.get("detected_domain", "o tema solicitado")
+            laya = LayaDispatcher()
+            routing = laya.route_manager_demand(manager_agent, query)
+            decision = routing.get("decision", "DELEGATE")
+            domain = routing.get("detected_domain", "o tema solicitado")
+            target_agent = routing.get("specialist")
 
-                # Se a gestora identificou um GAP na equipe
-                if decision == "GAP" or not spec_id or spec_id == "GAP":
-                    return (
-                        f"{manager_avatar} **[{manager_name} — {manager_role}]**:\n\n"
-                        f"Rodrigo, recebi e analisei a sua demanda sobre **{domain}**.\n\n"
-                        f"🚨 **RELATÓRIO DE DEFASAGEM TÉCNICA (GAP IDENTIFICADO NA EQUIPE)**:\n"
-                        f"Como líder da área, verifiquei que **nenhum especialista da nossa equipe atual** possui formação, "
-                        f"certificação ou cursos absorvidos sobre `{domain}`.\n\n"
-                        f"💼 **Plano de Ação Proposto pela Liderança**:\n"
-                        f"1. **Capacitação via Oráculo**: Disponibilizar aulas ou cursos sobre `{domain}` na pasta do Google Drive (`Mestre dos Cursos`), para que nossa esteira treine um especialista dedicado.\n"
-                        f"2. **Provisionamento de Especialista**: Autorizar a contratação/provisionamento de um novo agente técnico focado em `{domain}`.\n\n"
-                        f"Aguardando sua decisão estratégica para prosseguir."
-                    )
+            # Se a Laya identificou um GAP na equipe: resposta imediata (0 chamadas LLM)
+            if decision == "GAP" or not target_agent:
+                return (
+                    f"{manager_avatar} **[{manager_name} — {manager_role}]**:\n\n"
+                    f"Rodrigo, recebi e analisei a sua demanda sobre **{domain}**.\n\n"
+                    f"🚨 **RELATÓRIO DE DEFASAGEM TÉCNICA (GAP IDENTIFICADO NA EQUIPE)**:\n"
+                    f"Como líder da área, verifiquei que **nenhum especialista da nossa equipe atual** possui formação, "
+                    f"certificação ou cursos absorvidos sobre `{domain}`.\n\n"
+                    f"💼 **Plano de Ação Proposto pela Liderança**:\n"
+                    f"1. **Capacitação via Oráculo**: Disponibilizar aulas ou cursos sobre `{domain}` na pasta do Google Drive (`Mestre dos Cursos`), para que nossa esteira treine um especialista dedicado.\n"
+                    f"2. **Provisionamento de Especialista**: Autorizar a contratação/provisionamento de um novo agente técnico focado em `{domain}`.\n\n"
+                    f"Aguardando sua decisão estratégica para prosseguir."
+                )
 
-                target_agent = self.find_agent(spec_id)
-                if target_agent:
-                    target_name = target_agent.get("name")
-                    target_role = target_agent.get("role")
-                    target_avatar = target_agent.get("avatar", "🧠")
+            target_name = target_agent.get("name")
+            target_role = target_agent.get("role")
+            target_avatar = target_agent.get("avatar", "🧠")
 
-                    # 1. Gera a resposta técnica profunda do especialista
-                    spec_context = f"Nota: Você recebeu esta demanda formalmente encaminhada por {manager_name} ({manager_role}). Responda com rigor técnico.\n"
-                    spec_solution = self.generate_agent_response(target_agent, query, context_prefix=spec_context)
+            # 1. Gera a resposta técnica profunda do especialista (System 2 LLM)
+            spec_context = f"Nota: Você recebeu esta demanda formalmente encaminhada por {manager_name} ({manager_role}). Responda com rigor técnico.\n"
+            spec_solution = self.generate_agent_response(target_agent, query, context_prefix=spec_context)
 
-                    # 2. Gera a síntese executiva do gestor
-                    synthesis_prompt = f"""
+            # 2. Gera a síntese executiva do gestor (System 2 LLM)
+            synthesis_prompt = f"""
 Você é {manager_name} ({manager_role}), líder executivo(a).
 Você NUNCA programa ou detalha sintaxe de código.
 Você solicitou a análise técnica de {target_name} ({target_role}) sobre: "{query}".
@@ -361,17 +355,17 @@ Elabore sua SÍNTESE EXECUTIVA para o Rodrigo Bettio Jr.:
 - Proponha os próximos passos sob a perspectiva de liderança.
 NÃO inclua blocos de código nem explicações de sintaxe.
 """
-                    executive_synthesis = self._call_gemini_fast(synthesis_prompt)
+            executive_synthesis = self._call_gemini_fast(synthesis_prompt)
 
-                    return (
-                        f"{manager_avatar} **[{manager_name} — {manager_role}]**:\n\n"
-                        f"Rodrigo, para atender a essa demanda estratégica, requisitei a análise técnica de {target_avatar} **{target_name}** ({target_role}).\n\n"
-                        f"📋 **SÍNTESE EXECUTIVA DE TI**:\n"
-                        f"{executive_synthesis}\n\n"
-                        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-                        f"{target_avatar} **PARECER TÉCNICO DETALHADO ({target_name})**:\n\n"
-                        f"{spec_solution}"
-                    )
+            return (
+                f"{manager_avatar} **[{manager_name} — {manager_role}]**:\n\n"
+                f"Rodrigo, para atender a essa demanda estratégica, requisitei a análise técnica de {target_avatar} **{target_name}** ({target_role}).\n\n"
+                f"📋 **SÍNTESE EXECUTIVA DE TI**:\n"
+                f"{executive_synthesis}\n\n"
+                f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"{target_avatar} **PARECER TÉCNICO DETALHADO ({target_name})**:\n\n"
+                f"{spec_solution}"
+            )
         except Exception as e:
             logger.warning(f"Erro no fluxo de gestor executivo: {e}")
 
