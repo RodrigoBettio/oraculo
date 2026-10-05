@@ -977,6 +977,49 @@ def _call_gemini_resilient(prompt: str) -> str:
                     break
     raise RuntimeError(f"Falha ao chamar Gemini após tentativas: {last_err}")
 
+
+async def _execute_project_background_and_notify(project_id: str):
+    """Executa todas as tarefas do projeto em segundo plano e notifica as entregas no Telegram."""
+    from orchestration.harness import AgentHarness
+    harness = AgentHarness()
+    tasks = harness.store.list_tasks(project_id=project_id)
+    project = harness.store.get_project(project_id)
+    proj_title = project.title if project else "Projeto"
+
+    for idx, t in enumerate(tasks, 1):
+        try:
+            executed = await harness.execute_task(t.id)
+            docs = [d for d in harness.store.list_documents(project_id=project_id) if d.task_id == t.id]
+            doc_info = ""
+            if docs:
+                for doc in docs:
+                    doc_snippet = doc.content[:1500] if len(doc.content) > 1500 else doc.content
+                    doc_info += f"\n\n📄 **ARTEFATO GERADO: {doc.title}**\n\n{doc_snippet}"
+                    if len(doc.content) > 1500:
+                        doc_info += f"\n\n_... (Documento completo de {len(doc.content)} caracteres arquivado no Cofre de Projetos)_"
+
+            delivery_msg = (
+                f"✅ **ENTREGA CONCLUÍDA — TAREFA [{idx}/{len(tasks)}]**\n\n"
+                f"📌 **Projeto**: {proj_title}\n"
+                f"🎯 **Tarefa**: {t.title}\n"
+                f"👤 **Especialista**: {t.assigned_agent_name}\n"
+                f"⚡ **Resumo**: {executed.result_summary}"
+                f"{doc_info}"
+            )
+            await send_telegram_notification(f"Entrega: {t.title}", delivery_msg)
+        except Exception as err:
+            logger.error(f"Erro ao executar tarefa {t.id} em background: {err}")
+            await send_telegram_notification(f"Erro na Tarefa {t.title}", f"⚠️ Falha ao executar tarefa '{t.title}': {err}")
+
+    # Notificação final
+    await send_telegram_notification(
+        "Projeto Concluído",
+        f"🎉 **PROJETO MULTI-AGENTE CONCLUÍDO COM SUCESSO!**\n\n"
+        f"📌 **{proj_title}**\n"
+        f"Todas as {len(tasks)} tarefas foram entregues e seus documentos estão arquivados no Cofre de Projetos."
+    )
+
+
 async def process_telegram_command(command_text: str) -> str:
     """Processa comandos recebidos no Telegram e gera a resposta correspondente."""
     cmd = command_text.strip()
@@ -1029,24 +1072,47 @@ async def process_telegram_command(command_text: str) -> str:
         from orchestration.agent_delegator import agent_delegator
         return agent_delegator.consult(target_agent, query)
 
-    # === 0.2. Harness de Desenvolvimento Remoto ===
-    if cmd_lower.startswith(("/dev", "/harness")):
+    # === 0.2. Harness de Projetos & Fluxos Multi-Agentes ===
+    if cmd_lower.startswith(("/dev", "/harness", "/projeto", "/fluxo")):
         parts = cmd.split(maxsplit=1)
         if len(parts) < 2:
             return (
-                "🛠️ **ORÁCULO DEV HARNESS — CONTROLE REMOTO**\n\n"
-                "Envie instruções de desenvolvimento diretamente para a equipe técnica:\n"
-                "`/dev <sua instrução de código ou tarefa>`\n\n"
-                "Exemplos:\n"
-                "• `/dev Criar rota /api/v1/metrics no FastAPI com testes`\n"
-                "• `/dev Refatorar study_queue para persistir em SQLite com WAL`\n"
-                "• `/dev Rodar pytest nos módulos de orchestration`\n\n"
-                "🛡️ _Proteções ativas: isolamento em branch, validação estrita e confirmação para ações destrutivas._"
+                "🛠️ **ORÁCULO DEV & FLUXOS — MULTI-AGENTE HARNESS**\n\n"
+                "Dispare projetos estratégicos e fluxos autônomos direto pelo celular:\n"
+                "`/dev <seu objetivo>` ou `/fluxo <seu objetivo>`\n\n"
+                "Exemplos de fluxos prontos:\n"
+                "• `/dev Criar roteiro de vídeo para youtube de 8 minutos + post no linkedin sobre Hooks no Claude Code`\n"
+                "• `/fluxo Criar funil de vendas completo com copy de e-mail e página de captura`\n"
+                "• `/dev Criar rota /api/v1/metrics no FastAPI com testes unitários no sandbox`\n\n"
+                "⚙️ _O Gestor de Área decompõe o objetivo em tarefas, aloca os especialistas técnicos e executa os artefatos automaticamente!_"
             )
         instruction = parts[1].strip()
-        from orchestration.agent_delegator import agent_delegator
-        dev_prompt = f"Instrução de desenvolvimento recebida via Telegram Harness: {instruction}. Avalie o impacto arquitetural, planeje a execução e forneça a solução técnica."
-        return agent_delegator.consult("vance", dev_prompt)
+        from orchestration.harness import AgentHarness
+        harness = AgentHarness()
+        try:
+            proj = harness.auto_dispatch(instruction)
+            tasks = proj.tasks or harness.store.list_tasks(project_id=proj.id)
+
+            task_list_txt = ""
+            for idx, t in enumerate(tasks, 1):
+                task_list_txt += f"• `[{idx}]` **{t.title}** ➔ _{t.assigned_agent_name}_\n"
+
+            # Dispara execução das tarefas em background com entrega no Telegram
+            asyncio.create_task(_execute_project_background_and_notify(proj.id))
+
+            assigned_names = ", ".join(set(t.assigned_agent_name for t in tasks))
+            return (
+                f"🚀 **PROJETO MULTI-AGENTE DISPARADO VIA HARNESS!**\n\n"
+                f"📌 **Projeto**: {proj.title}\n"
+                f"🏢 **Área**: {proj.area_name} | 👑 **Gestor**: {proj.manager_agent_name}\n\n"
+                f"📋 **Plano de Tarefas Decomposto** (`{len(tasks)} etapas`):\n"
+                f"{task_list_txt}\n"
+                f"⚙️ **Status**: Os especialistas ({assigned_names}) já iniciaram a produção dos artefatos em segundo plano.\n\n"
+                f"📲 Você receberá cada entrega finalizada (roteiro de vídeo, post no LinkedIn, código) diretamente aqui no Telegram!"
+            )
+        except Exception as e:
+            logger.error(f"Erro no auto_dispatch do Telegram: {e}")
+            return f"❌ Erro ao disparar fluxo via Harness: {e}"
 
     # 1. Menu Principal & Ajuda Executiva
     if cmd_lower == "/menu" or cmd_lower in ["/start", "/ajuda", "/help"]:
