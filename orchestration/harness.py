@@ -283,8 +283,9 @@ Por favor, implemente o código necessário no workspace atual, criando os arqui
         if prior_docs:
             formatted_docs = []
             for d in prior_docs:
-                formatted_docs.append(f"### {d.title} (ID: {d.id})" + chr(10) + f"{d.content[:800]}...")
-            docs_context = "DOCUMENTOS JA CRIADOS NESTE PROJETO:" + chr(10) + chr(10).join(formatted_docs)
+                doc_text = d.content[:4000] if len(d.content) > 4000 else d.content
+                formatted_docs.append(f"### {d.title} (ID: {d.id})\n{doc_text}\n")
+            docs_context = "DOCUMENTOS JA CRIADOS NESTE PROJETO:\n" + "\n".join(formatted_docs)
 
         system_prompt = f"""Você é {agent_ctx['name']} ({agent_ctx['role']}), um agente operador e técnico especialista.
 Seu perfil e diretrizes:
@@ -570,9 +571,93 @@ Por favor, corrija o código de todos os arquivos afetados mantendo a formataç�
                 await self.execute_task(t.id)
 
 
+    def dispatch_pipeline(self, pipeline_data: Dict[str, Any], theme: str) -> Project:
+        """Instancia e planeja um projeto diretamente a partir de uma Pipeline Playbook do Obsidian Vault."""
+        all_agents = get_all_agents()
+        areas = []
+        if settings.AREAS_DIR.exists():
+            for f in settings.AREAS_DIR.glob("*.json"):
+                try:
+                    with open(f, "r", encoding="utf-8") as fp:
+                        areas.append(json.load(fp))
+                except Exception:
+                    pass
+
+        area_id = pipeline_data.get("area", "marketing")
+        area_obj = next((a for a in areas if a["id"] == area_id), None)
+        area_name = area_obj.get("name") if area_obj else area_id.title()
+
+        manager_id = pipeline_data.get("manager")
+        manager_obj = next((a for a in all_agents if a["id"] == manager_id), None)
+        manager_name = manager_obj.get("name") if manager_obj else "Gestor Executivo"
+
+        clean_theme = theme.strip() if theme else "Execução"
+        project_title = f"{pipeline_data.get('name', 'Pipeline')}: {clean_theme[:50]}"
+        project = Project(
+            title=project_title,
+            description=f"Playbook: {pipeline_data.get('description', '')}\n\nTema Central: {clean_theme}",
+            area_id=area_id,
+            area_name=area_name,
+            manager_agent_id=manager_id,
+            manager_agent_name=manager_name,
+            status=ProjectStatus.IN_PROGRESS
+        )
+        saved_proj = self.store.save_project(project)
+
+        created_tasks = []
+        for step in pipeline_data.get("steps", []):
+            agent_id = step.get("agent_id")
+            target_a = next((a for a in all_agents if a["id"] == agent_id), None)
+            assigned_name = target_a.get("name", "Especialista") if target_a else step.get("role", "Especialista")
+            h_type = step.get("harness_type", "oraculo_cloud")
+
+            instruction = f"""OBJETIVO GERAL DO PROJETO:
+{clean_theme}
+
+DIRETRIZES TÉCNICAS ESPECÍFICAS DA ETAPA:
+{step.get('instruction', '')}
+"""
+            ide_prompt = None
+            if h_type == "antigravity_ide":
+                t_ctx = load_agent_context(agent_id) if agent_id else {}
+                ide_prompt = f"""# TAREFA DO ORÁCULO PARA O ANTIGRAVITY IDE (PLAYBOOK VAULT)
+PROJETO: {project.title}
+ESPECIALISTA DESIGNADO: {assigned_name} ({t_ctx.get('role', 'Técnico')})
+TAREFA: {step.get('title')}
+
+DIRETRIZES TÉCNICAS ABSORVIDAS DOS CURSOS (SKILL.MD):
+{t_ctx.get('skill_md', '')[:1200]}
+
+INSTRUÇÕES DE IMPLEMENTAÇÃO:
+{instruction}
+
+Por favor, implemente o código com excelência técnica."""
+
+            task = Task(
+                project_id=saved_proj.id,
+                title=f"[{step.get('step', len(created_tasks)+1)}] {step.get('title', 'Tarefa')}",
+                instruction=instruction,
+                assigned_agent_id=agent_id,
+                assigned_agent_name=assigned_name,
+                harness_type=h_type,
+                ide_handoff_prompt=ide_prompt,
+                status=TaskStatus.TODO
+            )
+            saved_task = self.store.save_task(task)
+            created_tasks.append(saved_task)
+
+        saved_proj.tasks = created_tasks
+        return saved_proj
+
     def auto_dispatch(self, user_prompt: str) -> Project:
-        """Recebe um prompt universal em linguagem natural, deduz a área, o gestor,
-        cria o projeto e dispara a decomposição em tarefas com roteamento de harness."""
+        """Recebe um prompt universal em linguagem natural, verifica se existe pipeline no Obsidian Vault,
+        ou deduz a área dinamicamente com o Gestor."""
+        from orchestration.pipeline_loader import find_pipeline_for_prompt
+        matched_pipeline, theme = find_pipeline_for_prompt(user_prompt)
+        if matched_pipeline:
+            logger.info(f"⚡ Pipeline '{matched_pipeline['id']}' identificada no Obsidian Vault para o prompt: '{user_prompt[:40]}'")
+            return self.dispatch_pipeline(matched_pipeline, theme)
+
         all_agents = get_all_agents()
         areas = []
         if settings.AREAS_DIR.exists():

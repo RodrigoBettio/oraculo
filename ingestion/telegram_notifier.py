@@ -1011,12 +1011,24 @@ async def _execute_project_background_and_notify(project_id: str):
             logger.error(f"Erro ao executar tarefa {t.id} em background: {err}")
             await send_telegram_notification(f"Erro na Tarefa {t.title}", f"⚠️ Falha ao executar tarefa '{t.title}': {err}")
 
+    # Arquivamento no Cofre Obsidian (Host e Espelho)
+    vault_status = ""
+    try:
+        from orchestration.pipeline_loader import save_project_to_vault
+        all_docs = harness.store.list_documents(project_id=project_id)
+        saved_vault_paths = save_project_to_vault(project, tasks, all_docs)
+        if saved_vault_paths:
+            vault_status = f"\n\n📂 **Arquivado no Obsidian**: `04_Projetos_Ativos/Execucoes` ({len(saved_vault_paths)} notas com wikilinks geradas)"
+    except Exception as e_vault:
+        logger.error(f"Erro ao salvar no vault: {e_vault}")
+
     # Notificação final
     await send_telegram_notification(
         "Projeto Concluído",
         f"🎉 **PROJETO MULTI-AGENTE CONCLUÍDO COM SUCESSO!**\n\n"
         f"📌 **{proj_title}**\n"
-        f"Todas as {len(tasks)} tarefas foram entregues e seus documentos estão arquivados no Cofre de Projetos."
+        f"Todas as {len(tasks)} tarefas foram entregues e seus documentos estão arquivados.{vault_status}\n\n"
+        f"🔗 Abra seu Obsidian no computador ou celular para ver o projeto no Graph View!"
     )
 
 
@@ -1076,15 +1088,27 @@ async def process_telegram_command(command_text: str) -> str:
     if cmd_lower.startswith(("/dev", "/harness", "/projeto", "/fluxo")):
         parts = cmd.split(maxsplit=1)
         if len(parts) < 2:
+            pipes_text = ""
+            try:
+                from orchestration.pipeline_loader import list_available_pipelines
+                pipes = list_available_pipelines()
+                for p in pipes:
+                    pipes_text += f"⚡ **`{p['id']}`** — {p['name']}\n"
+                    pipes_text += f"   👑 _{p.get('manager', 'Gestor')}_ | {len(p.get('steps', []))} etapas\n"
+                    pipes_text += f"   📝 _{p.get('description', '')[:85]}..._\n\n"
+            except Exception:
+                pass
+
             return (
-                "🛠️ **ORÁCULO DEV & FLUXOS — MULTI-AGENTE HARNESS**\n\n"
-                "Dispare projetos estratégicos e fluxos autônomos direto pelo celular:\n"
-                "`/dev <seu objetivo>` ou `/fluxo <seu objetivo>`\n\n"
-                "Exemplos de fluxos prontos:\n"
-                "• `/dev Criar roteiro de vídeo para youtube de 8 minutos + post no linkedin sobre Hooks no Claude Code`\n"
-                "• `/fluxo Criar funil de vendas completo com copy de e-mail e página de captura`\n"
-                "• `/dev Criar rota /api/v1/metrics no FastAPI com testes unitários no sandbox`\n\n"
-                "⚙️ _O Gestor de Área decompõe o objetivo em tarefas, aloca os especialistas técnicos e executa os artefatos automaticamente!_"
+                "🛠️ **PIPELINES DO SEGUNDO CÉREBRO (OBSIDIAN VAULT)**\n\n"
+                "Playbooks padronizados que executam com consistência sem depender de adivinhação da IA:\n\n"
+                f"{pipes_text}"
+                "💡 **COMO DISPARAR PELO CELULAR**:\n"
+                "• `/fluxo <nome_pipeline> <seu tema>`\n"
+                "• Ex: `/fluxo youtube_linkedin Hooks no Claude Code`\n"
+                "• Ex: `/fluxo feature_tdd_sdd Nova rota /metrics com FastAPI`\n"
+                "• Ex: `/fluxo funil_vendas_b2b Software de IA para Clínicas`\n\n"
+                "📁 _Os artefatos finais serão arquivados automaticamente no seu Obsidian em 04_Projetos_Ativos/Execucoes!_"
             )
         instruction = parts[1].strip()
         from orchestration.harness import AgentHarness
