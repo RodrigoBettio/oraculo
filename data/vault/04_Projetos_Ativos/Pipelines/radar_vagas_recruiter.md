@@ -1,33 +1,46 @@
 ---
 id: radar_vagas_recruiter
-nome: Radar de Vagas & Abordagem Direta de Tech Recruiters
-gestor: gestor_tech_cto
-gestor_nome: Thiago Tech (VP de TI)
+name: Radar de Vagas & Abordagem Direta de Tech Recruiters
 area: tech
-area_nome: Tecnologia & Desenvolvimento
-descricao: Pipeline cirúrgico para caçar vagas remotas de Desenvolvedor (Python/IA/Automação de R$ 3k a R$ 6k), minerar os Tech Recruiters e Hiring Managers no LinkedIn e executar abordagem que pula a fila dos portais (Gupy/ATS).
-tags:
-  - pipeline
-  - carreira
-  - emprego_remoto
-  - linkedin
-  - sdr
-etapas:
-  - ordem: 1
-    titulo: Mapeamento de Vagas Remotas Compatíveis
-    especialista: agent_alex_vance
-    especialista_nome: Alex Vance
-    entregavel: Relatório com 5 a 10 vagas remotas ativas com requisitos alinhados ao perfil (Python, FastAPI, Automação, IA, Scripts)
-  - ordem: 2
-    titulo: Mineração do Decisor & Tech Recruiter no LinkedIn
-    especialista: agent_link_4211
-    especialista_nome: Link (Pesquisador Web)
-    entregavel: Dossiê com nome, perfil do LinkedIn e cargo do Tech Recruiter ou Líder Técnico de cada vaga
-  - ordem: 3
-    titulo: Copy de Abordagem Direta "Skip the Queue"
-    especialista: agent_jordan_belford_5567
-    especialista_nome: Jordan Belford
-    entregavel: Mensagens personalizadas de conexão no LinkedIn (até 300 caracteres) e mensagem de follow-up destacando projetos práticos entregues
+manager: gestor_tech_cto
+description: Pipeline cirúrgico para caçar vagas remotas de Desenvolvedor (Python/IA/Automação de R$ 3k a R$ 6k), minerar os Tech Recruiters e Hiring Managers no LinkedIn e executar abordagem que pula a fila dos portais (Gupy/ATS).
+triggers:
+  - vagas
+  - emprego
+  - recruiter
+  - tech recruiter
+  - vaga remota
+steps:
+  - step: 1
+    title: Mapeamento de Vagas Remotas Compatíveis
+    agent_id: agent_alex_vance
+    role: Engenheiro de Software & IA
+    harness_type: antigravity_ide
+    instruction: |
+      Mapeie de 5 a 10 vagas remotas ativas para Desenvolvedor Python / Automação / IA (PJ ou CLT de R$ 3k a R$ 6k).
+      Requisitos fundamentais para filtrar:
+      1. Stack compatível: Python, FastAPI, Automação de Processos, APIs, Scraping, IA Generativa.
+      2. Modelo 100% Home Office (Brasil ou Internacional).
+      3. Extraia o link da vaga, empresa contratante e requisitos essenciais.
+  - step: 2
+    title: Mineração de Tech Recruiters & Líderes de Engenharia no LinkedIn
+    agent_id: agent_link_4211
+    role: Pesquisador Web & Inteligência de Negócios
+    harness_type: oraculo_cloud
+    instruction: |
+      Para cada empresa mapeada na etapa anterior:
+      1. Pesquise e identifique o perfil do LinkedIn do Tech Recruiter, Talent Acquisition ou Head/CTO da empresa.
+      2. Extraia o nome completo, cargo exato e URL do perfil no LinkedIn.
+      3. Organize um dossiê limpo para contato direto.
+  - step: 3
+    title: Copy de Abordagem Direta "Skip the Queue"
+    agent_id: agent_jordan_belford_5567
+    role: Closer & Negociador de Alto Impacto
+    harness_type: oraculo_cloud
+    instruction: |
+      Redija mensagens personalizadas de alta conversão para cada decisor minerado:
+      1. Nota de Conexão no LinkedIn (limite estrito de 300 caracteres): personalizada, citando a vaga e destacando experiência prática com sistemas em produção.
+      2. Mensagem de Follow-up (pós-conexão): pitch de 3 parágrafos destacando cases reais (automação de scraping, arquitetura Oráculo com FastAPI/Docker) e convidando para bate-papo de 10 minutos.
 ---
 
 # 🎯 Pipeline: Radar de Vagas & Abordagem Direta de Tech Recruiters

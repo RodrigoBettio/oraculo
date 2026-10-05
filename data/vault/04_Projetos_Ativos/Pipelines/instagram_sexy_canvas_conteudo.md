@@ -1,33 +1,47 @@
 ---
 id: instagram_sexy_canvas_conteudo
-nome: Posicionamento no Instagram & Conteúdo Sexy Canvas
-gestor: gestor_marketing
-gestor_nome: Marcelo Marketing (Diretor de Marketing & Growth)
+name: Posicionamento no Instagram & Conteúdo Sexy Canvas
 area: marketing
-area_nome: Marketing & Aquisição
-descricao: Pipeline contínuo para criação de posts e Reels virais aplicando a metodologia Sexy Canvas (André Diamand) no posicionamento de Ontologia Tech e IA para empresas.
-tags:
-  - pipeline
+manager: gestor_marketing
+description: Pipeline contínuo para criação de posts e Reels virais aplicando a metodologia Sexy Canvas (André Diamand) no posicionamento de Ontologia Tech e IA para empresas.
+triggers:
   - instagram
-  - sexy_canvas
-  - conteudo_viral
-  - marketing
-etapas:
-  - ordem: 1
-    titulo: Mapeamento de Pecados & Desejos Humanos (Sexy Canvas)
-    especialista: agent_andre_diamand_1281
-    especialista_nome: André Diamand (Sexy Canvas)
-    entregavel: Matriz com 3 a 5 ângulos emocionais ativando Ganância, Preguiça, Curiosidade e Segurança para donos de pequenas empresas
-  - ordem: 2
-    titulo: Roteirização de Reels & Carrosséis de Alta Retenção
-    especialista: agent_ana_5058
-    especialista_nome: Ana (Social & Conteúdo)
-    entregavel: Roteiro completo do vídeo/post com gancho de 3 segundos, desenvolvimento visual de 45 segundos e chamada para ação (CTA)
-  - ordem: 3
-    titulo: CTA & Automação de DM para Atendimento
-    especialista: agent_jordan_belford_5567
-    especialista_nome: Jordan Belford
-    entregavel: Palavra-chave de gatilho para comentários (ex: 'DIAGNÓSTICO') e mensagem automática no Direct para qualificar e migrar o lead para o WhatsApp
+  - sexy canvas
+  - post instagram
+  - reels
+  - ontologia tech
+steps:
+  - step: 1
+    title: Mapeamento de Pecados & Desejos Humanos (Sexy Canvas)
+    agent_id: agent_andre_diamand_1281
+    role: Mentor Sexy Canvas
+    harness_type: oraculo_cloud
+    instruction: |
+      Analise o tema e elabore o enquadramento Sexy Canvas para empresários e líderes:
+      1. Selecione o pecado dominante: Ganância (lucro/faturamento), Preguiça (automação/tempo), Curiosidade (gargalos invisíveis) ou Segurança (blindagem contra obsolescência).
+      2. Mapeie a criança interior do dono de empresa: o desejo de ter controle, liberdade e não ser enganado por agências genéricas.
+      3. Defina a tese central e a quebra de padrão que o post deve defender.
+  - step: 2
+    title: Roteiro Audiovisual Completo do Reels (45 Segundos)
+    agent_id: agent_ana_5058
+    role: Especialista em Conteúdo & Social Media
+    harness_type: oraculo_cloud
+    instruction: |
+      Utilizando o enquadramento do André Diamand, crie o roteiro completo de Reels de alta retenção:
+      1. Gancho nos primeiros 3 segundos: frase polarizadora ou choque de realidade.
+      2. Conflito (3s a 15s): a dor real da empresa (planilhas, trabalho repetitivo, lentidão de atendimento).
+      3. A Revelação Prática (15s a 35s): o case prático ou a tela da automação resolvendo a dor em segundos.
+      4. Chamada para Ação / CTA (35s a 45s): comando simples para comentar uma palavra-chave (ex: 'DIAGNÓSTICO').
+  - step: 3
+    title: Script de Triagem na DM & Transição para o WhatsApp
+    agent_id: agent_jordan_belford_5567
+    role: Closer & Qualificador de Vendas
+    harness_type: oraculo_cloud
+    instruction: |
+      Crie a cadência de mensagens para quem interagir com a publicação:
+      1. Mensagem de abertura enviada automaticamente na DM do Instagram assim que o lead comentar a palavra-chave.
+      2. Duas perguntas rápidas de triagem para qualificar o tamanho da dor da empresa.
+      3. Roteiro de transição elegante para o WhatsApp com o link da agenda do Rodrigo para o Diagnóstico de Ontologia Tech de 15 minutos.
 ---
 
 # 📱 Pipeline: Posicionamento no Instagram & Conteúdo Sexy Canvas
@@ -50,24 +64,12 @@ etapas:
 
 ### Etapa 1: Mapeamento de Pecados & Ângulos Emocionais
 - **Responsável**: André Diamand
-- **Ação**: Para cada ideia de post, identificar o pecado dominante:
-  - **Preguiça (Eficiência)**: *"Como economizar 20 horas de trabalho manual por semana na sua empresa"*.
-  - **Ganância (Lucro/Dinheiro)**: *"Onde o faturamento da sua empresa está vazando por falta de automação"*.
-  - **Curiosidade**: *"O que é uma Ontologia Tech e por que grandes empresas usam isso em silêncio"*.
-  - **Segurança**: *"Como evitar que sua empresa fique obsoleta enquanto seus concorrentes adotam IA"*.
+- **Ação**: Identificar o pecado dominante e o gatilho da criança interior do empresário.
 
 ### Etapa 2: Roteirização de Conteúdo (Reels & Carrosséis)
 - **Responsável**: Ana (Social & Conteúdo) & Marcelo Marketing
-- **Estrutura de Ouro de um Reels de 45s**:
-  - **0s - 3s (O Gancho)**: Frase polarizadora, quebra de padrão ou choque de realidade.
-  - **3s - 15s (O Problema do Empresário)**: Identificação com a dor real (planilhas travando, funcionários sobrecarregados, atendimento lento).
-  - **15s - 35s (A Solução / A Tela)**: Mostrar a automação ou o código resolvendo o problema em tempo real (prova visual indiscutível).
-  - **35s - 45s (A Chamada / CTA)**: Comando simples e direto.
+- **Estrutura**: Gancho 3s -> Conflito 12s -> Solução 20s -> CTA 10s.
 
 ### Etapa 3: Conversão na DM & Direcionamento p/ WhatsApp
 - **Responsável**: Jordan Belford
-- **Fluxo**:
-  - Usuário comenta a palavra-chave no post (ex: `DIAGNÓSTICO`).
-  - O perfil envia uma mensagem direta no Instagram com uma pergunta rápida de triagem:
-    > *"Opa! Vi seu comentário no post sobre processos. Qual é o seu segmento hoje e onde você mais sente que sua equipe perde tempo?"*
-  - Resposta do lead -> Envio do link do WhatsApp para agendar os 15 minutos de diagnóstico com o Rodrigo.
+- **Fluxo**: Comentário no post -> DM de triagem -> WhatsApp para Diagnóstico.
