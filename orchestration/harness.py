@@ -606,12 +606,14 @@ Por favor, corrija o código de todos os arquivos afetados mantendo a formataç�
             for f in settings.AREAS_DIR.glob("*.json"):
                 try:
                     with open(f, "r", encoding="utf-8") as fp:
-                        areas.append(json.load(fp))
+                        data = json.load(fp)
+                        if isinstance(data, dict) and "id" in data:
+                            areas.append(data)
                 except Exception:
                     pass
 
         area_id = pipeline_data.get("area", "marketing")
-        area_obj = next((a for a in areas if a["id"] == area_id), None)
+        area_obj = next((a for a in areas if a.get("id") == area_id), None)
         area_name = area_obj.get("name") if area_obj else area_id.title()
 
         manager_id = pipeline_data.get("manager")
