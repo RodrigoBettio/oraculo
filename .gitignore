@@ -49,3 +49,6 @@ data/last_study_session.json
 # OS
 Thumbs.db
 .DS_Store
+
+# Obsidian Workspace Session
+data/vault/.obsidian/workspace*.json

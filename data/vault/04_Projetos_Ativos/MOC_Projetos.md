@@ -5,6 +5,7 @@
 ---
 
 ## 🔥 Em Andamento
+- [[Execucoes/proj_2432d53e_Vídeo_YouTube_(8min)_+_Post_LinkedIn_Hooks_no_Clau/00_Overview|Vídeo YouTube (8min) + Post LinkedIn: Hooks no Claude Code]] — _Marcelo Marketing (05/10/2026)_
 
 ### Oráculo
 - **Status**: Em desenvolvimento ativo

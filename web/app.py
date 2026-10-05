@@ -38,6 +38,9 @@ app.include_router(orchestration_router)
 from web.guardian_routes import router as guardian_router
 app.include_router(guardian_router)
 
+from web.vault_routes import router as vault_router
+app.include_router(vault_router)
+
 @app.on_event("startup")
 async def startup_guardian():
     from orchestration.guardian import guardian
