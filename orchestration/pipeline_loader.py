@@ -1,6 +1,7 @@
 """
-Oráculo — Pipeline Loader & Obsidian Vault Bridge
-Gerencia playbooks/SOPs declarativos em Markdown e persiste entregas de projetos no Obsidian.
+Oráculo — Pipeline Loader & Obsidian Vault Bridge (Real-Time Edition)
+Gerencia playbooks declarativos (SOPs) em Markdown e persiste o ciclo de vida
+completo dos projetos no Obsidian em TEMPO REAL (Única Fonte da Verdade).
 """
 
 import os
@@ -123,7 +124,6 @@ def find_pipeline_for_prompt(prompt: str) -> Tuple[Optional[Dict[str, Any]], str
     # 2. Correspondência por gatilhos (triggers) definidos no YAML
     for p in all_pipelines:
         triggers = p.get("triggers", [])
-        # Se todos os triggers obrigatórios estiverem presentes no texto
         matched_triggers = [t for t in triggers if t.lower() in words]
         if len(matched_triggers) >= 2 or (len(triggers) == 1 and len(matched_triggers) == 1):
             return p, cleaned
@@ -134,40 +134,167 @@ def sanitize_filename(name: str) -> str:
     """Limpa string para nome de arquivo seguro."""
     clean = re.sub(r'[\\/*?:"<>|]', "", name)
     clean = clean.replace(" ", "_").strip("_")
-    return clean[:60]
+    return clean[:50]
 
-def save_project_to_vault(project: Project, tasks: List[Task], docs: List[DocumentArtifact]) -> List[Path]:
-    """Salva todo o projeto concluído no setor 04_Projetos_Ativos/Execucoes do Obsidian."""
-    saved_paths = []
-    vaults = get_vault_dirs()
-    if not vaults:
-        return saved_paths
+def get_project_vault_dir_name(project: Project) -> str:
+    """Retorna o nome determinístico da pasta do projeto no Obsidian."""
+    clean_title = sanitize_filename(project.title)
+    return f"{project.id}_{clean_title}"
 
+def update_moc_project(vault_path: Path, project: Project, folder_name: str, status_category: str):
+    """
+    Atualiza o MOC_Projetos.md movendo ou inserindo o projeto na seção correta.
+    status_category pode ser: 'IN_PROGRESS' ou 'COMPLETED'
+    """
+    moc_path = vault_path / "04_Projetos_Ativos" / "MOC_Projetos.md"
+    if not moc_path.exists():
+        return
+    try:
+        text = moc_path.read_text(encoding="utf-8")
+        link_target = f"Execucoes/{folder_name}/00_Overview"
+        now_str = datetime.now().strftime("%d/%m/%Y")
+        project_entry = f"- [[{link_target}|{project.title}]] — _{project.manager_agent_name} ({now_str})_\n"
+
+        # Remove qualquer entrada anterior desse projeto
+        lines = [line for line in text.splitlines(keepends=True) if link_target not in line]
+        clean_text = "".join(lines)
+
+        target_header = "## ✅ Concluídos\n" if status_category.upper() == "COMPLETED" else "## 🔥 Em Andamento\n"
+
+        if target_header in clean_text:
+            new_text = clean_text.replace(target_header, f"{target_header}{project_entry}")
+            moc_path.write_text(new_text, encoding="utf-8")
+    except Exception as e:
+        logger.warning(f"Erro ao atualizar MOC_Projetos em {vault_path}: {e}")
+
+
+def _build_overview_content(project: Project, tasks: List[Task], docs: List[DocumentArtifact]) -> str:
+    """Gera o Markdown vivo para a nota 00_Overview.md."""
     now = datetime.now()
-    folder_name = f"{now.strftime('%Y%m%d_%H%M')}_{sanitize_filename(project.title)}"
-
-    # Monta os dados dos artefatos
     doc_map = {d.task_id: d for d in docs}
 
-    for v in vaults:
+    task_table = "| # | Tarefa | Especialista | Status | Entregável |\n|---|---|---|---|---|\n"
+    for idx, t in enumerate(tasks, 1):
+        clean_t_title = sanitize_filename(t.title)
+        file_stem = f"{idx:02d}_{clean_t_title}"
+        doc_obj = doc_map.get(t.id)
+
+        if t.status.value.lower() == "done" or doc_obj:
+            status_badge = "CONCLUÍDO ✅"
+            doc_link = f"[[{file_stem}]]"
+        elif t.status.value.lower() == "in_progress":
+            status_badge = "EM ANDAMENTO ⚙️"
+            doc_link = "_produzindo..._"
+        elif t.status.value.lower() == "failed":
+            status_badge = "FALHOU ❌"
+            doc_link = "_ver logs_"
+        else:
+            status_badge = "PENDENTE ⏳"
+            doc_link = "_na fila_"
+
+        task_table += f"| {idx} | {t.title} | {t.assigned_agent_name} | {status_badge} | {doc_link} |\n"
+
+    status_str = project.status.value.upper()
+    is_done = project.status.value.lower() == "completed"
+
+    overview_content = f"""---
+id: "{project.id}"
+titulo: "{project.title}"
+area: "{project.area_name}"
+gestor: "{project.manager_agent_name}"
+status: "{project.status.value}"
+data_criacao: "{now.strftime('%d/%m/%Y %H:%M')}"
+total_etapas: {len(tasks)}
+tags:
+  - projeto
+  - {"concluido" if is_done else "ativo"}
+  - oraculo
+  - {project.area_id}
+---
+
+# 🚀 Projeto: {project.title}
+
+> **Área**: {project.area_name}  
+> **Gestor Responsável**: {project.manager_agent_name}  
+> **Status**: {status_str} {"✅" if is_done else "⚙️"}  
+> **Última Atualização**: {now.strftime('%d/%m/%Y às %H:%M:%S')}  
+
+---
+
+## 📌 Descrição & Objetivo
+{project.description}
+
+---
+
+## 📋 Entregas & Tarefas (Atualização em Tempo Real)
+{task_table}
+
+---
+
+## 🔗 Navegação do Segundo Cérebro
+- **MOC Geral de Projetos**: [[MOC_Projetos]]
+- **Home**: [[Home]]
+
+_Orquestrado pelo Oráculo Harness & Sincronizado em Tempo Real no Obsidian._
+"""
+    return overview_content
+
+
+def sync_project_created(project: Project, tasks: List[Task]) -> List[Path]:
+    """
+    Gatilho de Tempo Real: Disparado no momento em que um projeto é criado/planejado.
+    Cria a pasta no Obsidian, gera 00_Overview.md com tarefas TODO e registra no MOC.
+    """
+    saved_paths = []
+    folder_name = get_project_vault_dir_name(project)
+    overview_text = _build_overview_content(project, tasks, [])
+
+    for v in get_vault_dirs():
         try:
             proj_dir = v / "04_Projetos_Ativos" / "Execucoes" / folder_name
             proj_dir.mkdir(parents=True, exist_ok=True)
 
-            # 1. Cria cada documento de entrega
-            created_notes = []
-            for idx, task in enumerate(tasks, 1):
-                clean_title = sanitize_filename(task.title)
-                file_name = f"{idx:02d}_{clean_title}.md"
-                doc_file = proj_dir / file_name
+            overview_file = proj_dir / "00_Overview.md"
+            overview_file.write_text(overview_text, encoding="utf-8")
+            saved_paths.append(overview_file)
 
-                doc_obj = doc_map.get(task.id)
-                body_content = doc_obj.content if doc_obj else (task.result_summary or "Sem conteúdo.")
+            update_moc_project(v, project, folder_name, "IN_PROGRESS")
+        except Exception as err:
+            logger.error(f"Erro no sync_project_created no vault {v}: {err}")
 
-                note_text = f"""---
+    logger.info(f"📁 [Obsidian Real-Time] Projeto '{project.title}' inicializado no Vault.")
+    return saved_paths
+
+
+def sync_task_completed(
+    project: Project,
+    task: Task,
+    doc: Optional[DocumentArtifact],
+    all_tasks: List[Task]
+) -> List[Path]:
+    """
+    Gatilho de Tempo Real: Disparado imediatamente após uma tarefa ser concluída por um especialista.
+    Grava o arquivo Markdown individual da entrega e atualiza o 00_Overview.md no mesmo instante!
+    """
+    saved_paths = []
+    folder_name = get_project_vault_dir_name(project)
+    now = datetime.now()
+
+    # Localiza o índice da tarefa
+    task_idx = 1
+    for idx, t in enumerate(all_tasks, 1):
+        if t.id == task.id:
+            task_idx = idx
+            break
+
+    clean_title = sanitize_filename(task.title)
+    file_name = f"{task_idx:02d}_{clean_title}.md"
+    body_content = doc.content if doc else (task.result_summary or "Sem conteúdo.")
+
+    task_note_text = f"""---
 id: "{task.id}"
 projeto: "[[00_Overview]]"
-etapa: {idx}
+etapa: {task_idx}
 especialista: "{task.assigned_agent_name}"
 especialista_id: "{task.assigned_agent_id}"
 status: "{task.status.value}"
@@ -181,7 +308,7 @@ tags:
 # 🎯 {task.title}
 
 > **Especialista Responsável**: {task.assigned_agent_name}  
-> **Status**: {task.status.value.upper()}  
+> **Status**: {task.status.value.upper()} ✅  
 > **Voltar para o Projeto**: [[00_Overview]]
 
 ---
@@ -189,100 +316,120 @@ tags:
 {body_content}
 
 ---
-_Gerado e validado automaticamente pelo Oráculo Agent Harness em {now.strftime('%d/%m/%Y às %H:%M')}._
+_Gerado e validado automaticamente pelo Oráculo Agent Harness em {now.strftime('%d/%m/%Y às %H:%M:%S')}._
 """
-                doc_file.write_text(note_text, encoding="utf-8")
-                created_notes.append({
-                    "idx": idx,
-                    "title": task.title,
-                    "file_stem": doc_file.stem,
-                    "agent": task.assigned_agent_name,
-                    "status": task.status.value
-                })
 
-            # 2. Cria a nota 00_Overview.md
+    for v in get_vault_dirs():
+        try:
+            proj_dir = v / "04_Projetos_Ativos" / "Execucoes" / folder_name
+            proj_dir.mkdir(parents=True, exist_ok=True)
+
+            # 1. Grava a nota individual da entrega
+            doc_file = proj_dir / file_name
+            doc_file.write_text(task_note_text, encoding="utf-8")
+            saved_paths.append(doc_file)
+
+            # 2. Atualiza imediatamente a nota viva 00_Overview.md
+            # Carrega todos os docs conhecidos até agora
             overview_file = proj_dir / "00_Overview.md"
-            task_table = "| # | Tarefa | Especialista | Status | Documento |\n|---|---|---|---|---|\n"
-            for n in created_notes:
-                task_table += f"| {n['idx']} | {n['title']} | {n['agent']} | {n['status'].upper()} | [[{n['file_stem']}]] |\n"
-
-            overview_content = f"""---
-id: "{project.id}"
-titulo: "{project.title}"
-area: "{project.area_name}"
-gestor: "{project.manager_agent_name}"
-status: "{project.status.value}"
-data_criacao: "{now.strftime('%d/%m/%Y %H:%M')}"
-total_etapas: {len(tasks)}
-tags:
-  - projeto
-  - concluido
-  - oraculo
-  - {project.area_id}
----
-
-# 🚀 Projeto: {project.title}
-
-> **Área**: {project.area_name}  
-> **Gestor Responsável**: {project.manager_agent_name}  
-> **Status**: {project.status.value.upper()} ✅  
-> **Data de Finalização**: {now.strftime('%d/%m/%Y às %H:%M')}  
-
----
-
-## 📌 Descrição & Objetivo
-{project.description}
-
----
-
-## 📋 Entregas & Artefatos Produzidos
-{task_table}
-
----
-
-## 🔗 Navegação do Segundo Cérebro
-- **MOC Geral de Projetos**: [[MOC_Projetos]]
-- **Home**: [[Home]]
-
-_Orquestrado pelo Oráculo Harness & Arquivado no Obsidian._
-"""
-            overview_file.write_text(overview_content, encoding="utf-8")
-            saved_paths.append(overview_file)
-
-            # 3. Atualiza o MOC_Projetos.md do Obsidian
-            moc_path = v / "04_Projetos_Ativos" / "MOC_Projetos.md"
-            if moc_path.exists():
-                try:
-                    moc_text = moc_path.read_text(encoding="utf-8")
-                    project_link = f"- [[{folder_name}/00_Overview|{project.title}]] — _{project.manager_agent_name} ({now.strftime('%d/%m/%Y')})_\n"
-                    if "## ✅ Concluídos" in moc_text and project_link not in moc_text:
-                        moc_text = moc_text.replace("## ✅ Concluídos\n", f"## ✅ Concluídos\n{project_link}")
-                        moc_path.write_text(moc_text, encoding="utf-8")
-                except Exception as e:
-                    logger.warning(f"Não foi possível atualizar MOC_Projetos: {e}")
+            active_docs = [doc] if doc else []
+            updated_overview = _build_overview_content(project, all_tasks, active_docs)
+            overview_file.write_text(updated_overview, encoding="utf-8")
 
         except Exception as err:
-            logger.error(f"Erro ao salvar projeto no vault {v}: {err}")
+            logger.error(f"Erro no sync_task_completed no vault {v}: {err}")
 
+    logger.info(f"📄 [Obsidian Real-Time] Tarefa [{task_idx}] '{task.title}' gravada no Vault.")
     return saved_paths
 
-def sync_vault_mirrors():
-    """Sincroniza os templates de Pipelines e os projetos entre o Vault primário e o mirror."""
-    vaults = get_vault_dirs()
-    if len(vaults) < 2:
-        return
-    
-    primary, mirror = vaults[0], vaults[1]
-    
-    # Copia Pipelines de um pro outro se faltar
-    for src, dst in [(primary, mirror), (mirror, primary)]:
-        p_src = src / "04_Projetos_Ativos" / "Pipelines"
-        p_dst = dst / "04_Projetos_Ativos" / "Pipelines"
-        if p_src.exists():
-            for f in p_src.glob("*.md"):
-                target = p_dst / f.name
-                if not target.exists() or f.stat().st_mtime > target.stat().st_mtime:
-                    try:
-                        shutil.copy2(f, target)
-                    except Exception:
-                        pass
+
+def sync_project_completed(
+    project: Project,
+    all_tasks: List[Task],
+    all_docs: List[DocumentArtifact]
+) -> List[Path]:
+    """
+    Gatilho de Tempo Real: Disparado quando todas as tarefas do projeto finalizam com sucesso.
+    Finaliza o 00_Overview.md com status COMPLETED e move o projeto para Concluídos no MOC.
+    """
+    saved_paths = []
+    folder_name = get_project_vault_dir_name(project)
+    overview_text = _build_overview_content(project, all_tasks, all_docs)
+
+    for v in get_vault_dirs():
+        try:
+            proj_dir = v / "04_Projetos_Ativos" / "Execucoes" / folder_name
+            proj_dir.mkdir(parents=True, exist_ok=True)
+
+            overview_file = proj_dir / "00_Overview.md"
+            overview_file.write_text(overview_text, encoding="utf-8")
+            saved_paths.append(overview_file)
+
+            update_moc_project(v, project, folder_name, "COMPLETED")
+        except Exception as err:
+            logger.error(f"Erro no sync_project_completed no vault {v}: {err}")
+
+    logger.info(f"🎉 [Obsidian Real-Time] Projeto '{project.title}' finalizado e arquivado no Vault.")
+    return saved_paths
+
+
+def save_project_to_vault(project: Project, tasks: List[Task], docs: List[DocumentArtifact]) -> List[Path]:
+    """Compatibilidade reversa: finaliza o projeto no cofre."""
+    return sync_project_completed(project, tasks, docs)
+
+
+def list_vault_projects() -> Dict[str, List[Dict[str, Any]]]:
+    """Lê todas as execuções de projetos arquivadas no Vault para visualização mobile/web."""
+    active_projects = []
+    completed_projects = []
+
+    primary = get_primary_vault()
+    exec_dir = primary / "04_Projetos_Ativos" / "Execucoes"
+
+    if exec_dir.exists():
+        for p_folder in exec_dir.iterdir():
+            if not p_folder.is_dir():
+                continue
+            overview_file = p_folder / "00_Overview.md"
+            if overview_file.exists():
+                try:
+                    content = overview_file.read_text(encoding="utf-8")
+                    info = {}
+                    if content.startswith("---"):
+                        fm = content.split("---", 2)[1]
+                        info = yaml.safe_load(fm) or {}
+                    
+                    p_entry = {
+                        "id": info.get("id", p_folder.name),
+                        "title": info.get("titulo", p_folder.name),
+                        "gestor": info.get("gestor", "Gestor"),
+                        "area": info.get("area", "Área"),
+                        "status": info.get("status", "unknown"),
+                        "folder": p_folder.name
+                    }
+                    if info.get("status", "").lower() == "completed":
+                        completed_projects.append(p_entry)
+                    else:
+                        active_projects.append(p_entry)
+                except Exception:
+                    continue
+
+    return {
+        "active": active_projects,
+        "completed": completed_projects
+    }
+
+
+def get_vault_project_overview(project_id: str) -> Optional[str]:
+    """Retorna o conteúdo Markdown da nota 00_Overview.md de um projeto específico."""
+    primary = get_primary_vault()
+    exec_dir = primary / "04_Projetos_Ativos" / "Execucoes"
+    if not exec_dir.exists():
+        return None
+
+    for p_folder in exec_dir.iterdir():
+        if p_folder.is_dir() and project_id.lower() in p_folder.name.lower():
+            overview_file = p_folder / "00_Overview.md"
+            if overview_file.exists():
+                return overview_file.read_text(encoding="utf-8")
+    return None

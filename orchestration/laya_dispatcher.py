@@ -394,3 +394,68 @@ class LayaDispatcher:
             logger.info(f"[LayaDispatcher] Pasta '{folder_name}' atribuída automaticamente a {best_agent.get('name')} (score: {score:.1f})")
             return best_agent
         return None
+
+    @staticmethod
+    def normalize_area_id(raw_area: str) -> str:
+        """Normaliza IDs de área dinâmicos (ex: area_marketing_6867 -> marketing)."""
+        raw = (raw_area or "").lower()
+        if "market" in raw or "mkt" in raw:
+            return "marketing"
+        if "sale" in raw or "venda" in raw:
+            return "sales"
+        if "tech" in raw or "ti" in raw or "desenv" in raw:
+            return "tech"
+        if "mind" in raw or "mente" in raw or "foco" in raw:
+            return "mind"
+        return "tech"
+
+    def route_project_demand(self, prompt: str) -> Dict[str, Any]:
+        """
+        Avalia uma demanda ou meta de projeto em < 3ms em memória RAM (System 1).
+        Determina a Área, o Gestor Executivo encarregado e os especialistas técnicos recomendados.
+        """
+        area_managers = {
+            "tech": ("gestor_tech_cto", "Thiago Tech", "Tecnologia & Desenvolvimento"),
+            "sales": ("gestor_sales_director", "Ricardo Monteiro", "Vendas & Negócios"),
+            "marketing": ("gestor_marketing", "Marcelo Marketing", "Marketing & Crescimento"),
+            "mind": ("gestor_mind_wellness", "Dra. Camila Reis", "Mente & Alta Performance"),
+        }
+
+        area_scores: Dict[str, float] = {k: 0.0 for k in area_managers.keys()}
+        area_best_agent: Dict[str, Tuple[Optional[Dict[str, Any]], float]] = {k: (None, 0.0) for k in area_managers.keys()}
+
+        for ag in self.agents_cache.values():
+            if ag.get("agent_type") == "tecnico":
+                ag_area = self.normalize_area_id(ag.get("area_id", "tech"))
+                score = self.calculate_agent_score(ag.get("id"), prompt)
+                if ag_area in area_scores:
+                    area_scores[ag_area] += score
+                    if score > area_best_agent[ag_area][1]:
+                        area_best_agent[ag_area] = (ag, score)
+
+        # Encontra a área com maior pontuação agregada
+        best_area = max(area_scores.keys(), key=lambda a: area_scores[a])
+        best_score = area_scores[best_area]
+        best_specialist, spec_score = area_best_agent[best_area]
+
+        # Se nenhum especialista atingiu score mínimo de competência técnica (1.8)
+        is_gap = spec_score < 1.8
+
+        mgr_id, mgr_name, area_title = area_managers.get(best_area, ("gestor_tech_cto", "Thiago Tech", "Tecnologia & Desenvolvimento"))
+
+        # Determina o ID original do gestor nos arquivos se existir
+        for ag in self.agents_cache.values():
+            if ag.get("agent_type") == "gestor" and self.normalize_area_id(ag.get("area_id")) == best_area:
+                mgr_id = ag.get("id")
+                mgr_name = ag.get("name")
+                break
+
+        return {
+            "area_id": best_area,
+            "area_name": area_title,
+            "manager_agent_id": mgr_id,
+            "manager_agent_name": mgr_name,
+            "lead_specialist": best_specialist,
+            "score": best_score,
+            "is_gap": is_gap
+        }

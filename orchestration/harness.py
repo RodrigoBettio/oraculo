@@ -67,6 +67,30 @@ class AgentHarness:
     def __init__(self):
         self.store = ProjectStore()
 
+    def _sync_created_project_to_vault(self, project: Project, tasks: List[Task]):
+        """Dispara inicialização do projeto no Obsidian em tempo real."""
+        try:
+            from orchestration.pipeline_loader import sync_project_created
+            sync_project_created(project, tasks)
+        except Exception as err:
+            logger.warning(f"Erro ao inicializar projeto no Obsidian: {err}")
+
+    def _sync_task_to_vault(self, project: Project, task: Task):
+        """Dispara sincronização em tempo real da tarefa no Obsidian."""
+        try:
+            from orchestration.pipeline_loader import sync_task_completed, sync_project_completed
+            all_tasks = self.store.list_tasks(project_id=project.id)
+            doc = None
+            if task.document_ids:
+                doc = self.store.get_document(task.document_ids[0])
+            sync_task_completed(project, task, doc, all_tasks)
+
+            if all(t.status == TaskStatus.DONE for t in all_tasks):
+                all_docs = self.store.list_documents(project_id=project.id)
+                sync_project_completed(project, all_tasks, all_docs)
+        except Exception as err:
+            logger.warning(f"Erro ao sincronizar tarefa com Obsidian: {err}")
+
     def _call_gemini_raw(self, prompt: str, system_instruction: Optional[str] = None) -> str:
         """Executa chamada resiliente ao Gemini utilizando o pool de chaves."""
         from google import genai
@@ -245,6 +269,7 @@ Por favor, implemente o código necessário no workspace atual, criando os arqui
 
         project.status = ProjectStatus.PLANNING
         self.store.save_project(project)
+        self._sync_created_project_to_vault(project, created_tasks)
         return created_tasks
 
     async def execute_task(self, task_id: str) -> Task:
@@ -399,6 +424,7 @@ Conteúdo completo, sem resumos preguiçosos, código executável, roteiro cena 
             else:
                 project.status = ProjectStatus.IN_PROGRESS
             self.store.save_project(project)
+            self._sync_task_to_vault(project, task)
 
             return task
 
@@ -560,6 +586,7 @@ Por favor, corrija o código de todos os arquivos afetados mantendo a formataç�
         else:
             project.status = ProjectStatus.IN_PROGRESS
         self.store.save_project(project)
+        self._sync_task_to_vault(project, task)
 
         return task
 
@@ -647,75 +674,61 @@ Por favor, implemente o código com excelência técnica."""
             created_tasks.append(saved_task)
 
         saved_proj.tasks = created_tasks
+        self._sync_created_project_to_vault(saved_proj, created_tasks)
         return saved_proj
 
     def auto_dispatch(self, user_prompt: str) -> Project:
         """Recebe um prompt universal em linguagem natural, verifica se existe pipeline no Obsidian Vault,
-        ou deduz a área dinamicamente com o Gestor."""
+        utiliza a LAYA (System 1) para triagem instantânea de área e gestor em < 3ms,
+        ou acusa GAP técnico em tempo real."""
+        # 1. Checa se bate com algum Playbook do Obsidian Vault (0ms de LLM)
         from orchestration.pipeline_loader import find_pipeline_for_prompt
         matched_pipeline, theme = find_pipeline_for_prompt(user_prompt)
         if matched_pipeline:
             logger.info(f"⚡ Pipeline '{matched_pipeline['id']}' identificada no Obsidian Vault para o prompt: '{user_prompt[:40]}'")
             return self.dispatch_pipeline(matched_pipeline, theme)
 
-        all_agents = get_all_agents()
-        areas = []
-        if settings.AREAS_DIR.exists():
-            for f in settings.AREAS_DIR.glob("*.json"):
-                try:
-                    with open(f, "r", encoding="utf-8") as fp:
-                        areas.append(json.load(fp))
-                except Exception:
-                    pass
+        # 2. Laya System 1: Triagem instantânea de Área e Gestor em memória RAM (< 3ms)
+        from orchestration.laya_dispatcher import LayaDispatcher
+        laya = LayaDispatcher()
+        laya_res = laya.route_project_demand(user_prompt)
 
-        areas_desc = chr(10).join([
-            f"- ID: '{a['id']}', Nome: '{a.get('name')}', Descrição: '{a.get('description', '')}'"
-            for a in areas
-        ])
+        area_id = laya_res["area_id"]
+        area_name = laya_res["area_name"]
+        manager_id = laya_res["manager_agent_id"]
+        manager_name = laya_res["manager_agent_name"]
 
-        classify_prompt = f"""Você é o Orquestrador Central do Oráculo.
-Um usuário enviou este comando ou objetivo de projeto:
-\"{user_prompt}\"
+        # 3. Detecção de GAP pela Laya (sem queimar tokens nem gerar alucinação)
+        if laya_res.get("is_gap"):
+            logger.info(f"🚨 GAP Técnico detectado pela Laya em < 3ms para: '{user_prompt[:40]}'")
+            project = Project(
+                title=f"Defasagem: {user_prompt.strip()[:40]}",
+                description=f"Demanda fora do escopo técnico da equipe: {user_prompt}\n\nRecomendação: {manager_name} deve registrar GAP de conhecimento.",
+                area_id=area_id,
+                area_name=area_name,
+                manager_agent_id=manager_id,
+                manager_agent_name=manager_name,
+                status=ProjectStatus.FAILED
+            )
+            saved_proj = self.store.save_project(project)
+            gap_task = Task(
+                project_id=saved_proj.id,
+                title="🚨 Registrar Defasagem Técnica (GAP)",
+                instruction=f"A Laya identificou que nenhum agente da equipe domina o assunto '{user_prompt}'. O gestor deve acionar contratação ou estudo.",
+                assigned_agent_id=manager_id,
+                assigned_agent_name=manager_name,
+                harness_type="oraculo_cloud",
+                status=TaskStatus.FAILED
+            )
+            saved_task = self.store.save_task(gap_task)
+            saved_proj.tasks = [saved_task]
+            self._sync_created_project_to_vault(saved_proj, [saved_task])
+            return saved_proj
 
-Analise o objetivo e escolha a melhor Área da Vida / Negócio para assumir esse projeto entre as disponíveis:
-{areas_desc}
-
-Responda estritamente em formato JSON:
-```json
-{{
-  \"title\": \"Um título curto e memorável para o projeto (máximo 6 palavras)\",
-  \"description\": \"Uma descrição expandida e detalhada do objetivo e dos entregáveis esperados\",
-  \"area_id\": \"o_id_da_area_escolhida\"
-}}
-```"""
-        raw = self._call_gemini_raw(classify_prompt)
-        json_text = raw
-        if "```json" in json_text:
-            json_text = json_text.split("```json")[1].split("```")[0].strip()
-        elif "```" in json_text:
-            json_text = json_text.split("```")[1].split("```")[0].strip()
-
-        try:
-            decision = json.loads(json_text)
-        except Exception:
-            decision = {
-                "title": user_prompt[:40],
-                "description": user_prompt,
-                "area_id": "tech" if areas else "geral"
-            }
-
-        area_id = decision.get("area_id", "tech")
-        area_obj = next((a for a in areas if a["id"] == area_id), None)
-        area_name = area_obj.get("name") if area_obj else "Geral"
-
-        # Acha o gestor da área
-        area_managers = [a for a in all_agents if a.get("area_id") == area_id and a.get("agent_type") == "gestor"]
-        manager_id = area_managers[0]["id"] if area_managers else (all_agents[0]["id"] if all_agents else None)
-        manager_name = area_managers[0]["name"] if area_managers else (all_agents[0]["name"] if all_agents else "Gestor")
-
+        # 4. Criação do Projeto com Gestor Roteado pela Laya
         project = Project(
-            title=decision.get("title", user_prompt[:40]),
-            description=decision.get("description", user_prompt),
+            title=user_prompt.strip()[:50],
+            description=user_prompt,
             area_id=area_id,
             area_name=area_name,
             manager_agent_id=manager_id,
@@ -724,7 +737,7 @@ Responda estritamente em formato JSON:
         )
         saved_proj = self.store.save_project(project)
 
-        # Decompõe em tarefas com o Gestor
+        # 5. O Gestor Executivo (LLM System 2) decompõe a meta técnica inédita
         tasks = self.plan_project(saved_proj.id)
         saved_proj.tasks = tasks
         return saved_proj

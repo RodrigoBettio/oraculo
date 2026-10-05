@@ -1072,6 +1072,12 @@ async def process_telegram_command(command_text: str) -> str:
         cmd_lower = "/contratar"
     elif cmd_lower.startswith("/c "):
         cmd_lower = "/contratar" + cmd_lower[2:]
+    elif cmd_lower == "/p":
+        cmd_lower = "/projetos"
+    elif cmd_lower.startswith("/p "):
+        cmd_lower = "/projetos" + cmd_lower[2:]
+    elif cmd_lower == "/v" or cmd_lower == "/vault":
+        cmd_lower = "/projetos"
 
     # === 0.1. Roteamento Direto para Agente Especialista ===
     cmd_tokens = cmd.split(maxsplit=1)
@@ -1138,6 +1144,48 @@ async def process_telegram_command(command_text: str) -> str:
             logger.error(f"Erro no auto_dispatch do Telegram: {e}")
             return f"❌ Erro ao disparar fluxo via Harness: {e}"
 
+    # === 0.3. Consulta de Projetos do Obsidian Vault em Tempo Real ===
+    if cmd_lower.startswith(("/projetos", "/vault")):
+        from orchestration.pipeline_loader import list_vault_projects
+        p_data = list_vault_projects()
+        active = p_data.get("active", [])
+        completed = p_data.get("completed", [])
+
+        txt = "📂 **COFRE OBSIDIAN — PROJETOS EM TEMPO REAL**\n"
+        txt += "━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+
+        if active:
+            txt += f"🔥 **EM ANDAMENTO (`{len(active)}`):**\n"
+            for p in active:
+                txt += f"• `{p['id']}` — **{p['title']}**\n"
+                txt += f"   👑 _{p['gestor']}_ | Área: _{p['area']}_\n"
+            txt += "\n"
+        else:
+            txt += "🔥 **EM ANDAMENTO**: _Nenhum projeto rodando agora_\n\n"
+
+        if completed:
+            txt += f"✅ **CONCLUÍDOS RECENTES (`{len(completed)}`):**\n"
+            for p in completed[:5]:
+                txt += f"• `{p['id']}` — **{p['title']}**\n"
+                txt += f"   👑 _{p['gestor']}_\n"
+            txt += "\n"
+
+        txt += "💡 _Envie `/ver <id_do_projeto>` para ler o Overview e links das notas direto pelo celular!_"
+        return txt
+
+    if cmd_lower.startswith("/ver"):
+        parts = cmd.split(maxsplit=1)
+        if len(parts) < 2:
+            return "💡 Uso: `/ver <id_do_projeto>` (ex: `/ver proj_24fddb3b`)"
+        p_id = parts[1].strip()
+        from orchestration.pipeline_loader import get_vault_project_overview
+        ov_text = get_vault_project_overview(p_id)
+        if not ov_text:
+            return f"⚠️ Projeto `{p_id}` não encontrado no Cofre Obsidian. Envie `/p` para listar os projetos."
+        if len(ov_text) > 3500:
+            ov_text = ov_text[:3500] + "\n\n_... (Nota completa arquivada no Obsidian Vault)_"
+        return f"📄 **NOTA DO OBSIDIAN VAULT (`{p_id}`)**\n\n{ov_text}"
+
     # 1. Menu Principal & Ajuda Executiva
     if cmd_lower == "/menu" or cmd_lower in ["/start", "/ajuda", "/help"]:
         group_id = get_cockpit_group_id()
@@ -1151,11 +1199,13 @@ async def process_telegram_command(command_text: str) -> str:
             "• `/s` | `/status` ➔ Workers, fila & tokens\n"
             "• `/r` | `/relatorio` ➔ Relatório executivo do dia\n"
             "• `/a` | `/agentes` ➔ Organograma & carga horária\n"
+            "• `/p` | `/projetos` ➔ Projetos no Obsidian Vault em tempo real\n"
             "• `/d` | `/drive` ➔ Navegador de pastas do Google Drive\n"
             "• `/e` | `/estudar` ➔ Enfileirar curso do Drive\n"
             "• `/t` | `/tarefa` ➔ Backlog de tarefas executivas\n"
             "• `/g` | `/gaps` ➔ Relatório de defasagens (Tech, Mkt, Vendas, Mente)\n"
             "• `/c` | `/contratar` ➔ Provisionar novo especialista\n"
+            "• `/fluxo` ➔ Catálogo de Pipelines do Obsidian\n"
             "• `/dev <prompt>` ➔ Instrução de desenvolvimento remoto\n\n"
             "👥 **CHAMADA DIRETA DE AGENTES**:\n"
             "• `/thiago <pergunta>` ➔ Thiago Tech (VP de TI)\n"
