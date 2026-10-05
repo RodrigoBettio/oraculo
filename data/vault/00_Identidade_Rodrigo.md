@@ -1,60 +1,82 @@
 # 👤 Identidade Central & Bússola Estratégica — Rodrigo Bettio Jr.
 
-> **Status**: Ativo & Operacional  
+> **Status**: SPRINT CRÍTICO DE TRANSIÇÃO (17 DIAS PARA O DIA D)  
 > **Perfil**: 20 anos (Aniversário em 01/11) | Casado | Solo-Founder & Arquiteto de Software/IA  
+> **Formação**: Cursando **Machine Learning na FIAP** (Formatura prevista: Final de 2027)  
 > **Assistente Pessoal**: Antigravity (Chief of Staff Estratégico & Copiloto Proativo)  
-> **Transição Crítica**: Saída do emprego na metade de **Outubro/2026** (Janela de ~20 dias para destravar caixa e recorrência)  
-> **Última Atualização**: 26/09/2026  
+> **Data Fatal de Saída**: **22 de Outubro de 2026** (Janela de 17 dias)  
+> **Custo de Vida Essencial (Burn Rate)**: **R$ 2.000 / mês**  
+> **Reserva de Emergência**: **R$ 0,00** (Foco absoluto em caixa imediato)  
+> **Última Atualização**: 05/10/2026  
 
 ---
 
-## 🧭 1. Momento de Vida & Transição de Carreira
-- **Fase Atual**: Emprego atual até meados de outubro de 2026.
-- **Estratégia de Transição**: Destravar imediatamente os projetos represados (R$ 10k a R$ 15k de caixa represado) e estruturar contratos recorrentes (manutenção/nuvem de R$ 500 a R$ 1.500/mês). Se o caixa e a esteira de outbound validarem nos próximos 30-45 dias, dedicação total ao negócio próprio; caso contrário, busca-se um trabalho remoto/flexível estratégico como rede de segurança.
-- **Modelo Operacional**: **Empresa Enxuta e Altamente Lucrativa (One-Person / Micro-Team impulsionado por IA)**.
-  - Alavancagem máxima do ecossistema Oráculo para desenvolvimento, prospecção e suporte, mantendo estrutura enxuta e margem líquida superior a 70%.
+## 🚨 1. Diagnóstico do Momento de Vida: O Sprint dos 17 Dias
+
+- **Fato Consumado**: Saída irrevogável do emprego atual no dia **22/10/2026**.
+- **Ponto de Equilíbrio (Break-Even)**: **R$ 2.000 / mês**. Cobrindo isso, todas as contas da casa com a esposa estão 100% pagas.
+- **Realidade Financeira**: Com zero reserva, novembro precisa estar pago com dinheiro que entra entre 05/10 e 31/10.
+- **Estratégia de Duplo Trilho (Segurança + Alavancagem)**:
+  1. **Trilho 1 (Caixa Imediato / Rede de Proteção)**: Radar e candidaturas ativas para vagas remotas de Desenvolvedor / Automação IA (PJ/CLT de R$ 3k a R$ 6k) para travar a base com estabilidade. (LinkedIn 100% pronto, atualizar currículo).
+  2. **Trilho 2 (Negócio Próprio & Freelas)**: Captação ativa com posicionamento **"Ontologia Tech"** no Instagram com o método **Sexy Canvas** (André Diamand) + fechamento de novos projetos rápidos.
 - **Valores Intransponíveis**:
-  - **Família & Casamento**: Preservar o tempo com a esposa e rituais familiares de fim de semana.
-  - **Liberdade Geográfica e de Tempo**: Controle total sobre a própria agenda e autonomia de trabalho.
-  - **Previsibilidade Financeira**: Construção de receita recorrente mensal (MRR).
-  - **Paz Mental & Clareza**: Sem sobrecarga desnecessária ou gerência pesada de pessoas.
+  - **Família & Casamento**: 
+    - **Todo dia 21**: Jantar / saída comemorativa com a esposa (ritual sagrado e intocável).
+    - Finais de semana: Atividades em casal e descompressão.
+  - **Integridade Técnica**: Fazer entregas impecáveis (ex: deploy da automação de R$ 12k já paga).
+  - **Execução Implacável**: Eliminar qualquer tarefa que não gere caixa ou não garanta a sobrevivência nos próximos 17 dias.
 
 ---
 
-## 🎯 2. Metas & Objetivos (1 a 3 Anos)
-- **Faturamento Alvo**: **R$ 30.000 a R$ 80.000 / mês**.
-- **Composição da Receita**:
-  - *Setup / Implantação*: R$ 3.000 a R$ 8.000 por projeto.
-  - *Recorrência (MRR)*: R$ 500 a R$ 2.500/mês por cliente (manutenção, nuvem, evolução de agentes e suporte).
-- **Meta de Clientes**: 15 a 30 clientes ativos na carteira para atingir a meta máxima com alta qualidade de entrega.
+## 🎯 2. Metas & Prazos Críticos
+
+| Horizonte | Meta Financeira | Objetivo Principal | Ação Chave |
+| :--- | :---: | :--- | :--- |
+| **Imediato (até 22/10)** | **R$ 2.000 a R$ 4.000** | Sobrevivência & Garantir Novembro | Fechar 1 novo freela OU aprovação em vaga remota |
+| **Curto Prazo (30-60 dias)** | **R$ 5.000 a R$ 10.000/mês** | Construção da 1ª Reserva de Emergência | 3 meses de custo de vida guardados (R$ 6.000) |
+| **Médio Prazo (1 a 3 anos)** | **R$ 30.000 a R$ 80.000/mês** | Escala com Micro-Empresa de IA | 15 a 30 contratos recorrentes (MRR) + setups |
 
 ---
 
-## 💼 3. Estratégia de Produto & Vendas ("Cavalo de Troia Inovador")
-- **O Gancho de Atração (Jordan Belford)**: Demonstrações impactantes de IA (agentes autônomos, vídeos/avatares inteligentes) que geram curiosidade e diferenciam o Rodrigo de agências comuns.
-- **A Entrega de Valor Real & Recorrência**: Eficiência operacional, CRM integrado no WhatsApp e automações que reduzem custos e organizam o fluxo da empresa cliente.
-- **Canal de Aquisição**: **Outbound Cirúrgico B2B com Demo Inovadora de 1 Minuto**.
-  - O Oráculo mapeia empresas e gera a demonstração em vídeo.
-  - Abordagem direta (Cold Email/WhatsApp) sem expor a imagem pessoal nas redes sociais.
-  - Fechamento em Call objetiva de 15 minutos com o Rodrigo.
+## 💼 3. Status Real dos Projetos & Clientes (Outubro/2026)
+
+- **1. Site para Artista (R$ 3.000 recebidos)**:
+  - *Status*: Reunião agendada para esta semana.
+  - *Objetivo na reunião*: Alinhar deploy final no domínio oficial e travar proposta de suporte/manutenção mensal (**R$ 100 a R$ 200/mês**).
+- **2. Automação de Posts / Scraping (R$ 12.000 recebidos)**:
+  - *Status*: Cliente enviou credenciais e `.env`. Falta o deploy em nuvem.
+  - *Próximo passo*: Revisar código em chat dedicado, subir na nuvem e entregar funcionando 100%. Pedir depoimento em vídeo e indicação de novos clientes.
+- **3. Gestão Logística (R$ 1.750 pendente)**:
+  - *Status*: Congelado pelo cliente por tempo indeterminado. Retirado da previsão imediata de caixa.
+- **4. Oficina do Tio (~R$ 2.500)**:
+  - *Status*: Tio em crise financeira; projeto postergado. Retirado da previsão imediata de caixa.
+- **5. Nova Frente: Ontologia Tech & Instagram Sexy Canvas**:
+  - *Conceito*: Posicionamento de "Diagnóstico de Tecnologia & IA" (Ontologia Tech) para empresas descobrirem gargalos operacionais e implantarem automação.
+  - *Canal*: Perfil magnético no Instagram aplicando Sexy Canvas (Curiosidade, Ganância, Preguiça/Eficiência, Segurança).
+- **6. Roadmap Comercial**: Número de WhatsApp com o agente **Jordan Belford** para atender e pré-qualificar leads automaticamente.
 
 ---
 
-## ⏰ 4. Rotina Diária & Ritmo de Foco (Segunda a Sexta)
-- **08:00 - 09:00**: Despertar, troca de roupa, café e deslocamento (ou início do Home Office nos 2 dias remotos).
-- **09:00 - 15:00**: Trabalho formal (até meados de outubro).
-- **15:00 - 19:00 [BLOCO DE OURO / 4 HORAS]**: Janela crítica de **Deep Work** para projetos de software, deploys e prospecção do negócio próprio.
-- **19:00 - 23:00**: Faculdade (às vezes libera mais cedo).
-- **23:00 - 00:00**: Chegada em casa, jantar com a esposa, alinhamento do dia seguinte e descompressão.
-- **00:00**: Descanso / Sono reparador.
-- **Finais de Semana**: Preparação de marmitas da semana (saúde e economia de tempo), compromissos em casal, visitas a parentes e planejamento estratégico sem estresse.
+## ⏰ 4. Rotina Diária & Ritmo Operacional
+
+- **Regime Semanal de Trabalho**:
+  - **Segunda, Terça, Quinta**: Presencial no trabalho formal (09:00 - 15:00).
+  - **Quarta e Sexta**: **Home Office** (economia de deslocamento e maior energia mental).
+- **08:00 - 08:30**: Despertar, café e leitura das **5 Prioridades do Dia** enviadas pelo Oráculo.
+- **09:00 - 15:00**: Trabalho formal (cumprimento profissional até o dia 22/10).
+- **15:00 - 19:00 [BLOCO DE OURO / 4 HORAS CRÍTICAS]**:
+  - **Foco 1**: Atualização do currículo e 3 a 5 candidaturas estratégicas para vagas remotas de Dev/IA.
+  - **Foco 2**: Deploys e suporte aos clientes existentes (Scraping & Artista).
+  - **Foco 3**: Estruturação da Ontologia Tech e posts virais do Instagram.
+- **19:00 - 23:00**: Faculdade (FIAP - Machine Learning). Sem entregas prioritárias no momento.
+- **23:00 - 00:00**: Jantar com a esposa, descompressão e descanso.
 
 ---
 
-## 🤖 5. Papel dos Agentes e do Assistente Pessoal
-- **Antigravity (Assistente Pessoal / Chief of Staff)**: Cobrar foco, filtrar ruídos, sintetizar prioridades, estruturar o Obsidian e manter o Rodrigo focado no que gera R$ 30k-80k/mês.
-- **Helena Torres (Tech/CTO)**: Garantir excelência arquitetural e padrões limpos de código.
-- **Alex Vance & Bruno**: Execução e implementação de sistemas e IA.
-- **Ricardo Monteiro (Diretor Comercial)**: Diagnóstico de mercado, esteiras de vendas e governança comercial.
-- **Jordan Belford (Closer)**: Fechamento de reuniões, quebra de objeções e refinamento de propostas de alto valor.
-- **Dra. Camila Reis & Jim Kwik**: Foco cognitivo, clareza mental e prevenção de burnout.
+## 🤖 5. Papel dos Agentes na Operação de Guerra
+
+- **Antigravity (Chief of Staff)**: Guardião do foco. Disparar diariamente as **5 prioridades** no Telegram/Obsidian e cobrar execução sem desvios.
+- **Marcelo Marketing & André Diamand**: Arquitetura do perfil de Ontologia Tech no Instagram e identificação de tendências virais.
+- **Jordan Belford**: Closer e roteirista comercial (futuro agente no WhatsApp).
+- **Alex Vance & Bruno**: Revisão rápida de código e auxílio nos deploys dos clientes.
+- **Dra. Camila Reis**: Clareza mental, ritmo de sono e equilíbrio emocional durante a transição.
