@@ -212,7 +212,7 @@ async def execute_or_clarify_intent(text: str) -> Dict[str, Any]:
     elif intent == "CONSULT":
         agent_id = parsed.get("target_agent_id") or "gestor_tech_cto"
         from orchestration.agent_delegator import agent_delegator
-        response = agent_delegator.consult(agent_id=agent_id, user_query=text)
+        response = agent_delegator.consult(agent_id, text)
         return {
             "status": "executed",
             "response_text": response
@@ -269,7 +269,7 @@ async def execute_or_clarify_intent(text: str) -> Dict[str, Any]:
         target_id = parsed.get("target_agent_id")
         if target_id:
             from orchestration.agent_delegator import agent_delegator
-            ans = agent_delegator.consult(agent_id=target_id, user_query=text)
+            ans = agent_delegator.consult(target_id, text)
             return {"status": "executed", "response_text": ans}
         
         # Resposta Maestro Oráculo Central

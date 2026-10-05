@@ -82,6 +82,366 @@ def get_action_proposal_keyboard(action_id: str):
     ]
 
 
+def get_agents_menu_keyboard() -> list:
+    """Gera teclado inline em grade com todos os especialistas e gestores para toque rápido."""
+    return [
+        [
+            Button.inline("💻 Thiago Tech", data=b"action:agent_card:thiago"),
+            Button.inline("⚡ Alex Vance", data=b"action:agent_card:vance")
+        ],
+        [
+            Button.inline("🤖 Jordan Belford", data=b"action:agent_card:jordan"),
+            Button.inline("🎯 Sobral (Tráfego)", data=b"action:agent_card:sobral")
+        ],
+        [
+            Button.inline("💎 André Diamand", data=b"action:agent_card:diamand"),
+            Button.inline("🧪 Quinn QA", data=b"action:agent_card:quinn")
+        ],
+        [
+            Button.inline("☁️ Cláudio Cloud", data=b"action:agent_card:claudio"),
+            Button.inline("⚙️ Bruno Codex", data=b"action:agent_card:bruno")
+        ],
+        [
+            Button.inline("💼 Victor Vendas", data=b"action:agent_card:victor"),
+            Button.inline("🚀 Marcelo Mkt", data=b"action:agent_card:marcelo")
+        ],
+        [
+            Button.inline("🧠 Marina Mente", data=b"action:agent_card:marina"),
+            Button.inline("⚡ Thales (N8N)", data=b"action:agent_card:thales")
+        ],
+        [
+            Button.inline("🔮 Oráculo Central", data=b"action:agent_card:oraculo"),
+            Button.inline("🔙 Menu Principal", data=b"action:main_menu")
+        ]
+    ]
+
+
+# Mapeamento unificado de comandos de barra e menções para os IDs canônicos dos agentes
+AGENT_COMMAND_MAP = {
+    # Gestores Executivos (C-Level)
+    "thiago": "gestor_tech_cto",
+    "tiago": "gestor_tech_cto",
+    "tech": "gestor_tech_cto",
+    "helena": "gestor_tech_cto",
+    "marcelo": "gestor_marketing",
+    "marketing": "gestor_marketing",
+    "mkt": "gestor_marketing",
+    "growth": "gestor_marketing",
+    "victor": "gestor_sales_director",
+    "vendas": "gestor_sales_director",
+    "ricardo": "gestor_sales_director",
+    "marina": "gestor_mind_wellness",
+    "mente": "gestor_mind_wellness",
+    "camila": "gestor_mind_wellness",
+    # Especialistas Técnicos
+    "vance": "agent_alex_vance",
+    "alex": "agent_alex_vance",
+    "alex_vance": "agent_alex_vance",
+    "jordan": "agent_jordan_belford_5567",
+    "belford": "agent_jordan_belford_5567",
+    "diamand": "agent_andre_diamand_1281",
+    "andre": "agent_andre_diamand_1281",
+    "quinn": "agent_quinn_qa_7781",
+    "qa": "agent_quinn_qa_7781",
+    "claudio": "agent_claudio_cloud_4421",
+    "cloud": "agent_claudio_cloud_4421",
+    "devops": "agent_claudio_cloud_4421",
+    "sre": "agent_claudio_cloud_4421",
+    "bruno": "agent_claude_code",
+    "claude": "agent_claude_code",
+    "codex": "agent_claude_code",
+    "sobral": "agent_sobral_marketing",
+    "pedro": "agent_sobral_marketing",
+    "trafego": "agent_sobral_marketing",
+    "thales": "agent_thales_automations",
+    "automacao": "agent_thales_automations",
+    "n8n": "agent_thales_automations",
+    "link": "agent_link_4211",
+    "monge": "agent_o_monge_8324",
+    "jim": "agent_jim_kwik",
+    "kwik": "agent_jim_kwik",
+    "jimkwik": "agent_jim_kwik",
+    "ana": "agent_ana_5058",
+    "sofia": "agent_sofia_sdr",
+    "sdr": "agent_sofia_sdr",
+    "caio": "agent_caio_copywriter",
+    "copy": "agent_caio_copywriter",
+    "copywriter": "agent_caio_copywriter",
+    "felipe": "agent_felipe_followup",
+    "followup": "agent_felipe_followup",
+    "pedro_fullstack": "agent_pedro_fullstack",
+    "fullstack": "agent_pedro_fullstack",
+    # Maestro Central
+    "oraculo": "oraculo",
+    "maestro": "oraculo",
+    "central": "oraculo",
+}
+
+AGENT_PROMPT_EXAMPLES = {
+    "thiago": [
+        "Como priorizar o roadmap técnico deste trimestre?",
+        "Qual arquitetura você recomenda para nosso backend assíncrono?",
+        "Como está o diagnóstico de GAPs da equipe de TI?"
+    ],
+    "vance": [
+        "Como otimizar a latência da API Gemini com streaming?",
+        "Qual pattern usar para workers concorrentes em Python?",
+        "Como estruturar a injeção de dependências no FastAPI?"
+    ],
+    "jordan": [
+        "Como contornar a objeção clássica de 'está muito caro'?",
+        "Roteiro de pitch para fechamento de contrato de software em 15min",
+        "Como aplicar o Straight Line System para fechar no primeiro contato?"
+    ],
+    "sobral": [
+        "Como estruturar a campanha de captação no Meta Ads?",
+        "Qual métrica analisar antes de escalar o orçamento de um anúncio?",
+        "Como diminuir meu CPL mantendo a qualidade dos leads?"
+    ],
+    "diamand": [
+        "Como aplicar os 7 Pecados Capitais no posicionamento deste app?",
+        "O que falta na nossa oferta para torná-la irresistível?",
+        "Como gerar desejo visceral em vez de vender apenas recursos técnicos?"
+    ],
+    "quinn": [
+        "Como estruturar testes E2E com Playwright para fluxo crítico?",
+        "Qual a melhor estratégia de mocks para isolar testes unitários?",
+        "Como implementar o ciclo Red-Green-Refactor no novo módulo?"
+    ],
+    "claudio": [
+        "Como fazer hardening de segurança em um container Docker para produção?",
+        "Melhores práticas de rede VPC e firewall no Google Cloud Platform",
+        "Como estruturar métricas SRE e alertas de disponibilidade da VM?"
+    ],
+    "bruno": [
+        "Como refatorar este script em Python com tipagem estrita e uv?",
+        "Escreva uma rotina para manipulação de arquivos assíncrona",
+        "Como resolver condição de corrida em worker paralelo?"
+    ],
+    "thales": [
+        "Como desenhar um fluxo no N8N com tratamento de erros e retry?",
+        "Como receber webhooks e salvar direto no banco de dados?",
+        "Qual a melhor estratégia para automações de negócio sem código?"
+    ],
+    "marcelo": [
+        "Qual a estratégia de aquisição e growth para este mês?",
+        "Como alinhar as métricas de tráfego (CAC/ROAS) com o time de vendas?",
+        "Como estruturar nosso funil de conversão para escala?"
+    ],
+    "victor": [
+        "Como estruturar a cadência de prospecção outbound da equipe?",
+        "Qual o melhor critério de qualificação BANT para nossas reuniões?",
+        "Como acelerar a passagem de leads de SDR para Closer?"
+    ],
+    "marina": [
+        "Como organizar blocos de trabalho profundo (Deep Work) no dia?",
+        "Protocolo para recuperar energia e foco no período da tarde",
+        "Como manter alta performance mental sem risco de burnout?"
+    ],
+    "link": [
+        "Como otimizar o perfil do LinkedIn para atrair decisores de tecnologia?",
+        "Qual estrutura de postagem gera mais autoridade e engajamento?",
+        "Como prospectar clientes no LinkedIn de forma elegante e não invasiva?"
+    ],
+    "monge": [
+        "Como cultivar serenidade e clareza mental sob alta pressão?",
+        "Qual princípio aplicar para tomar decisões estratégicas difíceis?",
+        "Como manter o foco e não se deixar levar pelo ruído do dia a dia?"
+    ],
+    "jim": [
+        "Como acelerar o aprendizado e retenção de novas tecnologias?",
+        "Qual método usar para ler e absorver livros técnicos rapidamente?",
+        "Como treinar a memória de trabalho para arquitetura de software?"
+    ],
+    "ana": [
+        "Qual a linha editorial ideal para redes sociais esta semana?",
+        "Como transformar um insight técnico em um post magnético?",
+        "Como criar carrosséis que gerem compartilhamento orgânico?"
+    ],
+    "sofia": [
+        "Como qualificar um lead corporativo usando a metodologia BANT?",
+        "Qual roteiro de mensagem de prospecção fria tem maior resposta?",
+        "Como descobrir quem é o decisor correto dentro de uma grande empresa?"
+    ],
+    "caio": [
+        "Escreva uma headline de alto impacto para a página de vendas",
+        "Como estruturar uma carta de vendas (VSL) de alta conversão?",
+        "Que gatilhos mentais aceleram a decisão de compra no e-mail?"
+    ],
+    "felipe": [
+        "Como montar uma cadência de follow-up multitoque sem parecer chato?",
+        "Mensagem de WhatsApp para resgatar uma proposta que esfriou",
+        "O que enviar quando o cliente visualizou e não respondeu há 48h?"
+    ],
+    "oraculo": [
+        "Qual o panorama geral de toda a operação de IA e especialistas?",
+        "Como está o progresso de estudos no Google Drive?",
+        "Quais as principais prioridades recomendadas para o ecossistema hoje?"
+    ]
+}
+
+
+def format_agent_card(agent_identifier: str) -> str:
+    """Gera um cartão visual mobile de apresentação do agente com atalhos de consulta."""
+    clean_id = str(agent_identifier).replace("@", "").strip().lower()
+
+    if clean_id in ["oraculo", "central", "maestro"]:
+        samples = AGENT_PROMPT_EXAMPLES.get("oraculo", [])
+        samples_txt = "\n".join([f"• `/{clean_id} {s}`" for s in samples])
+        return (
+            "🔮 **ORÁCULO — MAESTRO & CENTRAL OPERACIONAL**\n\n"
+            "Supervisão holística de todo o ecossistema de inteligência artificial, "
+            "esteira de estudos, coordenação de gestores e governança autônoma.\n\n"
+            "💡 **Perguntas Rápidas (Toque para copiar ou enviar)**:\n"
+            f"{samples_txt}\n\n"
+            f"👉 _Para consultar, digite:_ `/{clean_id} <sua dúvida>`"
+        )
+
+    from orchestration.agent_delegator import agent_delegator
+    ag = agent_delegator.find_agent(clean_id)
+    if not ag:
+        return f"❌ Especialista `{clean_id}` não encontrado no organograma."
+
+    name = ag.get("name", "Especialista")
+    avatar = ag.get("avatar", "🧠")
+    role = ag.get("role", "Consultor")
+    agent_type = ag.get("agent_type", "tecnico")
+    hours = ag.get("total_hours_studied", 0.0)
+    videos = ag.get("total_videos_studied", 0)
+    topics = ag.get("topics_mastered", [])[:4]
+
+    short_cmd = clean_id
+    for k, v in AGENT_COMMAND_MAP.items():
+        if v == ag.get("id"):
+            short_cmd = k
+            break
+
+    header = "👑 **LIDERANÇA EXECUTIVA (C-LEVEL)**" if agent_type == "gestor" else "🎓 **ESPECIALISTA TÉCNICO**"
+
+    card = (
+        f"{header}\n\n"
+        f"{avatar} **{name}**\n"
+        f"💼 _{role}_\n\n"
+    )
+
+    if agent_type != "gestor":
+        seniority = ag.get("seniority", {})
+        badge = seniority.get("badge", "🥉")
+        rank = seniority.get("rank", "Júnior")
+        card += (
+            f"📚 **Bagagem no Drive**:\n"
+            f"• `{hours:.1f}h` estudadas | `{videos}` aulas | {badge} **{rank}**\n\n"
+        )
+    else:
+        card += (
+            f"🎯 **Papel Estratégico**:\n"
+            f"• Liderança executiva, distribuição inteligente de tarefas e síntese de impacto para o Rodrigo.\n\n"
+        )
+
+    if topics:
+        topics_str = ", ".join(topics)
+        card += f"🧠 **Domínios**: {topics_str}\n\n"
+
+    samples = AGENT_PROMPT_EXAMPLES.get(short_cmd, [
+        "Qual sua recomendação para nosso projeto?",
+        "Como você abordaria esse desafio?",
+        "Quais as melhores práticas no seu domínio?"
+    ])
+    samples_txt = "\n".join([f"• `/{short_cmd} {s}`" for s in samples[:3]])
+
+    card += (
+        f"━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"💡 **Exemplos de Consulta Rápida**:\n"
+        f"{samples_txt}\n\n"
+        f"👉 _Envie no chat:_ `/{short_cmd} <sua dúvida>`"
+    )
+    return card
+
+
+def extract_agent_and_query(text: str) -> Optional[tuple]:
+    """
+    Detecta se o texto é direcionado a um agente específico.
+    Suporta:
+    - Comandos diretos: /jordan <dúvida> ou /jordan
+    - Menções: @jordan <dúvida>
+    - Prefixos nominais: jordan, <dúvida> ou jordan: <dúvida> ou jordan <dúvida>
+    Retorna (agent_id, query) se detectado, ou None.
+    """
+    raw = text.strip()
+    if not raw:
+        return None
+
+    # Caso 1: Comando iniciado com / (ex: /jordan ou /jordan como fechar)
+    if raw.startswith("/"):
+        parts = raw.split(maxsplit=1)
+        cmd_word = parts[0][1:].lower()
+        if cmd_word in AGENT_COMMAND_MAP:
+            query = parts[1].strip() if len(parts) > 1 else ""
+            return (AGENT_COMMAND_MAP[cmd_word], query)
+
+    # Caso 2: Menção explícita @agente (ex: @jordan como contornar preço)
+    m_mention = re.search(r"@([a-zA-Z0-9_]+)", raw)
+    if m_mention:
+        tag = m_mention.group(1).lower()
+        if tag in AGENT_COMMAND_MAP:
+            clean_q = re.sub(r"@" + re.escape(m_mention.group(1)), "", raw, flags=re.IGNORECASE).strip()
+            return (AGENT_COMMAND_MAP[tag], clean_q)
+
+    # Caso 3: Prefixo por nome com pontuação (ex: jordan, como fechar? ou thiago: qual arquitetura?)
+    m_prefix = re.match(r"^([a-zA-Z0-9_]{2,15})[:,\-]\s*(.+)$", raw, re.DOTALL)
+    if m_prefix:
+        name_token = m_prefix.group(1).lower()
+        if name_token in AGENT_COMMAND_MAP:
+            return (AGENT_COMMAND_MAP[name_token], m_prefix.group(2).strip())
+
+    return None
+
+
+async def send_safe_reply(event, text: str, buttons=None):
+    """
+    Envia resposta garantindo que nunca estoure o limite de 4096 caracteres do Telegram.
+    Se o texto for maior que 4000 caracteres, divide respeitando parágrafos e envia sequencialmente.
+    """
+    MAX_LEN = 4000
+    if not text:
+        return None
+    if len(text) <= MAX_LEN:
+        sent = await event.reply(text, buttons=buttons)
+        _record_sent_id(sent)
+        return sent
+
+    chunks = []
+    current_chunk = ""
+    for paragraph in text.split("\n\n"):
+        candidate = (current_chunk + "\n\n" + paragraph) if current_chunk else paragraph
+        if len(candidate) < MAX_LEN:
+            current_chunk = candidate
+        else:
+            if current_chunk:
+                chunks.append(current_chunk)
+            if len(paragraph) > MAX_LEN:
+                for line in paragraph.split("\n"):
+                    cand_line = (current_chunk + "\n" + line) if current_chunk else line
+                    if len(cand_line) < MAX_LEN:
+                        current_chunk = cand_line
+                    else:
+                        if current_chunk:
+                            chunks.append(current_chunk)
+                        current_chunk = line
+            else:
+                current_chunk = paragraph
+    if current_chunk:
+        chunks.append(current_chunk)
+
+    last_sent = None
+    for i, chk in enumerate(chunks):
+        btns = buttons if i == len(chunks) - 1 else None
+        last_sent = await event.reply(chk, buttons=btns)
+        _record_sent_id(last_sent)
+        await asyncio.sleep(0.3)
+    return last_sent
+
+
 def get_drive_explorer_keyboard(folder_data: dict) -> list:
     """Gera teclado inline para navegação visual do Google Drive."""
     buttons = []
@@ -225,7 +585,17 @@ async def handle_callback_query(event):
         elif data_str == "action:view_agents":
             await event.answer("👥 Carregando organograma completo...", alert=False)
             agents_text = await process_telegram_command("/agentes")
-            await event.edit(agents_text, buttons=get_back_keyboard())
+            await event.edit(agents_text, buttons=get_agents_menu_keyboard())
+
+        elif data_str.startswith("action:agent_card:"):
+            target_short = data_str.replace("action:agent_card:", "").strip()
+            await event.answer(f"👤 Abrindo {target_short.title()}...", alert=False)
+            card_text = format_agent_card(target_short)
+            back_btns = [
+                [Button.inline("👥 Voltar ao Organograma", data=b"action:view_agents")],
+                [Button.inline("🔙 Menu Principal", data=b"action:main_menu")]
+            ]
+            await event.edit(card_text, buttons=back_btns)
 
         elif data_str == "action:consult_vance":
             await event.answer("⚡ Alex Vance pronto para responder!", alert=False)
@@ -612,27 +982,110 @@ async def process_telegram_command(command_text: str) -> str:
     cmd = command_text.strip()
     cmd_lower = cmd.lower()
 
-    # 1. Menu Principal & Ajuda
-    if cmd_lower in ["/start", "/ajuda", "/help", "/menu"]:
+    # === 0. Normalização de Atalhos Rápidos (Mínimo Esforço) ===
+    if cmd_lower in ["/m", "/help", "/ajuda", "/menu", "/start"]:
+        cmd_lower = "/menu"
+    elif cmd_lower == "/s":
+        cmd_lower = "/status"
+    elif cmd_lower.startswith("/s "):
+        cmd_lower = "/status" + cmd_lower[2:]
+    elif cmd_lower == "/r":
+        cmd_lower = "/relatorio"
+    elif cmd_lower.startswith("/r "):
+        cmd_lower = "/relatorio" + cmd_lower[2:]
+    elif cmd_lower == "/a":
+        cmd_lower = "/agentes"
+    elif cmd_lower.startswith("/a "):
+        cmd_lower = "/agentes" + cmd_lower[2:]
+    elif cmd_lower == "/d":
+        cmd_lower = "/drive"
+    elif cmd_lower.startswith("/d "):
+        cmd_lower = "/drive" + cmd_lower[2:]
+    elif cmd_lower == "/e":
+        cmd_lower = "/estudar"
+    elif cmd_lower.startswith("/e "):
+        cmd_lower = "/estudar" + cmd_lower[2:]
+    elif cmd_lower == "/t":
+        cmd_lower = "/tarefas"
+    elif cmd_lower.startswith("/t "):
+        cmd_lower = "/tarefa" + cmd_lower[2:]
+    elif cmd_lower == "/g":
+        cmd_lower = "/gaps"
+    elif cmd_lower.startswith("/g "):
+        cmd_lower = "/gaps" + cmd_lower[2:]
+    elif cmd_lower == "/c":
+        cmd_lower = "/contratar"
+    elif cmd_lower.startswith("/c "):
+        cmd_lower = "/contratar" + cmd_lower[2:]
+
+    # === 0.1. Roteamento Direto para Agente Especialista ===
+    cmd_tokens = cmd.split(maxsplit=1)
+    first_token = cmd_tokens[0].lstrip("/").lower()
+    if first_token in AGENT_COMMAND_MAP:
+        target_agent = AGENT_COMMAND_MAP[first_token]
+        query = cmd_tokens[1].strip() if len(cmd_tokens) > 1 else ""
+        if not query:
+            return format_agent_card(target_agent)
+        from orchestration.agent_delegator import agent_delegator
+        return agent_delegator.consult(target_agent, query)
+
+    # === 0.2. Harness de Desenvolvimento Remoto ===
+    if cmd_lower.startswith(("/dev", "/harness")):
+        parts = cmd.split(maxsplit=1)
+        if len(parts) < 2:
+            return (
+                "🛠️ **ORÁCULO DEV HARNESS — CONTROLE REMOTO**\n\n"
+                "Envie instruções de desenvolvimento diretamente para a equipe técnica:\n"
+                "`/dev <sua instrução de código ou tarefa>`\n\n"
+                "Exemplos:\n"
+                "• `/dev Criar rota /api/v1/metrics no FastAPI com testes`\n"
+                "• `/dev Refatorar study_queue para persistir em SQLite com WAL`\n"
+                "• `/dev Rodar pytest nos módulos de orchestration`\n\n"
+                "🛡️ _Proteções ativas: isolamento em branch, validação estrita e confirmação para ações destrutivas._"
+            )
+        instruction = parts[1].strip()
+        from orchestration.agent_delegator import agent_delegator
+        dev_prompt = f"Instrução de desenvolvimento recebida via Telegram Harness: {instruction}. Avalie o impacto arquitetural, planeje a execução e forneça a solução técnica."
+        return agent_delegator.consult("vance", dev_prompt)
+
+    # 1. Menu Principal & Ajuda Executiva
+    if cmd_lower == "/menu" or cmd_lower in ["/start", "/ajuda", "/help"]:
         group_id = get_cockpit_group_id()
-        group_info = f"Conectado (ID `{group_id}`)" if group_id else "Não configurado (envie `/ativar_grupo` em qualquer grupo)"
+        group_info = f"Conectado (ID `{group_id}`)" if group_id else "Não vinculado (envie `/ativar_grupo` em qualquer grupo)"
 
         return (
-            "🔮 **ORÁCULO MOBILE COCKPIT — MESA REDONDA**\n\n"
-            f"📍 **Grupo Oficial**: {group_info}\n\n"
-            "Comandos e funcionalidades disponíveis:\n\n"
-            "📊 `/status` — Visão em tempo real de workers, fila e tokens\n"
-            "📊 `/relatorio` — Relatório executivo do dia com métricas e especialistas\n"
-            "👥 `/agentes` — Organograma estruturado (horas reais vs gestores)\n"
-            "🚨 `/gaps` — Relatório de GAPs consolidado de TODOS os gestores\n"
-            "➕ `/contratar <cargo>` — Provisionar novo especialista solicitado pelos gestores\n"
-            "📁 `/estudar <link_drive>` — Enfileirar curso do Drive direto pelo celular\n"
-            "📂 `/drive` — Navegar visualmente pelas pastas do Google Drive\n"
-            "💬 `/perguntar @agente <dúvida>` — Consultar qualquer especialista\n"
-            "📋 `/tarefas` — Ver backlog de tarefas recebidas do celular ou chat\n"
-            "🏢 `/ativar_grupo` — Vincular o grupo atual como Quartel-General Oficial\n"
-            "🔄 `/sync` — Forçar compilação de todas as skills\n"
-            "🤖 `/botfather` — Guia de configuração e comandos para menu dinâmico\n"
+            "🔮 **ORÁCULO MOBILE — COCKPIT EXECUTIVO**\n"
+            f"📍 Grupo QG: {group_info}\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            "⚡ **ATALHOS RÁPIDOS (1 TOQUE)**:\n"
+            "• `/s` | `/status` ➔ Workers, fila & tokens\n"
+            "• `/r` | `/relatorio` ➔ Relatório executivo do dia\n"
+            "• `/a` | `/agentes` ➔ Organograma & carga horária\n"
+            "• `/d` | `/drive` ➔ Navegador de pastas do Google Drive\n"
+            "• `/e` | `/estudar` ➔ Enfileirar curso do Drive\n"
+            "• `/t` | `/tarefa` ➔ Backlog de tarefas executivas\n"
+            "• `/g` | `/gaps` ➔ Relatório de defasagens (Tech, Mkt, Vendas, Mente)\n"
+            "• `/c` | `/contratar` ➔ Provisionar novo especialista\n"
+            "• `/dev <prompt>` ➔ Instrução de desenvolvimento remoto\n\n"
+            "👥 **CHAMADA DIRETA DE AGENTES**:\n"
+            "• `/thiago <pergunta>` ➔ Thiago Tech (VP de TI)\n"
+            "• `/vance <pergunta>` ➔ Alex Vance (Arquiteto de Software & IA)\n"
+            "• `/jordan <pergunta>` ➔ Jordan Belford (Vendas & Fechamento)\n"
+            "• `/sobral <pergunta>` ➔ Pedro Sobral (Tráfego Pago & Performance)\n"
+            "• `/diamand <pergunta>` ➔ André Diamand (Sexy Canvas & Desejo)\n"
+            "• `/quinn <pergunta>` ➔ Quinn QA (Testes & TDD)\n"
+            "• `/claudio <pergunta>` ➔ Cláudio Cloud (DevOps, GCP & Docker)\n"
+            "• `/bruno <pergunta>` ➔ Bruno (Codex, Python & Automações)\n"
+            "• `/marcelo <pergunta>` ➔ Marcelo Marketing (CMO & Growth)\n"
+            "• `/victor <pergunta>` ➔ Victor Vendas (Dir. Comercial)\n"
+            "• `/marina <pergunta>` ➔ Marina Mente (Foco & Performance)\n"
+            "• `/link <pergunta>` ➔ Link (LinkedIn & Autoridade)\n"
+            "• `/monge <pergunta>` ➔ O Monge (Espiritualidade & Códigos)\n"
+            "• `/jim <pergunta>` ➔ Jim Kwik (Supercérebro & Memória)\n"
+            "• `/ana <pergunta>` ➔ Ana (Conteúdo & Social)\n"
+            "• `/thales <pergunta>` ➔ Thales (N8N & Automação de Negócios)\n"
+            "• `/oraculo <pergunta>` ➔ Oráculo Central (Visão Geral & Maestro)\n\n"
+            "💡 _Dica: Digite apenas o comando do especialista (ex: `/jordan`) para ver o cartão de perfil e perguntas de exemplo!_"
         )
 
     # 2. Status com Barra de Progresso Visual
@@ -1571,30 +2024,42 @@ async def start_telegram_listener():
                 if txt.startswith("/") or is_button:
                     print(f"📱 [Telegram Privado] Comando recebido: {txt}", flush=True)
                     response = await process_telegram_command(txt)
-                    btns = get_cockpit_inline_keyboard() if is_bot else COCKPIT_KEYBOARD
-                    sent = await event.reply(response, buttons=btns)
-                    _record_sent_id(sent)
-                else:
-                    # Interpretação de Linguagem Natural no Privado
-                    print(f"🧠 [Telegram Privado] Interpretando linguagem natural: {txt[:50]}", flush=True)
-                    try:
-                        from orchestration.intent_interpreter import execute_or_clarify_intent
-                        parsed_res = await execute_or_clarify_intent(txt)
-                        resp_txt = parsed_res.get("response_text", "")
-                        if resp_txt:
-                            btns = None
-                            if parsed_res.get("status") == "executed_drive":
-                                from ingestion.telegram_notifier import get_drive_explorer_keyboard
-                                btns = get_drive_explorer_keyboard(parsed_res.get("folder_data", {}))
-                            sent = await event.reply(resp_txt, buttons=btns)
-                            _record_sent_id(sent)
-                    except Exception as nl_err:
-                        logger.error(f"Erro ao processar linguagem natural no privado: {nl_err}")
+                    btns = get_cockpit_inline_keyboard() if (is_bot and txt.lower() in ["/status", "/menu", "/cockpit", "/m", "/s", "/start", "/ajuda"]) else (get_agents_menu_keyboard() if (txt.lower() in ["/agentes", "/a"]) else None)
+                    await send_safe_reply(event, response, buttons=btns)
+                    return
+
+                # Se a mensagem mencionar um agente (@jordan, @thiago, jordan:, etc.)
+                agent_match = extract_agent_and_query(txt)
+                if agent_match:
+                    target_aid, query = agent_match
+                    print(f"👥 [Telegram Privado] Consulta direta para {target_aid}: {query[:50]}", flush=True)
+                    if not query:
+                        card = format_agent_card(target_aid)
+                        await send_safe_reply(event, card)
+                    else:
+                        from orchestration.agent_delegator import agent_delegator
+                        ans = agent_delegator.consult(target_aid, query)
+                        await send_safe_reply(event, ans)
+                    return
+
+                # Se não for comando nem agente explícito, cai na interpretação de intenção natural
+                print(f"🧠 [Telegram Privado] Interpretando linguagem natural: {txt[:50]}", flush=True)
+                try:
+                    from orchestration.intent_interpreter import execute_or_clarify_intent
+                    parsed_res = await execute_or_clarify_intent(txt)
+                    resp_txt = parsed_res.get("response_text", "")
+                    if resp_txt:
+                        btns = None
+                        if parsed_res.get("status") == "executed_drive":
+                            from ingestion.telegram_notifier import get_drive_explorer_keyboard
+                            btns = get_drive_explorer_keyboard(parsed_res.get("folder_data", {}))
+                        await send_safe_reply(event, resp_txt, buttons=btns)
+                except Exception as nl_err:
+                    logger.error(f"Erro ao processar linguagem natural no privado: {nl_err}")
                 return
 
-            # CASO 3: Mensagens dentro do Grupo Cockpit
-            is_cockpit = (cockpit_group_id and chat_id == cockpit_group_id) or ("oraculo" in getattr(chat, "title", "").lower() or "oráculo" in getattr(chat, "title", "").lower())
-            if is_group and is_cockpit:
+            # CASO 3: Mensagens dentro de Grupo / Fórum / Supergrupo
+            if is_group:
                 reply_to = getattr(event.message, "reply_to", None)
                 topic_id = getattr(reply_to, "reply_to_top_id", None) or getattr(reply_to, "reply_to_msg_id", None)
 
@@ -1602,7 +2067,8 @@ async def start_telegram_listener():
                 if txt.startswith(("/vincular_topico", "/bind_topico", "/set_topico")):
                     parts = txt.split(maxsplit=1)
                     if len(parts) < 2:
-                        sent = await event.reply(
+                        await send_safe_reply(
+                            event,
                             "ℹ️ **Como vincular este tópico a um especialista**:\n\n"
                             "Envie: `/vincular_topico @nome_do_agente`\n"
                             "Exemplos:\n"
@@ -1611,7 +2077,6 @@ async def start_telegram_listener():
                             "• `/vincular_topico @thiago`\n"
                             "• `/vincular_topico @diamand`"
                         )
-                        _record_sent_id(sent)
                         return
 
                     target_raw = parts[1].replace("@", "").strip().lower()
@@ -1624,8 +2089,7 @@ async def start_telegram_listener():
                             break
 
                     if not matched_ag:
-                        sent = await event.reply(f"❌ Especialista `@{target_raw}` não encontrado. Use `/agentes` para ver a lista.")
-                        _record_sent_id(sent)
+                        await send_safe_reply(event, f"❌ Especialista `@{target_raw}` não encontrado. Use `/agentes` para ver a lista.")
                         return
 
                     effective_tid = topic_id or event.message.id
@@ -1635,71 +2099,29 @@ async def start_telegram_listener():
                         f"Este canal agora é a **Sala Oficial de {matched_ag.get('name')}** ({matched_ag.get('avatar')} — {matched_ag.get('role')}).\n\n"
                         f"💬 **A partir de agora**: qualquer mensagem enviada aqui será respondida diretamente por ele sem precisar digitar `@`!"
                     )
-                    sent = await event.reply(welcome_top)
-                    _record_sent_id(sent)
+                    await send_safe_reply(event, welcome_top)
                     return
 
                 # Subcaso 3.2: Comandos de barra diretos no grupo (/status, /agentes, /gaps, /topicos, etc.)
                 if txt.startswith("/"):
                     print(f"📱 [Telegram Grupo] Comando recebido: {txt}", flush=True)
                     response = await process_telegram_command(txt)
-                    btns = get_cockpit_inline_keyboard() if (is_bot and txt.lower() in ["/status", "/menu", "/cockpit"]) else None
-                    sent = await event.reply(response, buttons=btns)
-                    _record_sent_id(sent)
+                    btns = get_cockpit_inline_keyboard() if (is_bot and txt.lower() in ["/status", "/menu", "/cockpit", "/m", "/s"]) else (get_agents_menu_keyboard() if (txt.lower() in ["/agentes", "/a"]) else None)
+                    await send_safe_reply(event, response, buttons=btns)
                     return
 
-                # Subcaso 3.3: Mapeamento de menções explícitas (@link, @jordan, @thiago, etc.)
-                agent_triggers = {
-                    "@link": "link",
-                    "@jordan": "jordan",
-                    "@belford": "jordan",
-                    "@diamand": "andre",
-                    "@thiago": "thiago",
-                    "@helena": "helena",
-                    "@tiago": "tiago",
-                    "@tech": "tiago",
-                    "@vance": "alex_vance",
-                    "@alex": "alex_vance",
-                    "@monge": "monge",
-                    "@bruno": "bruno",
-                    "@camila": "camila",
-                    "@marina": "marina",
-                    "@mente": "marina",
-                    "@ricardo": "ricardo",
-                    "@victor": "victor",
-                    "@vendas": "victor",
-                    "@sofia": "sofia",
-                    "@sdr": "sofia",
-                    "@caio": "caio",
-                    "@copy": "caio",
-                    "@felipe": "felipe",
-                    "@followup": "felipe",
-                    "@qa": "quinn",
-                    "@cloud": "claudio",
-                    "@jim": "jim",
-                    "@kwik": "jim",
-                    "@ana": "ana",
-                    "@sobral": "sobral",
-                    "@thales": "thales",
-                    "@marcelo": "marcelo",
-                    "@marketing": "marcelo",
-                    "@growth": "marcelo",
-                    "@oraculo": "oraculo"
-                }
-
-                matched = []
-                for trigger, aid in agent_triggers.items():
-                    if trigger in txt.lower():
-                        matched.append((trigger, aid))
-
-                if matched:
-                    for trigger, aid in matched:
-                        clean_q = re.sub(trigger, "", txt, flags=re.IGNORECASE).strip()
-                        cmd_synth = f"/perguntar @{aid} {clean_q if clean_q else txt}"
-                        print(f"👥 [Telegram Grupo] Roteando menção para @{aid}: {clean_q[:50]}", flush=True)
-                        ans = await process_telegram_command(cmd_synth)
-                        sent = await event.reply(ans)
-                        _record_sent_id(sent)
+                # Subcaso 3.3: Mapeamento de menções explícitas ou chamadas de agentes
+                agent_match = extract_agent_and_query(txt)
+                if agent_match:
+                    target_aid, clean_q = agent_match
+                    print(f"👥 [Telegram Grupo] Roteando para {target_aid}: {clean_q[:50]}", flush=True)
+                    if not clean_q:
+                        card = format_agent_card(target_aid)
+                        await send_safe_reply(event, card)
+                    else:
+                        from orchestration.agent_delegator import agent_delegator
+                        ans = agent_delegator.consult(target_aid, clean_q)
+                        await send_safe_reply(event, ans)
                     return
 
                 # Subcaso 3.4: Roteamento Automático por Tópico (Fórum / Supergrupo)
@@ -1709,11 +2131,10 @@ async def start_telegram_listener():
                     if bound_info:
                         bound_agent_id = bound_info.get("agent_id")
                         bound_agent_name = bound_info.get("agent_name", bound_agent_id)
-                        cmd_synth = f"/perguntar @{bound_agent_id} {txt}"
                         print(f"👥 [Fórum Tópico #{topic_id}] Roteando automaticamente para {bound_agent_name}: {txt[:50]}", flush=True)
-                        ans = await process_telegram_command(cmd_synth)
-                        sent = await event.reply(ans)
-                        _record_sent_id(sent)
+                        from orchestration.agent_delegator import agent_delegator
+                        ans = agent_delegator.consult(bound_agent_id, txt)
+                        await send_safe_reply(event, ans)
                         return
 
                 # Em grupos, o Bot NUNCA responde a conversas normais ou mensagens não direcionadas.

@@ -100,7 +100,18 @@ class AgentDelegator:
             "copywriter": "agent_caio_copywriter",
             "felipe": "agent_felipe_followup",
             "followup": "agent_felipe_followup",
-            "follow_up": "agent_felipe_followup"
+            "follow_up": "agent_felipe_followup",
+            "sobral": "agent_sobral_marketing",
+            "pedro": "agent_sobral_marketing",
+            "pedro_sobral": "agent_sobral_marketing",
+            "trafego": "agent_sobral_marketing",
+            "thales": "agent_thales_automations",
+            "automacao": "agent_thales_automations",
+            "n8n": "agent_thales_automations",
+            "marcelo": "gestor_marketing",
+            "marketing": "gestor_marketing",
+            "mkt": "gestor_marketing",
+            "growth": "gestor_marketing"
         }
         resolved_id = aliases.get(clean_id, clean_id)
 
@@ -379,13 +390,28 @@ NÃO inclua blocos de código nem explicações de sintaxe.
             return f"{manager_avatar} **[{manager_name} — {manager_role}]**:\n\nRodrigo, consultei a equipe de engenharia:\n\n{ans}"
         return f"{manager_avatar} **[{manager_name} — {manager_role}]**:\n\nDemanda recebida. Analisando alocação de equipe."
 
-    def consult(self, origin_identifier: str, query: str) -> str:
+    def consult(self, origin_identifier: str = "", query: str = "", agent_id: str = "", user_query: str = "", **kwargs) -> str:
         """
         Ponto de entrada unificado para consulta com Fallback e Delegação Inter-Agentes.
+        Suporta chamadas posicionais e por chave (origin_identifier ou agent_id, query ou user_query).
         """
-        origin_agent = self.find_agent(origin_identifier)
+        target_ident = origin_identifier or agent_id or kwargs.get("agent", "")
+        query = query or user_query or kwargs.get("q", "")
+        clean_target = str(target_ident).replace("@", "").strip().lower()
+
+        if clean_target in ["oraculo", "central", "maestro"]:
+            prompt = (
+                f"Você é o ORÁCULO (🔮), o Agente Central e Maestro da infraestrutura de inteligência artificial de Rodrigo Bettio Jr.\n"
+                f"Seu papel é supervisionar o ecossistema, orientar o Rodrigo sobre a esteira de estudos, coordenar os especialistas e manter a visão executiva.\n\n"
+                f"PERGUNTA DO RODRIGO: {query}\n\n"
+                f"Responda com clareza, objetividade e autoridade executiva como Agente Central."
+            )
+            resp_text = self._call_gemini_fast(prompt)
+            return f"🔮 **[Oráculo — Central Operacional]**:\n\n{resp_text}"
+
+        origin_agent = self.find_agent(target_ident)
         if not origin_agent:
-            return f"❌ Especialista `{origin_identifier}` não encontrado no organograma."
+            return f"❌ Especialista `{target_ident}` não encontrado no organograma."
 
         origin_id = origin_agent.get("id")
         origin_name = origin_agent.get("name")
