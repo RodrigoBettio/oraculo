@@ -1,0 +1,27 @@
+{
+  "items": [
+    {
+      "name": "Painel B3 & CRM Fechamento",
+      "priority": 1,
+      "items": [
+        {
+          "name": "Ativar Tela Cinza (Ciclo 5 Paginas / 30 Ativos)",
+          "action": "/bin/sh /mnt/us/extensions/painel_b3_crm/bin/ticker_loop.sh",
+          "exitmenu": true
+        },
+        {
+          "name": "Baixar Leads de Fechamento CRM para Biblioteca",
+          "action": "/bin/sh /mnt/us/extensions/painel_b3_crm/bin/sync_crm.sh",
+          "exitmenu": false,
+          "status": true
+        },
+        {
+          "name": "Diagnostico: Testar Conexao e Hardware",
+          "action": "/bin/sh /mnt/us/extensions/painel_b3_crm/bin/diagnostico.sh",
+          "exitmenu": false,
+          "status": true
+        }
+      ]
+    }
+  ]
+}

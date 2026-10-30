@@ -1,11 +1,20 @@
+import sys
 import os
+
+if sys.platform == "win32":
+    if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
 import re
 import json
 import asyncio
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
-from fastapi import FastAPI, BackgroundTasks, HTTPException, UploadFile, File
+from fastapi import FastAPI, BackgroundTasks, HTTPException, UploadFile, File, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -21,13 +30,118 @@ from orchestration.manager_sync import sync_all_managers_mappings
 app = FastAPI(title="Oráculo", version="1.0.0")
 
 from fastapi.middleware.cors import CORSMiddleware
+
+# Origens autorizadas estritas para evitar vulnerabilidades de Cross-Origin com credenciais
+ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://34.46.39.111:8000",
+    "http://34.46.39.111",
+    "https://34.46.39.111",
+]
+if os.getenv("ALLOWED_ORIGINS"):
+    ALLOWED_ORIGINS.extend([o.strip() for o in os.getenv("ALLOWED_ORIGINS").split(",") if o.strip()])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
 )
+
+from web.auth_guard import get_authenticated_user_and_role, is_route_allowed_for_role
+from fastapi.responses import JSONResponse, RedirectResponse
+
+PUBLIC_PREFIXES = (
+    "/login",
+    "/api/auth/login",
+    "/api/auth/logout",
+    "/health",
+    "/static/",
+    "/manifest.json",
+    "/favicon.ico",
+    "/sw.js",
+    "/api/whatsapp/webhook",
+    "/api/chatwoot",
+    "/investimentos",
+    "/api/investimentos",
+    "/api/vestibular",
+    "/api/v1/kindle",
+)
+
+@app.middleware("http")
+async def security_barrier_middleware(request: Request, call_next):
+    # Permite requisições OPTIONS (CORS preflight sem credenciais do navegador)
+    if request.method == "OPTIONS":
+        return await call_next(request)
+
+    # Se autenticação estiver desabilitada nas configurações, permite tudo
+    if not settings.AUTH_ENABLED:
+        return await call_next(request)
+
+    path = request.url.path
+
+    # Permite rotas públicas
+    if any(path.startswith(prefix) for prefix in PUBLIC_PREFIXES):
+        return await call_next(request)
+
+    # Valida credenciais (API Key, Bearer Token ou Cookie de Sessão)
+    user, role = get_authenticated_user_and_role(request)
+    if user:
+        # Aplica controle estrito de acesso baseado em papel (RBAC)
+        if not is_route_allowed_for_role(role or "guest", path, request.method):
+            return JSONResponse(
+                status_code=403,
+                content={"detail": "Acesso não permitido para este perfil de usuário. Funcionalidade restrita ao Administrador."}
+            )
+        return await call_next(request)
+
+    # Requisição não autenticada:
+    # Se for uma requisição HTML de navegador (para a raiz ou página geral):
+    accept = request.headers.get("accept", "")
+    if path == "/" or "text/html" in accept:
+        return RedirectResponse(url="/login", status_code=302)
+
+    # Se for requisição de API / dados:
+    return JSONResponse(
+        status_code=401,
+        content={"detail": "Não autorizado. Forneça credenciais válidas ou faça login em /login."}
+    )
+
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    """
+    Injeta headers de segurança defensiva em todas as respostas HTTP.
+    Registrado por último para ser a camada externa, interceptando todas as respostas (200, 302, 401, 403, 500).
+    """
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    # Strict-Transport-Security (HSTS)
+    if request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+    else:
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    # Content-Security-Policy (CSP)
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.pluggy.ai https://connect.pluggy.ai; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.pluggy.ai https://connect.pluggy.ai; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "img-src 'self' data: https: blob:; "
+        "connect-src 'self' ws: wss: https://api.pluggy.ai https://*.pluggy.ai https://connect.pluggy.ai https://cdn.pluggy.ai; "
+        "frame-src 'self' https://connect.pluggy.ai https://*.pluggy.ai; "
+        "frame-ancestors 'self';"
+    )
+    return response
+
+from web.login_routes import router as login_router
+app.include_router(login_router)
 
 from web.auth_routes import router as auth_router
 app.include_router(auth_router)
@@ -44,6 +158,21 @@ app.include_router(vault_router)
 from web.linkedin_routes import router as linkedin_router
 app.include_router(linkedin_router)
 
+from web.whatsapp_routes import router as whatsapp_router
+app.include_router(whatsapp_router)
+
+from web.investimentos_routes import router as investimentos_router
+app.include_router(investimentos_router)
+
+from web.vestibular_routes import router as vestibular_router
+app.include_router(vestibular_router)
+
+from web.chatwoot_routes import router as chatwoot_router
+app.include_router(chatwoot_router)
+
+from web.kindle_routes import kindle_router
+app.include_router(kindle_router)
+
 @app.on_event("startup")
 async def startup_guardian():
     from orchestration.guardian import guardian
@@ -52,12 +181,29 @@ async def startup_guardian():
         from ingestion.telegram_notifier import start_telegram_listener
         asyncio.create_task(start_telegram_listener())
     except Exception as e:
-        logger.warning(f"Não foi possível iniciar o Telegram Mobile Listener: {e}")
+        logging.getLogger("oraculo").warning(f"Não foi possível iniciar o Telegram Mobile Listener: {e}")
+    try:
+        from investimentos.watcher import B3DownloadsWatcher
+        b3_watcher = B3DownloadsWatcher()
+        b3_watcher.start()
+        app.state.b3_watcher = b3_watcher
+    except Exception as e:
+        logging.getLogger("oraculo").warning(f"Não foi possível iniciar o B3 Downloads Watcher: {e}")
+    try:
+        from ingestion.evolution_client import evolution_client
+        asyncio.create_task(evolution_client.ensure_webhook_configured())
+    except Exception as e:
+        logging.getLogger("oraculo").warning(f"Não foi possível auto-configurar Webhook da Evolution API: {e}")
 
 @app.on_event("shutdown")
 async def shutdown_guardian():
     from orchestration.guardian import guardian
     guardian.stop()
+    try:
+        if hasattr(app.state, "b3_watcher"):
+            app.state.b3_watcher.stop()
+    except Exception:
+        pass
 
 # MCP Server — Expõe ferramentas do Oráculo para o Antigravity via SSE
 try:
@@ -2496,7 +2642,32 @@ Retorne estritamente um JSON no seguinte formato:
         logger.error(f"Erro ao processar consulta no chat: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Erro no processamento da consulta: {str(e)}")
 
-# Servindo o Frontend SPA
+# Exportação de Agentes para o Codex / IDEs
+from fastapi.responses import StreamingResponse, PlainTextResponse
+from orchestration.codex_exporter import build_codex_export_zip, generate_consolidated_instructions, get_all_agents
+
+@app.get("/api/agents/export/codex")
+def export_agents_codex_zip():
+    """Gera e faz download do pacote ZIP de agentes formatados para o Codex."""
+    zip_buffer = build_codex_export_zip()
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=oraculo_agents_codex.zip"}
+    )
+
+@app.get("/api/agents/export/codex/instructions")
+def export_agents_codex_instructions():
+    """Retorna as instruções consolidadas de todos os agentes em Markdown."""
+    agents = get_all_agents()
+    content = generate_consolidated_instructions(agents)
+    return PlainTextResponse(content, media_type="text/markdown; charset=utf-8")
+
+# Servindo o Frontend SPA e Tela de Login
+@app.get("/login")
+def get_login():
+    return FileResponse(STATIC_DIR / "login.html")
+
 @app.get("/")
 def get_index():
     return FileResponse(STATIC_DIR / "index.html")

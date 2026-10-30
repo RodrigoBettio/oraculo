@@ -1,0 +1,5 @@
+# Garante que scripts shell e arquivos de extensao do Kindle sempre mantenham LF no Linux e no Kindle
+*.sh text eol=lf
+*.conf text eol=lf
+*.xml text eol=lf
+*.json text eol=lf
